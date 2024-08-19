@@ -41,6 +41,24 @@ fastify.get("/opencrvs-callback", {
   },
 });
 
+// ---
+
+const oidpSchema = z.object({
+  body: z.object({
+    token: z.string(),
+  }),
+});
+
+fastify.get("/oidp", {
+  schema: {
+    body: oidpSchema.shape.body,
+  },
+  handler: (request, reply) => {
+    const body = request.body as z.infer<typeof oidpSchema.shape.body>;
+    reply.send({ draft: { token: body.token } });
+  },
+});
+
 fastify.listen({ port: 2024 }, (err) => {
   if (err) {
     console.error(err);
