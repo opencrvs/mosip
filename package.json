@@ -1,0 +1,11 @@
+{
+  "name": "opencrvs-mosip-gateway",
+  "author": "Pyry Rouvila <pyry@opencrvs.org>",
+  "version": "1.0.0",
+  "main": "index.js",
+  "private": true,
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "@opencrvs-mosip/nid-authentication",
+  "version": "1.0.0",
+  "dependencies": {
+    "@types/node": "^22.4.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  }
+}

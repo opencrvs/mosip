@@ -1,0 +1,15 @@
+{
+  "name": "@opencrvs-mosip/vital-event-gateway",
+  "version": "1.0.0",
+  "dependencies": {
+    "@opencrvs/commons": "https://gitpkg.now.sh/opencrvs/opencrvs-core/packages/commons?fca9766",
+    "@types/node": "^22.4.1",
+    "envalid": "^8.0.0",
+    "fastify": "^4.28.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.5.4"
+  }
+}
