@@ -1,8 +1,14 @@
+// @TODO: we could start building these definitions to core tbh
+
 /**
  * E-Signet popup button form definition
- * @param url URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org)
  */
-export const popupButton = ({ url }: { url: string }) => {
+export const popupButton = ({
+  /** URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org) */
+  url,
+}: {
+  url: string;
+}) => {
   return {
     name: "INFORMANT_AUTHENTICATION_POPUP_BUTTON",
     type: "POPUP_BUTTON",
@@ -19,7 +25,6 @@ export const hidden = () => {
 
 /**
  * E-Signet popup button and hidden field form definitions
- * @param url URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org)
  * @example
  * ```
  * [
@@ -28,7 +33,9 @@ export const hidden = () => {
  * ]
  * ```
  */
-export const esignet = ({ url }: { url: string }) => [
-  popupButton({ url }),
-  hidden(),
-];
+export const esignet = ({
+  url,
+}: {
+  /** URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org) */
+  url: string;
+}) => [popupButton({ url }), hidden()];

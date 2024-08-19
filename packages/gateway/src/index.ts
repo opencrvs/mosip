@@ -1,68 +1,47 @@
 import Fastify from "fastify";
+import {
+  serializerCompiler,
+  validatorCompiler,
+  ZodTypeProvider,
+} from "fastify-type-provider-zod";
+import fastifyStatic from "@fastify/static";
 import path from "path";
 import { z } from "zod";
 
-const fastify = Fastify();
+const app = Fastify();
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
 
-fastify.register(require("@fastify/static"), {
+app.register(fastifyStatic, {
   root: path.join(__dirname, "../static"),
 });
 
-fastify.get("/", {
+app.get("/", {
   handler: (request, reply) => {
-    // @ts-expect-error sendFile is not available, fix
     reply.sendFile("index.html");
   },
 });
 
-fastify.get("/script.js", {
-  handler: (request, reply) => {
-    // @ts-expect-error sendFile is not available, fix
-    reply.sendFile("script.js");
-  },
-});
-
-// just some example stuff
-// --------------------------------
-
-const getUserSchema = z.object({
-  query: z.object({
-    id: z.string().uuid(),
-  }),
-});
-
-fastify.get("/opencrvs-callback", {
-  schema: {
-    querystring: getUserSchema.shape.query,
-  },
-  handler: (request, reply) => {
-    const query = request.query as z.infer<typeof getUserSchema.shape.query>;
-    reply.send({ id: query.id, name: "John Doe" });
-  },
-});
-
-// ---
-
 const oidpSchema = z.object({
-  body: z.object({
-    token: z.string(),
-  }),
+  token: z.string(),
 });
 
-fastify.get("/oidp", {
+app.withTypeProvider<ZodTypeProvider>().post("/oidp", {
   schema: {
-    body: oidpSchema.shape.body,
+    body: oidpSchema,
   },
   handler: (request, reply) => {
-    const body = request.body as z.infer<typeof oidpSchema.shape.body>;
-    reply.send({ draft: { token: body.token } });
+    reply.send({ draft: { token: request.body.token } });
   },
 });
 
-fastify.listen({ port: 2024 }, (err) => {
-  if (err) {
-    console.error(err);
-    process.exit(1);
-  }
-  console.log("Server running on http://localhost:2024");
-});
+async function run() {
+  await app.ready();
+  await app.listen({
+    port: 2024,
+  });
+
+  console.log(`OpenCRVS-MOSIP gateway running at http://localhost:2024/`);
+}
+
+void run();

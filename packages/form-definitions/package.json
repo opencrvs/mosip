@@ -1,7 +1,8 @@
 {
   "name": "@opencrvs-mosip/form-definitions",
-  "main": "index.ts",
   "version": "1.0.0",
+  "license": "MPL-2.0",
+  "main": "index.ts",
   "exports": {
     ".": "./build/index.js"
   },
