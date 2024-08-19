@@ -1,0 +1,20 @@
+{
+  "name": "@opencrvs-mosip/gateway",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@fastify/static": "^7.0.4",
+    "@opencrvs/commons": "https://gitpkg.now.sh/opencrvs/opencrvs-core/packages/commons?fca9766",
+    "@types/node": "^22.4.1",
+    "envalid": "^8.0.0",
+    "fastify": "^4.28.1",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3"
+  }
+}
