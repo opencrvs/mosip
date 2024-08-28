@@ -1,13 +1,11 @@
-import { cleanEnv, str } from "envalid";
+import { cleanEnv, str, num } from "envalid";
 
 export const env = cleanEnv(process.env, {
-  OPENCRVS_CLIENT_ID: str(),
-  OPENCRVS_CLIENT_SECRET: str(),
-  OPENCRVS_SHA_SECRET: str(),
-  OPENCRVS_TOKEN_URL: str(),
-  OPENCRVS_WEBHOOK_SUBSCRIBE_URL: str(),
-  OPENCRVS_WEBHOOK_CALLBACK_URL: str({
-    default: "http://mosip-api:2024/opencrvs-callback",
-    devDefault: "http://localhost:2024/opencrvs-callback",
+  PORT: num({ default: 2024 }),
+  MOSIP_RECEIVE_WEBHOOK_URL: str({
+    devDefault: "http://localhost:20240/webhooks/opencrvs",
+  }),
+  OPENCRVS_GRAPHQL_GATEWAY_URL: str({
+    devDefault: "http://localhost:7070/graphql",
   }),
 });

@@ -3,12 +3,11 @@
   "version": "1.0.0",
   "license": "MPL-2.0",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "tsx src/index.ts"
+    "dev": "NODE_ENV=development tsx watch src/index.ts",
+    "start": "NODE_ENV=production tsx src/index.ts"
   },
   "dependencies": {
     "@fastify/static": "^7.0.4",
-    "@opencrvs/commons": "https://gitpkg.now.sh/opencrvs/opencrvs-core/packages/commons?fca9766",
     "@types/node": "^22.4.1",
     "envalid": "^8.0.0",
     "fastify": "^4.28.1",

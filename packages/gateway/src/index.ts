@@ -4,44 +4,26 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import fastifyStatic from "@fastify/static";
-import path from "path";
-import { z } from "zod";
+import { mosipHandler } from "./webhooks/mosip";
+import { opencrvsHandler } from "./webhooks/opencrvs";
+import { env } from "./constants";
 
 const app = Fastify();
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
-app.register(fastifyStatic, {
-  root: path.join(__dirname, "../static"),
-});
+const route = app.withTypeProvider<ZodTypeProvider>();
 
-app.get("/", {
-  handler: (request, reply) => {
-    reply.sendFile("index.html");
-  },
-});
-
-const oidpSchema = z.object({
-  token: z.string(),
-});
-
-app.withTypeProvider<ZodTypeProvider>().post("/oidp", {
-  schema: {
-    body: oidpSchema,
-  },
-  handler: (request, reply) => {
-    reply.send({ draft: { token: request.body.token } });
-  },
-});
+route.post("/webhooks/opencrvs", opencrvsHandler);
+route.post("/webhooks/mosip", mosipHandler);
 
 async function run() {
   await app.ready();
   await app.listen({
-    port: 2024,
+    port: env.PORT,
   });
 
-  console.log(`OpenCRVS-MOSIP gateway running at http://localhost:2024/`);
+  console.log(`OpenCRVS-MOSIP gateway running at http://localhost:${env.PORT}`);
 }
 
 void run();

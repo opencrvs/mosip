@@ -1,0 +1,16 @@
+{
+  "name": "@opencrvs-mosip/mosip-mock",
+  "version": "1.0.0",
+  "license": "MPL-2.0",
+  "scripts": {
+    "dev": "NODE_ENV=development tsx watch src/index.ts",
+    "start": "NODE_ENV=production tsx src/index.ts"
+  },
+  "dependencies": {
+    "@types/node": "^22.4.1",
+    "envalid": "^8.0.0",
+    "fastify": "^4.28.1",
+    "tsx": "^4.17.0",
+    "typescript": "^5.5.4"
+  }
+}
