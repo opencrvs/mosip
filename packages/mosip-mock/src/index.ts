@@ -2,20 +2,18 @@ import Fastify from "fastify";
 import * as crypto from "crypto";
 import { env } from "./constants";
 
-const createNid = async ({ id }: { id: string }) => {
+const createNid = async () => {
   await new Promise((resolve) => setTimeout(resolve, 10000));
 
   const hash = crypto.createHash("sha256");
-  hash.update(id);
-  const randomString = hash.digest("hex").substring(0, 16);
-  return randomString;
+  return hash.digest("hex").substring(0, 16);
 };
 
-const sendNid = async ({ id }: { id: string }) => {
-  const nid = await createNid({ id });
+const sendNid = async ({ token, record }: { token: string; record: any }) => {
+  const nid = await createNid();
   const response = await fetch(env.OPENCRVS_MOSIP_GATEWAY_URL, {
     method: "POST",
-    body: JSON.stringify({ nid }),
+    body: JSON.stringify({ nid, token, record }),
   });
 
   if (!response.ok) {
@@ -33,12 +31,8 @@ const app = Fastify();
 
 app.post("/webhooks/opencrvs", {
   handler: async (request, reply) => {
-    const record = request.body as { id: string };
-
-    console.log(JSON.stringify(record, null, 4));
-
-    sendNid(record);
-
+    const { token, record } = request.body as { token: string; record: any };
+    sendNid({ token, record });
     reply.status(202).send({ received: true });
   },
 });

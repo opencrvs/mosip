@@ -1,9 +1,16 @@
 import { env } from "./constants";
+import { ValidRecord } from "@opencrvs/commons/types";
 
-export const postRecord = async (record: any) => {
+export const postRecord = async ({
+  record,
+  token,
+}: {
+  record: ValidRecord;
+  token: string;
+}) => {
   const response = await fetch(env.MOSIP_RECEIVE_WEBHOOK_URL, {
     method: "POST",
-    body: JSON.stringify(record),
+    body: JSON.stringify({ record, token }),
     headers: {
       "Content-Type": "application/json",
     },
