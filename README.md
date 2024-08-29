@@ -11,11 +11,11 @@ This package ensures a secure and a robust integration between OpenCRVS and MOSI
 
 ## Features
 
-| Feature                                              | Status         |
-| ---------------------------------------------------- | -------------- |
-| E-Signet form input for authenticating the informant | 🚧 In Progress |
-| Fetching a NID for a newborn                         | 🚧 In Progress |
-| Invalidating the NID for a deceased person           | 🚧 In Progress |
+| Feature                                              | Status          |
+| ---------------------------------------------------- | --------------- |
+| Fetching a NID for a newborn                         | 🚧 In Progress  |
+| Invalidating the NID for a deceased person           | 🚧 In Progress  |
+| E-Signet form input for authenticating the informant | 🔜 To be coming |
 
 ## Usage
 
