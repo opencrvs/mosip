@@ -12,7 +12,7 @@ export const opencrvsRecordSchema = z.object({
     })
     .catchall(z.unknown())
     .describe("Record as FHIR Bundle"),
-  token: z.string().describe("The one-time token from OpenCRVS"),
+  token: z.string().describe("One-time token from OpenCRVS"),
 });
 type OpenCRVSRequest = FastifyRequest<{
   Body: z.infer<typeof opencrvsRecordSchema> & { record: ValidRecord };

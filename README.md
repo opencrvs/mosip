@@ -19,4 +19,4 @@ This package ensures a secure and a robust integration between OpenCRVS and MOSI
 
 ## Usage
 
-The gateway runs by default in port 2024, the same year the first version of the MOSIP integration was created. The MOSIP-mock service runs in 2024**0**.
+The gateway runs by default in port 2024, the same year the stable version of the MOSIP integration is released. The MOSIP-mock service runs in 2024**0**.
