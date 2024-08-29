@@ -22,7 +22,6 @@ type MosipRequest = FastifyRequest<{
   Body: z.infer<typeof mosipNidSchema>;
 }>;
 
-export const mosipHandler = (request: MosipRequest, reply: FastifyReply) => {
-  console.log("were actually back from MOSIP");
-  reply.send({ draft: { token: request.body.nid } });
+export const mosipHandler = (_request: MosipRequest, reply: FastifyReply) => {
+  reply.send({ status: "received" });
 };
