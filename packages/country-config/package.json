@@ -16,7 +16,7 @@
     "@hapi/hapi": "^20.0.1"
   },
   "devDependencies": {
-    "@types/hapi__hapi": "^20.0.0",
+    "@types/hapi__hapi": "^21.0.0",
     "@types/node-fetch": "^2.6.11",
     "typescript": "^5.5.4"
   },
