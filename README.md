@@ -7,15 +7,7 @@
 
 # OpenCRVS API for MOSIP
 
-This package ensures a secure and a robust integration between OpenCRVS and MOSIP. It is supposed to be installed next to OpenCRVS, with the environment variables being the the integration details created in the National System Admin UI in OpenCRVS.
-
-## Features
-
-| Feature                                              | Status          |
-| ---------------------------------------------------- | --------------- |
-| Fetching a NID for a newborn                         | 🚧 In Progress  |
-| Invalidating the NID for a deceased person           | 🚧 In Progress  |
-| E-Signet form input for authenticating the informant | 🔜 To be coming |
+This package ensures a secure and a robust integration between OpenCRVS and MOSIP. For instructions on how to setup the integration, please refer to the [installation.md](./docs/installation.md). For local development, see instructions below. For features and core versions supported, please refer to the [compatibility.md](./docs/compatibility.md).
 
 ## Development
 
@@ -34,8 +26,6 @@ yarn dev
 ## Country configuration
 
 ```diff
-#src/index.ts
-
 -import { eventRegistrationHandler } from '@countryconfig/api/event-registration/handler'
 +import { mosipRegistrationHandler } from '@opencrvs-mosip/country-config'
 
