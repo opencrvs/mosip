@@ -7,7 +7,7 @@ export const register = async (app: FastifyInstance) => {
   await app.register(fastifySwagger, {
     openapi: {
       info: {
-        title: "OpenCRVS-MOSIP Gateway",
+        title: "OpenCRVS API for MOSIP",
         description: "Serves as a gateway between OpenCRVS and MOSIP",
         version: "1.0.0",
       },

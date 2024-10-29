@@ -5,7 +5,7 @@
 <img src="https://mosip.io/images/mosipn-logo.png" height="100" style="background:white">
 </td></tr></table>
 
-# OpenCRVS - MOSIP
+# OpenCRVS API for MOSIP
 
 This package ensures a secure and a robust integration between OpenCRVS and MOSIP. It is supposed to be installed next to OpenCRVS, with the environment variables being the the integration details created in the National System Admin UI in OpenCRVS.
 
@@ -23,7 +23,7 @@ This package ensures a secure and a robust integration between OpenCRVS and MOSI
 yarn install
 
 # start the web server
-cd packages/gateway
+cd packages/server
 yarn dev
 
 # optionally run MOSIP mock server
