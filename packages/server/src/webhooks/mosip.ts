@@ -1,15 +1,14 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
+import { confirmRegistration } from "../opencrvs-api";
 
 export const mosipNidSchema = z.object({
-  record: z
-    .object({
-      resourceType: z.enum(["Bundle"]),
-      type: z.enum(["document"]),
-      entry: z.array(z.unknown()),
-    })
-    .catchall(z.unknown())
-    .describe("Record as FHIR Bundle"),
+  eventId: z
+    .string()
+    .describe("The identifier for the event (record) from OpenCRVS"),
+  trackingId: z
+    .string()
+    .describe("The tracking ID for the event (record) from OpenCRVS"),
   nid: z.string().describe("The identifier for the registration from MOSIP"),
   token: z
     .string()
@@ -22,6 +21,22 @@ type MosipRequest = FastifyRequest<{
   Body: z.infer<typeof mosipNidSchema>;
 }>;
 
-export const mosipHandler = (_request: MosipRequest, reply: FastifyReply) => {
-  reply.send({ status: "received" });
+/** Handles the calls coming from MOSIP */
+export const mosipHandler = async (
+  request: MosipRequest,
+  reply: FastifyReply
+) => {
+  const { eventId, trackingId, nid, token } = request.body;
+
+  await confirmRegistration(
+    eventId,
+    {
+      trackingId,
+      registrationNumber: "BRN12341234", // @TODO
+      childIdentifiers: [{ type: "NID", value: nid }],
+    },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  reply.code(200);
 };

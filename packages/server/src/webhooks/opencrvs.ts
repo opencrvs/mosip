@@ -1,7 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as mosip from "../mosip-api";
-import { ValidRecord } from "@opencrvs/commons/types";
+import {
+  getTaskFromSavedBundle,
+  getTrackingId,
+  ValidRecord,
+} from "@opencrvs/commons/types";
 
 export const opencrvsRecordSchema = z.object({
   record: z
@@ -18,13 +22,19 @@ type OpenCRVSRequest = FastifyRequest<{
   Body: z.infer<typeof opencrvsRecordSchema> & { record: ValidRecord };
 }>;
 
+/** Handles the calls coming from OpenCRVS countryconfig */
 export const opencrvsHandler = (
   request: OpenCRVSRequest,
   reply: FastifyReply
 ) => {
   const { record, token } = request.body;
 
-  mosip.postRecord({ record, token });
+  const trackingId = getTrackingId(record);
 
-  reply.code(202).send({ status: "received" });
+  mosip.postRecord({
+    event: { id: record.id!, trackingId },
+    token,
+  });
+
+  reply.code(202);
 };

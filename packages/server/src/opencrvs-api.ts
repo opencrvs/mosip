@@ -1,45 +1,93 @@
+import fetch from "node-fetch";
 import { env } from "./constants";
 
-/**
- * Posts the confirm registration to OpenCRVS as GraphQL mutation
- */
-export const postConfirmRegistration = async ({
-  recordId,
-  nid,
-  token,
+export class OpenCRVSError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OpenCRVSError";
+  }
+}
+
+/** Communicates with opencrvs-core's GraphQL gateway */
+const post = async <T = any>({
+  query,
+  variables,
+  headers,
 }: {
-  recordId: string;
-  nid: string;
-  token: string;
+  query: string;
+  variables: Record<string, any>;
+  headers: Record<string, any>;
 }) => {
   const response = await fetch(env.OPENCRVS_GRAPHQL_GATEWAY_URL, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
+      ...headers,
     },
     body: JSON.stringify({
-      query: /* GraphQL */ `
-        mutation confirmRegistration($recordId: String!, $nid: String!) {
-          confirmRegistration(input: { recordId: $recordId, nid: $nid }) {
-            id
-          }
-        }
-      `,
-      variables: {
-        recordId,
-        nid,
-      },
+      variables,
+      query,
     }),
   });
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to confirm registration in OpenCRVS. Status: ${
-        response.status
-      }, response: ${await response.text()}`
+    throw new OpenCRVSError(
+      `POST to OpenCRVS GraphQL Gateway not ok: ${await response.text()}`
     );
   }
 
-  return response.json();
+  return response.json() as Promise<{ data: T }>;
 };
+
+export const confirmRegistration = (
+  id: string,
+  variables: {
+    childIdentifiers?: Array<{ type: string; value: string }>;
+    registrationNumber: string;
+    trackingId: string;
+  },
+  { headers }: { headers: Record<string, any> }
+) =>
+  post({
+    query: /* GraphQL */ `
+      mutation confirmRegistration(
+        $id: ID!
+        $details: ConfirmRegistrationInput!
+      ) {
+        confirmRegistration(id: $id, details: $details)
+      }
+    `,
+    variables: {
+      id,
+      details: {
+        childIdentifiers: variables.childIdentifiers,
+        registrationNumber: variables.registrationNumber,
+        trackingId: variables.trackingId,
+      },
+    },
+    headers,
+  });
+
+export const rejectRegistration = (
+  id: string,
+  { reason, comment }: { reason: string; comment: string },
+  { headers }: { headers: Record<string, any> }
+) =>
+  post({
+    query: /* GraphQL */ `
+      mutation rejectRegistration(
+        $id: ID!
+        $details: RejectRegistrationInput!
+      ) {
+        rejectRegistration(id: $id, details: $details)
+      }
+    `,
+    variables: {
+      id,
+      details: {
+        reason,
+        comment,
+      },
+    },
+    headers,
+  });
