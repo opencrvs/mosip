@@ -37,6 +37,13 @@ app.post("/webhooks/opencrvs", {
   },
 });
 
+app.get("/esignet", {
+  handler: async (request, reply) => {
+    const { redirect_uri } = request.query as { redirect_uri: string };
+    reply.redirect(redirect_uri);
+  },
+});
+
 async function run() {
   await app.ready();
   await app.listen({
