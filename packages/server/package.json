@@ -7,23 +7,22 @@
     "start": "NODE_ENV=production tsx src/index.ts"
   },
   "dependencies": {
-    "@fastify/static": "^7.0.4",
-    "@fastify/swagger": "^8.15.0",
-    "@fastify/swagger-ui": "^4.1.0",
+    "@fastify/swagger": "^9.2.0",
+    "@fastify/swagger-ui": "^5.1.0",
     "@opencrvs/commons": "https://gitpkg.vercel.app/opencrvs/opencrvs-core/packages/commons?release-v1.6.0",
-    "@types/node": "^22.4.1",
+    "@types/node": "^22.8.2",
     "envalid": "^8.0.0",
-    "fastify": "^4.28.1",
-    "fastify-type-provider-zod": "^2.0.0",
-    "tsx": "^4.17.0",
-    "typescript": "^5.5.4",
+    "fastify": "^5.0.0",
+    "fastify-type-provider-zod": "^4.0.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@eslint/js": "^9.9.0",
+    "@eslint/js": "^9.13.0",
     "@types/eslint__js": "^8.42.3",
-    "eslint": "^9.9.0",
-    "typescript": "^5.5.4",
-    "typescript-eslint": "^8.2.0"
+    "eslint": "^9.13.0",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.12.1"
   }
 }
