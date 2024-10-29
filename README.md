@@ -25,6 +25,8 @@ yarn dev
 
 ## Country configuration
 
+[@opencrvs/opencrvs-countryconfig/src/index.ts](https://github.com/opencrvs/opencrvs-countryconfig/blob/9531d88008829978ef8553bb345ba04aeaab06de/src/index.ts#L413)
+
 ```diff
 -import { eventRegistrationHandler } from '@countryconfig/api/event-registration/handler'
 +import { mosipRegistrationHandler } from '@opencrvs-mosip/country-config'
@@ -33,7 +35,7 @@ yarn dev
    method: 'POST',
    path: '/event-registration',
 -  handler: eventRegistrationHandler,
-+  handler: mosipRegistrationHandler({ url: "http://localhost:20240" })),
++  handler: mosipRegistrationHandler({ url: "http://localhost:2024" })),
    options: {
      tags: ['api'],
      description:
