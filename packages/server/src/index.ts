@@ -9,11 +9,29 @@ import { opencrvsHandler, opencrvsRecordSchema } from "./webhooks/opencrvs";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
 
-const app = Fastify();
+const envToLogger = {
+  development: {
+    transport: {
+      target: "pino-pretty",
+      options: {
+        ignore: "pid,hostname",
+      },
+    },
+  },
+  production: true,
+};
+const app = Fastify({
+  logger: envToLogger[env.isProd ? "production" : "development"],
+});
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
 openapi.register(app);
+
+app.setErrorHandler((error, request, reply) => {
+  request.log.error(error);
+  reply.status(500).send({ error: "An unexpected error occurred" });
+});
 
 app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({

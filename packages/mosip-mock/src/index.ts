@@ -8,7 +8,9 @@ type OpenCRVSEvent = {
 };
 
 const createNid = async () => {
+  console.log("Creating NID...");
   await new Promise((resolve) => setTimeout(resolve, 10000));
+  console.log("NID created!");
 
   const hash = crypto.createHash("sha256");
   return hash.digest("hex").substring(0, 16);
@@ -27,6 +29,9 @@ const sendNid = async ({
   const response = await fetch(env.OPENCRVS_MOSIP_GATEWAY_URL, {
     method: "POST",
     body: JSON.stringify({ nid, token, eventId, trackingId }),
+    headers: {
+      "Content-Type": "application/json",
+    },
   });
 
   if (!response.ok) {
@@ -48,8 +53,14 @@ app.post("/webhooks/opencrvs", {
       token: string;
       event: OpenCRVSEvent;
     };
-    sendNid({ token, eventId: event.id, trackingId: event.trackingId });
-    reply.status(202).send({ received: true });
+
+    sendNid({ token, eventId: event.id, trackingId: event.trackingId }).catch(
+      (e) => {
+        console.error(e);
+      }
+    );
+
+    return reply.status(202).send();
   },
 });
 

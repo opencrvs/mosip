@@ -1,5 +1,4 @@
 import { env } from "./constants";
-import { ValidRecord } from "@opencrvs/commons/types";
 
 export class MOSIPError extends Error {
   constructor(message: string) {
@@ -34,5 +33,5 @@ export const postRecord = async ({
     );
   }
 
-  return response.json();
+  return response;
 };
