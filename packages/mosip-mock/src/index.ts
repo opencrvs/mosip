@@ -1,19 +1,10 @@
 import Fastify from "fastify";
-import * as crypto from "crypto";
 import { env } from "./constants";
+import { createAid, createNid } from "./random-identifiers";
 
 type OpenCRVSEvent = {
   id: string;
   trackingId: string;
-};
-
-const createNid = async () => {
-  console.log("Creating NID...");
-  await new Promise((resolve) => setTimeout(resolve, 10000));
-  console.log("NID created!");
-
-  const hash = crypto.createHash("sha256");
-  return hash.digest("hex").substring(0, 16);
 };
 
 const sendNid = async ({
@@ -42,7 +33,7 @@ const sendNid = async ({
     );
   }
 
-  return response.json();
+  return response.text();
 };
 
 const app = Fastify();
@@ -60,7 +51,9 @@ app.post("/webhooks/opencrvs", {
       }
     );
 
-    return reply.status(202).send();
+    return reply.status(202).send({
+      aid: createAid(),
+    });
   },
 });
 

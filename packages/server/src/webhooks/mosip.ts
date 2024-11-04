@@ -35,7 +35,7 @@ export const mosipHandler = async (
     {
       trackingId,
       registrationNumber,
-      childIdentifiers: [{ type: "NID", value: nid }],
+      childIdentifiers: [{ type: "MOSIP_NID", value: nid }],
     },
     { headers: { Authorization: `Bearer ${token}` } }
   );

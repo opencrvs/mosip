@@ -6,6 +6,7 @@ import {
   getTrackingId,
   ValidRecord,
 } from "@opencrvs/commons/types";
+import * as opencrvs from "../opencrvs-api";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -46,10 +47,19 @@ export const opencrvsHandler = async (
 
   request.log.info({ trackingId }, "Received record from OpenCRVS");
 
-  await mosip.postRecord({
+  const { aid } = await mosip.postRecord({
     event: { id: eventId, trackingId },
     token,
   });
+
+  await opencrvs.upsertRegistrationIdentifier(
+    {
+      eventId,
+      identifierType: "MOSIP_AID",
+      identifierValue: aid,
+    },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 
   return reply.code(202).send();
 };

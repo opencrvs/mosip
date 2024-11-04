@@ -91,3 +91,37 @@ export const rejectRegistration = (
     },
     headers,
   });
+
+export const upsertRegistrationIdentifier = (
+  {
+    eventId,
+    identifierType,
+    identifierValue,
+  }: {
+    eventId: string;
+    identifierType: string;
+    identifierValue: string;
+  },
+  { headers }: { headers: Record<string, any> }
+) =>
+  post({
+    query: /* GraphQL */ `
+      mutation upsertRegistrationIdentifier(
+        $eventId: ID!
+        $identifierType: String!
+        $identifierValue: String!
+      ) {
+        upsertRegistrationIdentifier(
+          eventId: $eventId
+          identifierType: $identifierType
+          identifierValue: $identifierValue
+        )
+      }
+    `,
+    variables: {
+      eventId,
+      identifierType,
+      identifierValue,
+    },
+    headers,
+  });

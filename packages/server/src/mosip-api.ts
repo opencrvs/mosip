@@ -33,5 +33,7 @@ export const postRecord = async ({
     );
   }
 
-  return response;
+  return response.json() as Promise<{
+    aid: string;
+  }>;
 };
