@@ -1,6 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import { confirmRegistration } from "../opencrvs-api";
+import * as opencrvs from "../opencrvs-api";
+import { generateRegistrationNumber } from "../registration-number";
 
 export const mosipNidSchema = z.object({
   eventId: z
@@ -27,12 +28,13 @@ export const mosipHandler = async (
   reply: FastifyReply
 ) => {
   const { eventId, trackingId, nid, token } = request.body;
+  const registrationNumber = generateRegistrationNumber(trackingId);
 
-  await confirmRegistration(
+  await opencrvs.confirmRegistration(
     eventId,
     {
       trackingId,
-      registrationNumber: "BRN12341234", // @TODO
+      registrationNumber,
       childIdentifiers: [{ type: "NID", value: nid }],
     },
     { headers: { Authorization: `Bearer ${token}` } }
