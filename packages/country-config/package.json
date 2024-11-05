@@ -12,9 +12,7 @@
   "scripts": {
     "build": "tsc"
   },
-  "dependencies": {
-    "@hapi/hapi": "^20.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/hapi__hapi": "^20.0.0",
     "@types/node-fetch": "^2.6.11",
