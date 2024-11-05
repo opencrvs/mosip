@@ -19,14 +19,6 @@ jobs:
           node-version-file: ".nvmrc"
           registry-url: "https://registry.npmjs.org/"
 
-      - name: Install dependencies
-        run: yarn install
-        working-directory: packages/country-config
-
-      - name: Build
-        run: yarn build
-        working-directory: packages/country-config
-
       - name: Check if version exists on npm
         id: check-version
         run: |
@@ -34,14 +26,24 @@ jobs:
           if npm view @opencrvs/mosip@$PACKAGE_VERSION > /dev/null 2>&1; then
             echo "Version $PACKAGE_VERSION already exists on npm."
             echo "version-exists=true" >> $GITHUB_OUTPUT
-            exit 0
           else
             echo "Version $PACKAGE_VERSION does not exist on npm."
             echo "version-exists=false" >> $GITHUB_OUTPUT
           fi
         working-directory: packages/country-config
 
+      - name: Install dependencies
+        if: steps.check-version.outputs.version-exists == 'false'
+        run: yarn install
+        working-directory: packages/country-config
+
+      - name: Build
+        if: steps.check-version.outputs.version-exists == 'false'
+        run: yarn build
+        working-directory: packages/country-config
+
       - name: Authenticate to npm
+        if: steps.check-version.outputs.version-exists == 'false'
         run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
         working-directory: packages/country-config
 
