@@ -9,7 +9,6 @@
   "dependencies": {
     "@fastify/swagger": "^9.2.0",
     "@fastify/swagger-ui": "^5.1.0",
-    "@opencrvs/commons": "https://gitpkg.vercel.app/opencrvs/opencrvs-core/packages/commons?release-v1.6.0",
     "@types/node": "^22.8.2",
     "envalid": "^8.0.0",
     "fastify": "^5.0.0",
@@ -21,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "^9.13.0",
     "@types/eslint__js": "^8.42.3",
+    "@types/fhir": "^0.0.37",
     "eslint": "^9.13.0",
     "pino-pretty": "^11.3.0",
     "typescript": "^5.6.3",

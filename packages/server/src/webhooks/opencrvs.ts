@@ -1,11 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as mosip from "../mosip-api";
-import {
-  getComposition,
-  getTrackingId,
-  ValidRecord,
-} from "@opencrvs/commons/types";
+import { getComposition, getTrackingId } from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
 
 export const opencrvsRecordSchema = z
@@ -18,7 +14,7 @@ export const opencrvsRecordSchema = z
   .describe("Record as FHIR Bundle");
 
 type OpenCRVSRequest = FastifyRequest<{
-  Body: ValidRecord;
+  Body: fhir3.Bundle;
 }>;
 
 /** Handles the calls coming from OpenCRVS countryconfig */
