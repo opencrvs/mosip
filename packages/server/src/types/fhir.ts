@@ -1,5 +1,5 @@
 // Copypasted types from @opencrvs/commons
-// Later we will move to importing these from @opencrvs/toolkit
+// In 1.8.0 we'll move importing these from @opencrvs/toolkit
 
 declare const __nominal__type: unique symbol;
 export type Nominal<Type, Identifier extends string> = Type & {
