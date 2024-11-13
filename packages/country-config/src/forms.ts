@@ -1,5 +1,4 @@
-// @TODO: we could start building these definitions to core tbh
-// @TODO: add renovate or something to listen for core updates and create a PRs, then we get an error message if we have broken this
+// @TODO: Yet to be implemented! Placeholders for NPM publish.
 
 /**
  * E-Signet popup button form definition
