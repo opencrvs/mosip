@@ -17,7 +17,7 @@ export const postRecord = async ({
   };
   token: string;
 }) => {
-  const response = await fetch(env.MOSIP_RECEIVE_WEBHOOK_URL, {
+  const response = await fetch(env.MOSIP_WEBHOOK_URL, {
     method: "POST",
     body: JSON.stringify({ event, token }),
     headers: {

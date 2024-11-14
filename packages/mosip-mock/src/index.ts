@@ -17,7 +17,7 @@ const sendNid = async ({
   trackingId: string;
 }) => {
   const nid = await createNid();
-  const response = await fetch(env.OPENCRVS_MOSIP_GATEWAY_URL, {
+  const response = await fetch(env.OPENCRVS_MOSIP_SERVER_URL, {
     method: "POST",
     body: JSON.stringify({ nid, token, eventId, trackingId }),
     headers: {
