@@ -33,7 +33,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Get short commit hash
-        run: echo "commit_hash=$(git log -1 --pretty=format:%h)" >> $GITHUB_ENV
+        run: echo "COMMIT_HASH=$(git log -1 --pretty=format:%h)" >> $GITHUB_ENV
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -48,7 +48,7 @@ jobs:
           context: packages/server
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.commit_hash }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.COMMIT_HASH }}
             ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
