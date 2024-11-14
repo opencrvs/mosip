@@ -1,4 +1,4 @@
-name: Create and publish a Docker image of MOSIP mock
+name: "🧪 MOSIP mock: Build and publish Docker image"
 
 on:
   push:
