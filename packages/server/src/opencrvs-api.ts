@@ -1,4 +1,3 @@
-import fetch from "node-fetch";
 import { env } from "./constants";
 
 export class OpenCRVSError extends Error {
