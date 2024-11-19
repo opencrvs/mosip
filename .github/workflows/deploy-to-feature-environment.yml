@@ -130,8 +130,8 @@ jobs:
           script: |
             const commentBody = `Your environment is deployed to https://${process.env.STACK_NAME}.opencrvs.dev\n\nIf there is a problem, check the [opencrvs/e2e deploy-workflow](https://github.com/opencrvs/e2e/actions/workflows/deploy.yml)`;
             await github.rest.issues.createComment({
-              owner,
-              repo,
+              owner: '${{ github.event.repository.owner.login }}',
+              repo: '${{ github.event.repository.name }}',
               issue_number: ${{ github.event.pull_request.number }},
               body: commentBody
             });
