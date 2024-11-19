@@ -44,7 +44,7 @@ jobs:
           CORE_COMMIT_HASH: ${{ env.CORE_COMMIT_HASH }}
           FARAJALAND_COMMIT_HASH: ${{ env.FARAJALAND_COMMIT_HASH }}
         run: |
-          KEBAB_CASE_STACK=$(echo ${{ github.head_ref }} | tr '[:upper:]' '[:lower:]' | tr -c 'a-z' '-' | sed 's/-\+/-/g')
+          KEBAB_CASE_STACK=$(echo ${{ github.head_ref }} | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g')
           MOSIP_STACK=$(echo "mosip-$KEBAB_CASE_STACK" | cut -c 1-35)
 
           curl -X POST \
