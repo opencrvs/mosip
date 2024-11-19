@@ -62,30 +62,26 @@ jobs:
               }
             }'
 
+  wait-for-completion:
+    needs: trigger
+    runs-on: ubuntu-latest
+    steps:
       - name: Get run_id of triggered workflow
-        id: get-run-id
-        env:
-          GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
         run: |
+          # Wait for workflow to be created
+          sleep 10 
+
           RUN_ID=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
                         -H "Accept: application/vnd.github.v3+json" \
                         "https://api.github.com/repos/opencrvs/e2e/actions/workflows/deploy.yml/runs?branch=mosip&per_page=1" \
                         | jq -r '.workflow_runs[0].id')
           echo "run_id=$RUN_ID" >> $GITHUB_ENV
-          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
-  wait-for-completion:
-    needs: trigger
-    runs-on: ubuntu-latest
-    steps:
       - name: Poll workflow status
         env:
+          RUN_ID: ${{ env.RUN_ID }}
           GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
         run: |
-          # Wait for workflow to be created
-          sleep 10 
-
-          RUN_ID=${{ needs.trigger.outputs.run_id }}
           STATUS="in_progress"
 
           while [[ "$STATUS" == "in_progress" || "$STATUS" == "queued" ]]; do
@@ -95,7 +91,7 @@ jobs:
                           | jq -r '.status')
             echo "Workflow run status: $STATUS"
             [[ "$STATUS" == "completed" ]] && break
-            sleep 15
+            sleep 10
           done
 
           CONCLUSION=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
