@@ -1,0 +1,57 @@
+name: "Deploy to feature environment"
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      stack:
+        type: string
+        description: Stack name
+        required: false
+      core-image-tag:
+        type: string
+        description: Core DockerHub image tag
+        required: false
+      countryconfig-image-tag:
+        type: string
+        description: Countryconfig DockerHub image tag
+        required: false
+
+jobs:
+  deploy-to-feature-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch latest commit tag from opencrvs-core develop branch
+        if: inputs.core-image-tag == ''
+        run: |
+          CORE_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-core/commits/develop | jq -r '.sha' | cut -c1-7)
+          echo "CORE_COMMIT_HASH=$CORE_COMMIT_HASH" >> $GITHUB_ENV
+
+      - name: Fetch latest commit tag from opencrvs-farajaland mosip branch
+        if: inputs.countryconfig-image-tag == ''
+        run: |
+          FARAJALAND_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-farajaland/commits/mosip | jq -r '.sha' | cut -c1-7)
+          echo "FARAJALAND_COMMIT_HASH=$FARAJALAND_COMMIT_HASH" >> $GITHUB_ENV
+
+      - name: Trigger workflow in e2e repository
+        env:
+          GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
+          CORE_COMMIT_HASH: ${{ env.CORE_COMMIT_HASH }}
+          FARAJALAND_COMMIT_HASH: ${{ env.FARAJALAND_COMMIT_HASH }}
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/opencrvs/e2e/actions/workflows/deploy.yml/dispatches \
+            -d '{
+              "ref": "mosip",
+              "inputs": {
+                "core-image-tag": "'"$CORE_COMMIT_HASH"'",
+                "countryconfig-image-tag": "'"$FARAJALAND_COMMIT_HASH"'",
+                "stack": "'"${{ inputs.stack || 'mosip' }}"'",
+                "dependencies": false,
+                "reset": true
+              }
+            }'
