@@ -24,7 +24,7 @@ jobs:
   trigger:
     runs-on: ubuntu-latest
     outputs:
-      run_id: ${{ steps.get-run-id.outputs.run_id }}
+      stack: ${{ steps.trigger-workflow.outputs.stack }}
     steps:
       - name: Fetch latest commit tag from opencrvs-core branch
         if: inputs.core-image-tag == ''
@@ -41,6 +41,7 @@ jobs:
           echo "FARAJALAND_COMMIT_HASH=$FARAJALAND_COMMIT_HASH" >> $GITHUB_ENV
 
       - name: Trigger workflow in e2e repository
+        id: trigger-workflow
         env:
           GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
           CORE_COMMIT_HASH: ${{ env.CORE_COMMIT_HASH }}
@@ -48,6 +49,7 @@ jobs:
         run: |
           KEBAB_CASE_STACK=$(echo ${{ github.head_ref }} | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g')
           MOSIP_STACK=$(echo "mosip-$KEBAB_CASE_STACK" | cut -c 1-35)
+          echo "stack=$MOSIP_STACK" >> $GITHUB_OUTPUT
 
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -84,6 +86,8 @@ jobs:
 
       - name: Wait for E2E Workflow Completion
         uses: actions/github-script@v7
+        env:
+          STACK_NAME: ${{ needs.trigger.outputs.stack }}
         with:
           github-token: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
           script: |
@@ -120,5 +124,14 @@ jobs:
               
               if (conclusion.data.conclusion !== 'success') {
                 throw new Error('E2E workflow failed');
+              } else {
+                const commentBody = `Your environment is deployed to https://${process.env.STACK_NAME}.opencrvs.dev\n\nIf there is a problem, check the [opencrvs/e2e deploy-workflow](https://github.com/opencrvs/e2e/actions/workflows/deploy.yml)`;
+
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: ${{ github.event.pull_request.number }},
+                  body: commentBody
+                });          
               }
             }
