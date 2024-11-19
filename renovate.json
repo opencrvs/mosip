@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "monorepo:lerna", ":semanticCommits"],
+  "extends": ["config:recommended", ":semanticCommits"],
   "lockFileMaintenance": {
     "enabled": true
   },
@@ -13,7 +13,11 @@
   "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
-      "updateTypes": ["patch"],
+      "matchUpdateTypes": ["minor", "patch", "major"],
+      "enabled": false
+    },
+    {
+      "matchUpdateTypes": ["digest"],
       "enabled": false
     }
   ]
