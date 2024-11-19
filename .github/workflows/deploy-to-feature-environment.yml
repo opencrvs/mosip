@@ -58,7 +58,7 @@ jobs:
                 "countryconfig-image-tag": "'"$FARAJALAND_COMMIT_HASH"'",
                 "stack": "'"$MOSIP_STACK"'",
                 "dependencies": false,
-                "reset": true
+                "reset": "true"
               }
             }'
 
