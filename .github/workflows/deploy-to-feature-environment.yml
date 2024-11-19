@@ -67,6 +67,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get run_id of triggered workflow
+        id: get-run-id
         run: |
           # Wait for workflow to be created
           sleep 10 
@@ -75,11 +76,11 @@ jobs:
                         -H "Accept: application/vnd.github.v3+json" \
                         "https://api.github.com/repos/opencrvs/e2e/actions/workflows/deploy.yml/runs?branch=mosip&per_page=1" \
                         | jq -r '.workflow_runs[0].id')
-          echo "run_id=$RUN_ID" >> $GITHUB_ENV
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
 
       - name: Poll workflow status
         env:
-          RUN_ID: ${{ env.RUN_ID }}
+          RUN_ID: ${{ steps.get-run-id.outputs.run_id }}
           GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
         run: |
           STATUS="in_progress"
