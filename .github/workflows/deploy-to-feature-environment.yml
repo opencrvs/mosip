@@ -126,6 +126,7 @@ jobs:
       - name: Add comment to PR
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
           script: |
             const commentBody = `Your environment is deployed to https://${process.env.STACK_NAME}.opencrvs.dev\n\nIf there is a problem, check the [opencrvs/e2e deploy-workflow](https://github.com/opencrvs/e2e/actions/workflows/deploy.yml)`;
             await github.rest.issues.createComment({
