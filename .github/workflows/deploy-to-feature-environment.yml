@@ -68,6 +68,8 @@ jobs:
     steps:
       - name: Get run_id of triggered workflow
         id: get-run-id
+        env:
+          GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
         run: |
           # Wait for workflow to be created
           sleep 10 
