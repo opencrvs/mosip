@@ -26,16 +26,18 @@ jobs:
     outputs:
       run_id: ${{ steps.get-run-id.outputs.run_id }}
     steps:
-      - name: Fetch latest commit tag from opencrvs-core develop branch
+      - name: Fetch latest commit tag from opencrvs-core branch
         if: inputs.core-image-tag == ''
         run: |
-          CORE_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-core/commits/develop | jq -r '.sha' | cut -c1-7)
+          CORE_BRANCH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-core/branches/${{ github.head_ref }} | jq -r '.name // "develop"')
+          CORE_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-core/commits/$CORE_BRANCH | jq -r '.sha' | cut -c1-7)
           echo "CORE_COMMIT_HASH=$CORE_COMMIT_HASH" >> $GITHUB_ENV
 
-      - name: Fetch latest commit tag from opencrvs-farajaland mosip branch
+      - name: Fetch latest commit tag from opencrvs-farajaland branch
         if: inputs.countryconfig-image-tag == ''
         run: |
-          FARAJALAND_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-farajaland/commits/mosip | jq -r '.sha' | cut -c1-7)
+          FARAJALAND_BRANCH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-farajaland/branches/${{ github.head_ref }} | jq -r '.name // "mosip"')
+          FARAJALAND_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-farajaland/commits/$FARAJALAND_BRANCH | jq -r '.sha' | cut -c1-7)
           echo "FARAJALAND_COMMIT_HASH=$FARAJALAND_COMMIT_HASH" >> $GITHUB_ENV
 
       - name: Trigger workflow in e2e repository
@@ -87,14 +89,14 @@ jobs:
           script: |
             const owner = 'opencrvs';
             const repo = 'e2e';
-            const runId = ${{ steps.get-run-id.outputs.run_id }};
+            const run_id = ${{ steps.get-run-id.outputs.run_id }};
             let status = 'in_progress';
 
             while (status === 'in_progress' || status === 'queued') {
               const run = await github.rest.actions.getWorkflowRun({
                 owner,
                 repo,
-                run_id: runId
+                run_id
               });
 
               status = run.data.status;
@@ -109,7 +111,7 @@ jobs:
               const conclusion = await github.rest.actions.getWorkflowRun({
                 owner,
                 repo,
-                run_id: runId
+                run_id
               });
               console.log(`Workflow finished with conclusion: ${conclusion.data.conclusion}`);
               if (conclusion.data.conclusion !== 'success') {
