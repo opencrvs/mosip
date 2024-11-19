@@ -93,14 +93,14 @@ jobs:
           script: |
             const owner = 'opencrvs';
             const repo = 'e2e';
-            const run_id = ${{ steps.get-run-id.outputs.run_id }};
+            const runId = ${{ steps.get-run-id.outputs.run_id }};
             let status = 'in_progress';
 
             while (status === 'in_progress' || status === 'queued') {
               const run = await github.rest.actions.getWorkflowRun({
                 owner,
                 repo,
-                run_id
+                run_id: runId
               });
 
               status = run.data.status;
@@ -115,23 +115,22 @@ jobs:
               const conclusion = await github.rest.actions.getWorkflowRun({
                 owner,
                 repo,
-                run_id
+                run_id: runId
               });
-
-              console.log(JSON.stringify(conclusion.data, null, 2));
-
               console.log(`Workflow finished with conclusion: ${conclusion.data.conclusion}`);
-              
               if (conclusion.data.conclusion !== 'success') {
                 throw new Error('E2E workflow failed');
-              } else {
-                const commentBody = `Your environment is deployed to https://${process.env.STACK_NAME}.opencrvs.dev\n\nIf there is a problem, check the [opencrvs/e2e deploy-workflow](https://github.com/opencrvs/e2e/actions/workflows/deploy.yml)`;
-
-                await github.rest.issues.createComment({
-                  owner,
-                  repo,
-                  issue_number: ${{ github.event.pull_request.number }},
-                  body: commentBody
-                });          
               }
             }
+
+      - name: Add comment to PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commentBody = `Your environment is deployed to https://${process.env.STACK_NAME}.opencrvs.dev\n\nIf there is a problem, check the [opencrvs/e2e deploy-workflow](https://github.com/opencrvs/e2e/actions/workflows/deploy.yml)`;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: ${{ github.event.pull_request.number }},
+              body: commentBody
+            });
