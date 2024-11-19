@@ -24,28 +24,32 @@ jobs:
   trigger:
     runs-on: ubuntu-latest
     outputs:
-      run_id: ${{ steps.get-run-id.outputs.run_id }}
+      stack: ${{ steps.trigger-workflow.outputs.stack }}
     steps:
-      - name: Fetch latest commit tag from opencrvs-core develop branch
+      - name: Fetch latest commit tag from opencrvs-core branch
         if: inputs.core-image-tag == ''
         run: |
-          CORE_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-core/commits/develop | jq -r '.sha' | cut -c1-7)
+          CORE_BRANCH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-core/branches/${{ github.head_ref }} | jq -r '.name // "develop"')
+          CORE_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-core/commits/$CORE_BRANCH | jq -r '.sha' | cut -c1-7)
           echo "CORE_COMMIT_HASH=$CORE_COMMIT_HASH" >> $GITHUB_ENV
 
-      - name: Fetch latest commit tag from opencrvs-farajaland mosip branch
+      - name: Fetch latest commit tag from opencrvs-farajaland branch
         if: inputs.countryconfig-image-tag == ''
         run: |
-          FARAJALAND_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-farajaland/commits/mosip | jq -r '.sha' | cut -c1-7)
+          FARAJALAND_BRANCH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-farajaland/branches/${{ github.head_ref }} | jq -r '.name // "mosip"')
+          FARAJALAND_COMMIT_HASH=$(curl -s https://api.github.com/repos/opencrvs/opencrvs-farajaland/commits/$FARAJALAND_BRANCH | jq -r '.sha' | cut -c1-7)
           echo "FARAJALAND_COMMIT_HASH=$FARAJALAND_COMMIT_HASH" >> $GITHUB_ENV
 
       - name: Trigger workflow in e2e repository
+        id: trigger-workflow
         env:
           GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
           CORE_COMMIT_HASH: ${{ env.CORE_COMMIT_HASH }}
           FARAJALAND_COMMIT_HASH: ${{ env.FARAJALAND_COMMIT_HASH }}
         run: |
-          KEBAB_CASE_STACK=$(echo ${{ github.head_ref }} | tr '[:upper:]' '[:lower:]' | tr -c 'a-z' '-' | sed 's/-\+/-/g')
+          KEBAB_CASE_STACK=$(echo ${{ github.head_ref }} | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/-\+/-/g')
           MOSIP_STACK=$(echo "mosip-$KEBAB_CASE_STACK" | cut -c 1-35)
+          echo "stack=$MOSIP_STACK" >> $GITHUB_OUTPUT
 
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
@@ -58,54 +62,76 @@ jobs:
                 "countryconfig-image-tag": "'"$FARAJALAND_COMMIT_HASH"'",
                 "stack": "'"$MOSIP_STACK"'",
                 "dependencies": false,
-                "reset": true
+                "reset": "true"
               }
             }'
-
-      - name: Get run_id of triggered workflow
-        id: get-run-id
-        env:
-          GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
-        run: |
-          RUN_ID=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
-                        -H "Accept: application/vnd.github.v3+json" \
-                        "https://api.github.com/repos/opencrvs/e2e/actions/workflows/deploy.yml/runs?branch=mosip&per_page=1" \
-                        | jq -r '.workflow_runs[0].id')
-          echo "run_id=$RUN_ID" >> $GITHUB_ENV
-          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
   wait-for-completion:
     needs: trigger
     runs-on: ubuntu-latest
     steps:
-      - name: Poll workflow status
+      - name: Get run_id of triggered workflow
+        id: get-run-id
         env:
           GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
         run: |
           # Wait for workflow to be created
           sleep 10 
 
-          RUN_ID=${{ needs.trigger.outputs.run_id }}
-          STATUS="in_progress"
+          RUN_ID=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+                        -H "Accept: application/vnd.github.v3+json" \
+                        "https://api.github.com/repos/opencrvs/e2e/actions/workflows/deploy.yml/runs?branch=mosip&per_page=1" \
+                        | jq -r '.workflow_runs[0].id')
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
 
-          while [[ "$STATUS" == "in_progress" || "$STATUS" == "queued" ]]; do
-            STATUS=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
-                          -H "Accept: application/vnd.github.v3+json" \
-                          "https://api.github.com/repos/opencrvs/e2e/actions/runs/$RUN_ID" \
-                          | jq -r '.status')
-            echo "Workflow run status: $STATUS"
-            [[ "$STATUS" == "completed" ]] && break
-            sleep 15
-          done
+      - name: Wait for E2E Workflow Completion
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
+          script: |
+            const owner = 'opencrvs';
+            const repo = 'e2e';
+            const runId = ${{ steps.get-run-id.outputs.run_id }};
+            let status = 'in_progress';
 
-          CONCLUSION=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
-                             -H "Accept: application/vnd.github.v3+json" \
-                             "https://api.github.com/repos/opencrvs/e2e/actions/runs/$RUN_ID" \
-                             | jq -r '.conclusion')
+            while (status === 'in_progress' || status === 'queued') {
+              const run = await github.rest.actions.getWorkflowRun({
+                owner,
+                repo,
+                run_id: runId
+              });
 
-          if [[ "$CONCLUSION" != "success" ]]; then
-            echo "Workflow run failed with conclusion: $CONCLUSION"
-            exit 1
-          fi
+              status = run.data.status;
+              console.log(`Current status: ${status}`);
 
-          echo "Workflow run succeeded!"
+              if (status === 'in_progress' || status === 'queued') {
+                await new Promise(resolve => setTimeout(resolve, 10000));
+              }
+            }
+
+            if (status === 'completed') {
+              const conclusion = await github.rest.actions.getWorkflowRun({
+                owner,
+                repo,
+                run_id: runId
+              });
+              console.log(`Workflow finished with conclusion: ${conclusion.data.conclusion}`);
+              if (conclusion.data.conclusion !== 'success') {
+                throw new Error('E2E workflow failed');
+              }
+            }
+
+      - name: Add comment to PR
+        uses: actions/github-script@v7
+        env:
+          STACK_NAME: ${{ needs.trigger.outputs.stack }}
+        with:
+          github-token: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
+          script: |
+            const commentBody = `Your environment is deployed to https://${process.env.STACK_NAME}.opencrvs.dev\n\nIf there is a problem, check [opencrvs/e2e deploy-workflow](https://github.com/opencrvs/e2e/actions/workflows/deploy.yml)`;
+            await github.rest.issues.createComment({
+              owner: '${{ github.event.repository.owner.login }}',
+              repo: '${{ github.event.repository.name }}',
+              issue_number: ${{ github.event.pull_request.number }},
+              body: commentBody
+            });
