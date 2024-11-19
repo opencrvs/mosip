@@ -1,9 +1,10 @@
 name: "Deploy to feature environment"
 
 on:
-  push:
+  pull_request:
     branches:
       - main
+
   workflow_dispatch:
     inputs:
       stack:
@@ -20,8 +21,10 @@ on:
         required: false
 
 jobs:
-  deploy-to-feature-environment:
+  trigger:
     runs-on: ubuntu-latest
+    outputs:
+      run_id: ${{ steps.get-run-id.outputs.run_id }}
     steps:
       - name: Fetch latest commit tag from opencrvs-core develop branch
         if: inputs.core-image-tag == ''
@@ -41,6 +44,9 @@ jobs:
           CORE_COMMIT_HASH: ${{ env.CORE_COMMIT_HASH }}
           FARAJALAND_COMMIT_HASH: ${{ env.FARAJALAND_COMMIT_HASH }}
         run: |
+          KEBAB_CASE_STACK=$(echo ${{ github.head_ref }} | tr '[:upper:]' '[:lower:]' | tr -c 'a-z' '-' | sed 's/-\+/-/g')
+          MOSIP_STACK=$(echo "mosip-$KEBAB_CASE_STACK" | cut -c 1-35)
+
           curl -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
             -H "Accept: application/vnd.github.v3+json" \
@@ -50,8 +56,56 @@ jobs:
               "inputs": {
                 "core-image-tag": "'"$CORE_COMMIT_HASH"'",
                 "countryconfig-image-tag": "'"$FARAJALAND_COMMIT_HASH"'",
-                "stack": "'"${{ inputs.stack || 'mosip' }}"'",
+                "stack": "'"$MOSIP_STACK"'",
                 "dependencies": false,
                 "reset": true
               }
             }'
+
+      - name: Get run_id of triggered workflow
+        id: get-run-id
+        env:
+          GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+                        -H "Accept: application/vnd.github.v3+json" \
+                        "https://api.github.com/repos/opencrvs/e2e/actions/workflows/deploy.yml/runs?branch=mosip&per_page=1" \
+                        | jq -r '.workflow_runs[0].id')
+          echo "run_id=$RUN_ID" >> $GITHUB_ENV
+          echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+
+  wait-for-completion:
+    needs: trigger
+    runs-on: ubuntu-latest
+    steps:
+      - name: Poll workflow status
+        env:
+          GITHUB_TOKEN: ${{ secrets.OLLIE_BOT_GITHUB_TOKEN }}
+        run: |
+          # Wait for workflow to be created
+          sleep 10 
+
+          RUN_ID=${{ needs.trigger.outputs.run_id }}
+          STATUS="in_progress"
+
+          while [[ "$STATUS" == "in_progress" || "$STATUS" == "queued" ]]; do
+            STATUS=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+                          -H "Accept: application/vnd.github.v3+json" \
+                          "https://api.github.com/repos/opencrvs/e2e/actions/runs/$RUN_ID" \
+                          | jq -r '.status')
+            echo "Workflow run status: $STATUS"
+            [[ "$STATUS" == "completed" ]] && break
+            sleep 15
+          done
+
+          CONCLUSION=$(curl -H "Authorization: Bearer $GITHUB_TOKEN" \
+                             -H "Accept: application/vnd.github.v3+json" \
+                             "https://api.github.com/repos/opencrvs/e2e/actions/runs/$RUN_ID" \
+                             | jq -r '.conclusion')
+
+          if [[ "$CONCLUSION" != "success" ]]; then
+            echo "Workflow run failed with conclusion: $CONCLUSION"
+            exit 1
+          fi
+
+          echo "Workflow run succeeded!"
