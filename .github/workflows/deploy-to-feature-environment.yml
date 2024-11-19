@@ -113,7 +113,11 @@ jobs:
                 repo,
                 run_id
               });
+
+              console.log(JSON.stringify(conclusion.data, null, 2));
+
               console.log(`Workflow finished with conclusion: ${conclusion.data.conclusion}`);
+              
               if (conclusion.data.conclusion !== 'success') {
                 throw new Error('E2E workflow failed');
               }
