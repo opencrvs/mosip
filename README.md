@@ -1,5 +1,8 @@
 # OpenCRVS API for MOSIP
 
+> [!WARNING]
+> Work in progress! This release is not yet ready for production use.
+
 This package ensures a secure and a robust integration between OpenCRVS and MOSIP. For instructions on how to setup the integration, please refer to the [installation.md](./docs/installation.md). For local development, see instructions below. For features and core versions supported, please refer to the [compatibility.md](./docs/compatibility.md).
 
 ## Development
