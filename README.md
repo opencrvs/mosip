@@ -1,10 +1,3 @@
-<table>
-<tr><td>
-<img src="https://www.opencrvs.org/apple-touch-icon.png" height="100">
-</td><td>
-<img src="https://mosip.io/images/mosipn-logo.png" height="100" style="background:white">
-</td></tr></table>
-
 # OpenCRVS API for MOSIP
 
 This package ensures a secure and a robust integration between OpenCRVS and MOSIP. For instructions on how to setup the integration, please refer to the [installation.md](./docs/installation.md). For local development, see instructions below. For features and core versions supported, please refer to the [compatibility.md](./docs/compatibility.md).
