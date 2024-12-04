@@ -29,6 +29,11 @@ Pull requests deploy a new version to the [opencrvs/e2e](https://github.com/open
 
 ## Country configuration
 
+```sh
+# installs the npm package that is used to replace the default eventRegistrationHandler
+yarn add @opencrvs/mosip
+```
+
 [@opencrvs/opencrvs-countryconfig/src/index.ts](https://github.com/opencrvs/opencrvs-countryconfig/blob/9531d88008829978ef8553bb345ba04aeaab06de/src/index.ts#L413)
 
 ```diff
