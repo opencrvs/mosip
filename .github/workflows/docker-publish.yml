@@ -40,7 +40,7 @@ jobs:
           tags: |
             type=sha,prefix=
         env:
-          DOCKER_METADATA_SHORT_SHA_LENGTH: 8
+          DOCKER_METADATA_SHORT_SHA_LENGTH: 7
 
       - name: Build and push Docker image
         id: push
