@@ -67,10 +67,11 @@ app.get("/esignet", {
 async function run() {
   await app.ready();
   await app.listen({
-    port: 20240,
+    port: env.PORT,
+    host: env.HOST,
   });
 
-  console.log(`MOSIP mock running at http://localhost:20240/`);
+  console.log(`MOSIP mock server running at http://${env.HOST}:${env.PORT}`);
 }
 
 void run();

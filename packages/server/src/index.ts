@@ -56,11 +56,14 @@ async function run() {
   await app.ready();
   await app.listen({
     port: env.PORT,
+    host: env.HOST,
   });
 
-  console.log(`OpenCRVS-MOSIP server running at http://localhost:${env.PORT}`);
   console.log(
-    `Swagger UI running at http://localhost:${env.PORT}/documentation`
+    `OpenCRVS-MOSIP server running at http://${env.HOST}:${env.PORT}`
+  );
+  console.log(
+    `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation`
   );
 }
 

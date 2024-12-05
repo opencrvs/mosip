@@ -1,7 +1,8 @@
-import { cleanEnv, str, num } from "envalid";
+import { cleanEnv, str, port } from "envalid";
 
 export const env = cleanEnv(process.env, {
-  PORT: num({ default: 2024 }),
+  PORT: port({ default: 2024 }),
+  HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
   MOSIP_WEBHOOK_URL: str({
     devDefault: "http://localhost:20240/webhooks/opencrvs",
     desc: "The URL where MOSIP receives webhooks from OpenCRVS",
