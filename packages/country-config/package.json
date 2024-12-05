@@ -5,7 +5,7 @@
   "main": "./build/index.js",
   "exports": {
     ".": "./build/index.js",
-    "./form-definitions": "./build/form-definitions.js",
+    "./forms": "./build/forms.js",
     "./events": "./build/events.js"
   },
   "typings": "build/index.d.ts",
