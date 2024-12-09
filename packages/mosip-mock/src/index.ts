@@ -1,6 +1,7 @@
 import Fastify from "fastify";
-import { env } from "./constants";
+import { EMAIL_ENABLED, env } from "./constants";
 import { createAid, createNid } from "./random-identifiers";
+import { sendEmail } from "./mailer";
 
 type OpenCRVSEvent = {
   id: string;
@@ -19,10 +20,14 @@ const sendNid = async ({
   console.log(
     `${JSON.stringify({ eventId, trackingId }, null, 4)}, creating NID...`
   );
+
   const nid = await createNid();
   console.log(
     `${JSON.stringify({ eventId, trackingId }, null, 4)}, ..."${nid}" created.`
   );
+
+  await sendEmail(`NID created for tracking ID ${trackingId}`, `NID: ${nid}`);
+
   const response = await fetch(env.OPENCRVS_MOSIP_SERVER_URL, {
     method: "POST",
     body: JSON.stringify({ nid, token, eventId, trackingId }),
@@ -83,7 +88,12 @@ async function run() {
     host: env.HOST,
   });
 
+  const emailStatus = EMAIL_ENABLED
+    ? "✅ Emails enabled"
+    : "❌ Emails disabled";
+
   console.log(`MOSIP mock server running at http://${env.HOST}:${env.PORT}`);
+  console.log(emailStatus);
 }
 
 void run();
