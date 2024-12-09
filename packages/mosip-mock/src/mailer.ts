@@ -1,7 +1,11 @@
 import * as nodemailer from "nodemailer";
-import { env } from "./constants";
+import { EMAIL_ENABLED, env } from "./constants";
 
 export const sendEmail = async (subject: string, text: string) => {
+  if (!EMAIL_ENABLED) {
+    return;
+  }
+
   const emailTransport = nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,

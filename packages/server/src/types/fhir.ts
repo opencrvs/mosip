@@ -421,3 +421,89 @@ export function getComposition<T extends fhir3.Bundle>(bundle: T) {
 
   return composition;
 }
+
+export enum EVENT_TYPE {
+  BIRTH = "BIRTH",
+  DEATH = "DEATH",
+  MARRIAGE = "MARRIAGE",
+}
+
+const DETECT_EVENT: Record<string, EVENT_TYPE> = {
+  "birth-notification": EVENT_TYPE.BIRTH,
+  "birth-declaration": EVENT_TYPE.BIRTH,
+  "death-notification": EVENT_TYPE.DEATH,
+  "death-declaration": EVENT_TYPE.DEATH,
+  "marriage-notification": EVENT_TYPE.MARRIAGE,
+  "marriage-declaration": EVENT_TYPE.MARRIAGE,
+};
+
+export function getTaskEventType(task: Task) {
+  const eventType = task?.code?.coding?.[0].code;
+  return eventType;
+}
+
+function getCompositionEventType(composition: fhir3.Composition) {
+  const eventType = composition?.type?.coding?.[0].code;
+  return eventType && DETECT_EVENT[eventType];
+}
+
+export function getEventType(fhirBundle: fhir3.Bundle) {
+  if (fhirBundle.entry && fhirBundle.entry[0] && fhirBundle.entry[0].resource) {
+    const firstEntry = fhirBundle.entry[0].resource;
+    if (firstEntry.resourceType === "Composition") {
+      return getCompositionEventType(
+        firstEntry as fhir3.Composition
+      ) as EVENT_TYPE;
+    } else {
+      return getTaskEventType(firstEntry as Task) as EVENT_TYPE;
+    }
+  }
+
+  throw new Error("Invalid FHIR bundle found");
+}
+
+function getPatientNationalId(patient: fhir3.Patient) {
+  const identifier = patient.identifier?.find(
+    (identifier) => identifier.type?.coding?.[0].code === "NATIONAL_ID"
+  );
+  if (!identifier?.value) {
+    throw new Error("National ID not found in patient");
+  }
+  return identifier.value;
+}
+
+function getFromBundleById(bundle: fhir3.Bundle, id: string) {
+  const resource = bundle.entry?.find((item) => item.resource?.id === id);
+
+  if (!resource) {
+    throw new Error("Resource not found in bundle with id " + id);
+  }
+
+  if (!resource.fullUrl) {
+    throw new Error(
+      "A resource was found but it did not have a fullUrl. This should not happen."
+    );
+  }
+
+  return resource;
+}
+
+function findDeceasedEntry(
+  composition: fhir3.Composition,
+  bundle: fhir3.Bundle
+) {
+  const patientSection = composition.section?.find((section) =>
+    section.code?.coding?.some((coding) => coding.code === "deceased-details")
+  );
+  if (!patientSection || !patientSection.entry) {
+    throw new Error("Deceased details not found in composition");
+  }
+  const reference = patientSection.entry[0].reference;
+  return getFromBundleById(bundle, reference!.split("/")[1]).resource;
+}
+
+export const getDeceasedNid = (bundle: fhir3.Bundle) => {
+  const composition = getComposition(bundle);
+  const deceased = findDeceasedEntry(composition, bundle);
+  return getPatientNationalId(deceased as fhir3.Patient);
+};

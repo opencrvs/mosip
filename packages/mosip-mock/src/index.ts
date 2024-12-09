@@ -3,7 +3,7 @@ import { EMAIL_ENABLED, env } from "./constants";
 import { createAid, createNid } from "./random-identifiers";
 import { sendEmail } from "./mailer";
 
-type OpenCRVSEvent = {
+type OpenCRVSBirthEvent = {
   id: string;
   trackingId: string;
 };
@@ -49,11 +49,11 @@ const sendNid = async ({
 
 const app = Fastify();
 
-app.post("/webhooks/opencrvs", {
+app.post("/webhooks/opencrvs/birth", {
   handler: async (request, reply) => {
     const { token, event } = request.body as {
       token: string;
-      event: OpenCRVSEvent;
+      event: OpenCRVSBirthEvent;
     };
 
     sendNid({ token, eventId: event.id, trackingId: event.trackingId }).catch(
@@ -65,6 +65,20 @@ app.post("/webhooks/opencrvs", {
     return reply.status(202).send({
       aid: createAid(),
     });
+  },
+});
+
+app.post("/webhooks/opencrvs/death", {
+  handler: async (request, reply) => {
+    const { nid } = request.body as {
+      nid: string;
+    };
+
+    console.log(`${JSON.stringify({ nid }, null, 4)}, deactivating NID...`);
+
+    sendEmail(`NID deactivated for ${nid}`, `NID deactivated: ${nid}`);
+
+    return reply.status(202).send();
   },
 });
 

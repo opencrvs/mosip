@@ -7,7 +7,7 @@ export class MOSIPError extends Error {
   }
 }
 
-export const postRecord = async ({
+export const postBirthRecord = async ({
   event,
   token,
 }: {
@@ -17,7 +17,7 @@ export const postRecord = async ({
   };
   token: string;
 }) => {
-  const response = await fetch(env.MOSIP_WEBHOOK_URL, {
+  const response = await fetch(env.MOSIP_BIRTH_WEBHOOK_URL, {
     method: "POST",
     body: JSON.stringify({ event, token }),
     headers: {
@@ -36,4 +36,24 @@ export const postRecord = async ({
   return response.json() as Promise<{
     aid: string;
   }>;
+};
+
+export const postDeathRecord = async ({ nid }: { nid: string }) => {
+  const response = await fetch(env.MOSIP_DEATH_WEBHOOK_URL, {
+    method: "POST",
+    body: JSON.stringify({ nid }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new MOSIPError(
+      `Failed to post record to MOSIP. Status: ${
+        response.status
+      }, response: ${await response.text()}`
+    );
+  }
+
+  return response;
 };

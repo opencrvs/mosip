@@ -1,7 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as mosip from "../mosip-api";
-import { getComposition, getTrackingId } from "../types/fhir";
+import {
+  EVENT_TYPE,
+  getDeceasedNid,
+  getComposition,
+  getEventType,
+  getTrackingId,
+} from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
 
 export const opencrvsRecordSchema = z
@@ -43,19 +49,30 @@ export const opencrvsHandler = async (
 
   request.log.info({ trackingId }, "Received record from OpenCRVS");
 
-  const { aid } = await mosip.postRecord({
-    event: { id: eventId, trackingId },
-    token,
-  });
+  const eventType = getEventType(request.body);
 
-  await opencrvs.upsertRegistrationIdentifier(
-    {
-      id: eventId,
-      identifierType: "MOSIP_AID",
-      identifierValue: aid,
-    },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
+  if (eventType === EVENT_TYPE.BIRTH) {
+    const { aid } = await mosip.postBirthRecord({
+      event: { id: eventId, trackingId },
+      token,
+    });
+
+    await opencrvs.upsertRegistrationIdentifier(
+      {
+        id: eventId,
+        identifierType: "MOSIP_AID",
+        identifierValue: aid,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  }
+
+  if (eventType === EVENT_TYPE.DEATH) {
+    const nid = getDeceasedNid(request.body);
+    await mosip.postDeathRecord({
+      nid,
+    });
+  }
 
   return reply.code(202).send();
 };
