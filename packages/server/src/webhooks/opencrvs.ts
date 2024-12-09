@@ -50,7 +50,7 @@ export const opencrvsHandler = async (
 
   await opencrvs.upsertRegistrationIdentifier(
     {
-      eventId,
+      id: eventId,
       identifierType: "MOSIP_AID",
       identifierValue: aid,
     },

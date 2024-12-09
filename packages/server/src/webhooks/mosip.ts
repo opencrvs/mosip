@@ -31,11 +31,10 @@ export const mosipHandler = async (
   const registrationNumber = generateRegistrationNumber(trackingId);
 
   await opencrvs.confirmRegistration(
-    eventId,
     {
-      trackingId,
+      id: eventId,
       registrationNumber,
-      childIdentifiers: [{ type: "MOSIP_NID", value: nid }],
+      identifiers: [{ type: "BIRTH_CONFIGURABLE_IDENTIFIER_1", value: nid }],
     },
     { headers: { Authorization: `Bearer ${token}` } }
   );
