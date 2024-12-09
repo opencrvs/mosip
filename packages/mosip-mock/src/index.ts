@@ -16,7 +16,13 @@ const sendNid = async ({
   eventId: string;
   trackingId: string;
 }) => {
+  console.log(
+    `${JSON.stringify({ eventId, trackingId }, null, 4)}, creating NID...`
+  );
   const nid = await createNid();
+  console.log(
+    `${JSON.stringify({ eventId, trackingId }, null, 4)}, ..."${nid}" created.`
+  );
   const response = await fetch(env.OPENCRVS_MOSIP_SERVER_URL, {
     method: "POST",
     body: JSON.stringify({ nid, token, eventId, trackingId }),
@@ -65,6 +71,12 @@ app.get("/esignet", {
 });
 
 async function run() {
+  if (env.isProd) {
+    console.error(
+      "⚠️ You are running MOCK national ID server in production. All identifiers will be logged. ⚠️"
+    );
+  }
+
   await app.ready();
   await app.listen({
     port: env.PORT,
