@@ -34,7 +34,7 @@ export const mosipHandler = async (
     {
       id: eventId,
       registrationNumber,
-      identifiers: [{ type: "MOSIP_NID", value: nid }],
+      identifiers: [{ type: "BIRTH_CONFIGURABLE_IDENTIFIER_1", value: nid }],
     },
     { headers: { Authorization: `Bearer ${token}` } }
   );
