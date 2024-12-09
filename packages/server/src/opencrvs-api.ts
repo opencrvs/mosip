@@ -109,21 +109,20 @@ export const upsertRegistrationIdentifier = (
     query: /* GraphQL */ `
       mutation upsertRegistrationIdentifier(
         $id: ID!
-        $details: UpsertRegistrationIdentifierInput!
+        $identifierType: String!
+        $identifierValue: String!
       ) {
-        upsertRegistrationIdentifier(id: $id, details: $details)
+        upsertRegistrationIdentifier(
+          id: $id
+          identifierType: $identifierType
+          identifierValue: $identifierValue
+        )
       }
     `,
     variables: {
       id,
-      details: {
-        identifiers: [
-          {
-            type: identifierType,
-            value: identifierValue,
-          },
-        ],
-      },
+      identifierType,
+      identifierValue,
     },
     headers,
   });
