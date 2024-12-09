@@ -39,11 +39,14 @@ const post = async <T = any>({
 };
 
 export const confirmRegistration = (
-  id: string,
-  variables: {
-    childIdentifiers?: Array<{ type: string; value: string }>;
+  {
+    id,
+    identifiers,
+    registrationNumber,
+  }: {
+    id: string;
+    identifiers: Array<{ type: string; value: string }>;
     registrationNumber: string;
-    trackingId: string;
   },
   { headers }: { headers: Record<string, any> }
 ) =>
@@ -59,9 +62,8 @@ export const confirmRegistration = (
     variables: {
       id,
       details: {
-        childIdentifiers: variables.childIdentifiers,
-        registrationNumber: variables.registrationNumber,
-        trackingId: variables.trackingId,
+        identifiers,
+        registrationNumber,
       },
     },
     headers,
@@ -93,11 +95,11 @@ export const rejectRegistration = (
 
 export const upsertRegistrationIdentifier = (
   {
-    eventId,
+    id,
     identifierType,
     identifierValue,
   }: {
-    eventId: string;
+    id: string;
     identifierType: string;
     identifierValue: string;
   },
@@ -106,21 +108,22 @@ export const upsertRegistrationIdentifier = (
   post({
     query: /* GraphQL */ `
       mutation upsertRegistrationIdentifier(
-        $eventId: ID!
-        $identifierType: String!
-        $identifierValue: String!
+        $id: ID!
+        $details: UpsertRegistrationIdentifierInput!
       ) {
-        upsertRegistrationIdentifier(
-          eventId: $eventId
-          identifierType: $identifierType
-          identifierValue: $identifierValue
-        )
+        upsertRegistrationIdentifier(id: $id, details: $details)
       }
     `,
     variables: {
-      eventId,
-      identifierType,
-      identifierValue,
+      id,
+      details: {
+        identifiers: [
+          {
+            type: identifierType,
+            value: identifierValue,
+          },
+        ],
+      },
     },
     headers,
   });
