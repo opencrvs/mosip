@@ -126,3 +126,76 @@ export const upsertRegistrationIdentifier = (
     },
     headers,
   });
+
+export const getOIDPUserInfo = (
+  {
+    code,
+    clientId,
+    redirectUri,
+    grantType,
+  }: {
+    code: String;
+    clientId: String;
+    redirectUri: String;
+    grantType: String;
+  },
+  { headers }: { headers: Record<string, any> }
+) =>
+  post({
+    query: /* GraphQL */ `
+      mutation getOIDPUserInfo(
+        $code: String!
+        $clientId: String!
+        $redirectUri: String!
+        $grantType: String
+      ) {
+        getOIDPUserInfo(
+          code: $code
+          clientId: $clientId
+          redirectUri: $redirectUri
+          grantType: $grantType
+        ) {
+          oidpUserInfo {
+            sub
+            name
+            given_name
+            family_name
+            middle_name
+            nickname
+            preferred_username
+            profile
+            picture
+            website
+            email
+            email_verified
+            gender
+            birthdate
+            zoneinfo
+            locale
+            phone_number
+            phone_number_verified
+            address {
+              formatted
+              street_address
+              locality
+              region
+              postal_code
+              city
+              country
+            }
+            updated_at
+          }
+          districtFhirId
+          stateFhirId
+          locationLevel3FhirId
+        }
+      }
+    `,
+    variables: {
+      code,
+      clientId,
+      redirectUri,
+      grantType,
+    },
+    headers,
+  });

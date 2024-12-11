@@ -41,3 +41,23 @@ export const mosipHandler = async (
 
   reply.code(200);
 };
+
+export const getOIDPUserInfo = async (
+  request: MosipRequest,
+  reply: FastifyReply
+) => {
+  const { token } = request.body;
+  
+  // getOIDPUserInfo GraphQL query execution
+  // await opencrvs.getOIDPUserInfo(
+  //   {
+  //     code,
+  //     clientId,
+  //     redirectUri,
+  //     grantType,
+  //   },
+  //   { headers: { Authorization: `Bearer ${token}` } }
+  // );
+
+  reply.code(200);
+};

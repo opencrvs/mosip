@@ -1,4 +1,4 @@
-import { cleanEnv, str, port } from "envalid";
+import { cleanEnv, str, port, url } from "envalid";
 
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
@@ -15,4 +15,6 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:7070/graphql",
     desc: "The URL of the OpenCRVS GraphQL Gateway",
   }),
+  HEARTH_URL: url({ default: 'http://localhost:3447/fhir' }),
+  NATIONAL_ID_OIDP_REST_URL: url({ default: '' }),
 });
