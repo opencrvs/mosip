@@ -8,7 +8,7 @@ export class OpenCRVSError extends Error {
 }
 
 /** Communicates with opencrvs-core's GraphQL gateway */
-const post = async <T = any>({
+const post = async ({
   query,
   variables,
   headers,
@@ -35,7 +35,7 @@ const post = async <T = any>({
     );
   }
 
-  return response.json() as Promise<{ data: T }>;
+  return response;
 };
 
 export const confirmRegistration = (
@@ -43,10 +43,12 @@ export const confirmRegistration = (
     id,
     identifiers,
     registrationNumber,
+    comment,
   }: {
     id: string;
-    identifiers: Array<{ type: string; value: string }>;
+    identifiers?: Array<{ type: string; value: string }>;
     registrationNumber: string;
+    comment?: string;
   },
   { headers }: { headers: Record<string, any> }
 ) =>
@@ -64,6 +66,7 @@ export const confirmRegistration = (
       details: {
         identifiers,
         registrationNumber,
+        comment,
       },
     },
     headers,
