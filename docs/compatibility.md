@@ -1,7 +1,3 @@
----
-core: 13ae4a2
----
-
 # Compatibility
 
 This version supports the yet to be released OpenCRVS v1.7.

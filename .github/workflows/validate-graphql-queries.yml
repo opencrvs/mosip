@@ -31,9 +31,10 @@ jobs:
           echo "core_version=$core_version" >> $GITHUB_ENV
 
       - name: Run codegen
+        # Run using the `develop` branch. If there is an error, it does not imply the current versions aren't compatible, but prepares us for a future release.
         run: |
           cat <<EOF > codegen.yml
-          schema: "https://raw.githubusercontent.com/opencrvs/opencrvs-core/${{ env.core_version }}/packages/gateway/src/graphql/schema.graphql"
+          schema: "https://raw.githubusercontent.com/opencrvs/opencrvs-core/develop/packages/gateway/src/graphql/schema.graphql"
           documents: ".tmp/**/*.{graphql,js,ts,jsx,tsx}"
           generates:
             ./throwaway.ts:
