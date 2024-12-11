@@ -9,6 +9,7 @@ import {
   getTrackingId,
 } from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
+import { generateRegistrationNumber } from "../registration-number";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -69,9 +70,32 @@ export const opencrvsHandler = async (
 
   if (eventType === EVENT_TYPE.DEATH) {
     const nid = getDeceasedNid(request.body);
-    await mosip.postDeathRecord({
+    const response = await mosip.postDeathRecord({
       nid,
     });
+    const registrationNumber = generateRegistrationNumber(trackingId);
+
+    let comment: string;
+    if (response.status === 404) {
+      comment = `NID "${nid}" not found`;
+    } else if (response.status === 409) {
+      comment = `NID "${nid}" already deactivated`;
+    } else if (response.ok) {
+      comment = `NID "${nid}" deactivated`;
+    } else {
+      throw new Error(
+        `NID deactivation failed in MOSIP. Response: ${response.statusText}`
+      );
+    }
+
+    await opencrvs.confirmRegistration(
+      {
+        id: eventId,
+        registrationNumber,
+        comment,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
   }
 
   return reply.code(202).send();
