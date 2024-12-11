@@ -70,7 +70,7 @@ export const opencrvsHandler = async (
 
   if (eventType === EVENT_TYPE.DEATH) {
     const nid = getDeceasedNid(request.body);
-    const response = await mosip.postDeathRecord({
+    const response = await mosip.deactivateNid({
       nid,
     });
     const registrationNumber = generateRegistrationNumber(trackingId);
