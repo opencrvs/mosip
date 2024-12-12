@@ -16,5 +16,5 @@ export const env = cleanEnv(process.env, {
     desc: "The URL of the OpenCRVS GraphQL Gateway",
   }),
   HEARTH_URL: url({ default: 'http://localhost:3447/fhir' }),
-  NATIONAL_ID_OIDP_REST_URL: url({ default: '' }),
+  NATIONAL_ID_OIDP_REST_URL: url({ default: undefined }),
 });
