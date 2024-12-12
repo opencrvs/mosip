@@ -4,7 +4,7 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { getOIDPUserInfo, mosipHandler, mosipNidSchema } from "./webhooks/mosip";
+import { getOIDPUserInfo, mosipHandler, mosipNidSchema, OIDPUserInfoSchema } from "./webhooks/mosip";
 import { opencrvsHandler, opencrvsRecordSchema } from "./webhooks/opencrvs";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
@@ -54,10 +54,9 @@ app.after(() => {
     url: "/esignet/get-oidp-user-info",
     method: "POST",
     handler: getOIDPUserInfo,
-    // To-Do
-    // schema: {
-    //   body: ,
-    // },
+    schema: {
+      body: OIDPUserInfoSchema,
+    },
   });
 });
 
