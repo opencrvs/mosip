@@ -15,7 +15,7 @@ import fetch from "node-fetch";
 import { logger } from "./logger";
 import z from "zod";
 import { FastifyReply, FastifyRequest } from "fastify";
-import * as opencrvs from "./opencrvs-api";
+import * as jose from "jose";
 
 type OIDPUserAddress = {
   formatted: string;
@@ -50,6 +50,17 @@ type OIDPUserInfo = {
   updated_at?: number;
 };
 
+const JWT_EXPIRATION_TIME = "1h";
+const JWT_ALG = "RS256";
+const OIDP_USERINFO_ENDPOINT =
+  env.NATIONAL_ID_OIDP_REST_URL &&
+  new URL("oidc/userinfo", env.NATIONAL_ID_OIDP_REST_URL).toString();
+const OIDP_TOKEN_ENDPOINT =
+  env.OIDP_REST_URL && new URL("oauth/token", env.OIDP_REST_URL).toString();
+const CLIENT_ASSERTION_TYPE =
+  "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
+const TOKEN_GRANT_TYPE = "authorization_code";
+
 export const OIDPUserInfoSchema = z.object({
   code: z.string(),
   clientId: z.string(),
@@ -61,29 +72,88 @@ export type OIDPUserInfoRequest = FastifyRequest<{
   Body: z.infer<typeof OIDPUserInfoSchema>;
 }>;
 
-export const getOIDPUserInfo = async (
-    request: OIDPUserInfoRequest,
-    reply: FastifyReply
-  ) => {
-    const { token } = request.headers;
-    const { code, clientId, redirectUri, grantType } = request.body;
-  
-    await opencrvs.getOIDPUserInfo(
-      {
-        code,
-        clientId,
-        redirectUri,
-        grantType,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  
-    reply.code(200);
+type FetchTokenProps = {
+  code: string;
+  clientId: string;
+  redirectUri: string;
+  grantType?: string;
+};
+
+const generateSignedJwt = async (clientId: string) => {
+  const header = {
+    alg: JWT_ALG,
+    typ: "JWT",
   };
 
-const OIDP_USERINFO_ENDPOINT =
-  env.NATIONAL_ID_OIDP_REST_URL &&
-  new URL("oidc/userinfo", env.NATIONAL_ID_OIDP_REST_URL).toString();
+  const payload = {
+    iss: clientId,
+    sub: clientId,
+    aud: env.OIDP_JWT_AUD_CLAIM,
+  };
+
+  const decodeKey = Buffer.from(
+    env.OIDP_CLIENT_PRIVATE_KEY!,
+    "base64"
+  )?.toString();
+  const jwkObject = JSON.parse(decodeKey);
+  const privateKey = await jose.importJWK(jwkObject, JWT_ALG);
+
+  return new jose.SignJWT(payload)
+    .setProtectedHeader(header)
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRATION_TIME)
+    .sign(privateKey);
+};
+
+const fetchToken = async ({
+  code,
+  clientId,
+  redirectUri,
+  grantType = TOKEN_GRANT_TYPE,
+}: FetchTokenProps) => {
+  const body = new URLSearchParams({
+    code: code,
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    grant_type: grantType,
+    client_assertion_type: CLIENT_ASSERTION_TYPE,
+    client_assertion: await generateSignedJwt(clientId),
+  });
+
+  const request = await fetch(OIDP_TOKEN_ENDPOINT!, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+  });
+
+  const response = await request.json();
+  return response as { access_token?: string };
+};
+
+export const getOIDPUserInfo = async (
+  request: OIDPUserInfoRequest,
+  reply: FastifyReply
+) => {
+  const { code, clientId, redirectUri, grantType } = request.body;
+
+  const tokenResponse = await fetchToken({
+    code,
+    clientId,
+    redirectUri,
+    grantType,
+  });
+
+  if (!tokenResponse.access_token) {
+    throw new Error(
+      "Something went wrong with the OIDP token request. No access token was returned. Response from OIDP: " +
+        JSON.stringify(tokenResponse)
+    );
+  }
+
+  return fetchUserInfo(tokenResponse.access_token);
+};
 
 const decodeUserInfoResponse = (response: string) => {
   return jwt.decode(response) as OIDPUserInfo;

@@ -17,4 +17,7 @@ export const env = cleanEnv(process.env, {
   }),
   GATEWAY_URL: url({ default: "http://localhost:7070" }),
   NATIONAL_ID_OIDP_REST_URL: url({ default: undefined }),
+  OIDP_REST_URL: url({ default: undefined }),
+  OIDP_JWT_AUD_CLAIM: str({ default: undefined }),
+  OIDP_CLIENT_PRIVATE_KEY: str({ default: undefined }),
 });
