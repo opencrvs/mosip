@@ -11,8 +11,11 @@
 
 import * as jwt from "jsonwebtoken";
 import { env } from "./constants";
-import fetch from 'node-fetch'
+import fetch from "node-fetch";
 import { logger } from "./logger";
+import z from "zod";
+import { FastifyReply, FastifyRequest } from "fastify";
+import * as opencrvs from "./opencrvs-api";
 
 type OIDPUserAddress = {
   formatted: string;
@@ -47,22 +50,54 @@ type OIDPUserInfo = {
   updated_at?: number;
 };
 
+export const OIDPUserInfoSchema = z.object({
+  code: z.string(),
+  clientId: z.string(),
+  redirectUri: z.string(),
+  grantType: z.string(),
+});
+
+export type OIDPUserInfoRequest = FastifyRequest<{
+  Body: z.infer<typeof OIDPUserInfoSchema>;
+}>;
+
+export const getOIDPUserInfo = async (
+    request: OIDPUserInfoRequest,
+    reply: FastifyReply
+  ) => {
+    const { token } = request.headers;
+    const { code, clientId, redirectUri, grantType } = request.body;
+  
+    await opencrvs.getOIDPUserInfo(
+      {
+        code,
+        clientId,
+        redirectUri,
+        grantType,
+      },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+  
+    reply.code(200);
+  };
+
 const OIDP_USERINFO_ENDPOINT =
-  env.NATIONAL_ID_OIDP_REST_URL && new URL('oidc/userinfo', env.NATIONAL_ID_OIDP_REST_URL).toString()
+  env.NATIONAL_ID_OIDP_REST_URL &&
+  new URL("oidc/userinfo", env.NATIONAL_ID_OIDP_REST_URL).toString();
 
 const decodeUserInfoResponse = (response: string) => {
   return jwt.decode(response) as OIDPUserInfo;
 };
 
-export const fetchFromHearth = <T = any>(
+export const fetchLocationFromFHIR = <T = any>(
   suffix: string,
   method = "GET",
   body: string | undefined = undefined
 ): Promise<T> => {
-  return fetch(`${env.HEARTH_URL}${suffix}`, {
+  return fetch(`${env.GATEWAY_URL}${suffix}`, {
     method,
     headers: {
-      "Content-Type": "application/fhir+json",
+      "Content-Type": "application/json",
     },
     body,
   })
@@ -71,18 +106,18 @@ export const fetchFromHearth = <T = any>(
     })
     .catch((error) => {
       return Promise.reject(
-        new Error(`FHIR with Hearth request failed: ${error.message}`)
+        new Error(`Fetch Location from FHIR request failed: ${error.message}`)
       );
     });
 };
 
-const searchLocationFromHearth = (name: string) =>
-  fetchFromHearth<fhir2.Bundle>(
+const searchLocationFromFHIR = (name: string) =>
+  fetchLocationFromFHIR<fhir2.Bundle>(
     `/Location?${new URLSearchParams({ name, type: "ADMIN_STRUCTURE" })}`
   );
 
 const findAdminStructureLocationWithName = async (name: string) => {
-  const fhirBundleLocations = await searchLocationFromHearth(name);
+  const fhirBundleLocations = await searchLocationFromFHIR(name);
 
   if ((fhirBundleLocations.entry?.length ?? 0) > 1) {
     throw new Error(

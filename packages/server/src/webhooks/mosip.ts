@@ -41,34 +41,3 @@ export const mosipHandler = async (
 
   reply.code(200);
 };
-
-export const OIDPUserInfoSchema = z.object({
-  code: z.string(),
-  clientId: z.string(),
-  redirectUri: z.string(),
-  grantType: z.string(),
-});
-
-type OIDPUserInfoRequest = FastifyRequest<{
-  Body: z.infer<typeof OIDPUserInfoSchema>;
-}>;
-
-export const getOIDPUserInfo = async (
-  request: OIDPUserInfoRequest,
-  reply: FastifyReply
-) => {
-  const { token } = request.headers;
-  const { code, clientId, redirectUri, grantType } = request.body;
-
-  await opencrvs.getOIDPUserInfo(
-    {
-      code,
-      clientId,
-      redirectUri,
-      grantType,
-    },
-    { headers: { Authorization: `Bearer ${token}` } }
-  );
-
-  reply.code(200);
-};

@@ -4,10 +4,11 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { getOIDPUserInfo, mosipHandler, mosipNidSchema, OIDPUserInfoSchema } from "./webhooks/mosip";
+import { mosipHandler, mosipNidSchema } from "./webhooks/mosip";
 import { opencrvsHandler, opencrvsRecordSchema } from "./webhooks/opencrvs";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
+import { getOIDPUserInfo, OIDPUserInfoSchema } from "./esignet-api";
 
 const envToLogger = {
   development: {
