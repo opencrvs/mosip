@@ -55,9 +55,9 @@ app.after(() => {
     url: "/esignet/get-oidp-user-info",
     method: "POST",
     handler: getOIDPUserInfo,
-    schema: {
-      body: OIDPUserInfoSchema,
-    },
+    // schema: {
+    //   body: OIDPUserInfoSchema,
+    // },
   });
 });
 
