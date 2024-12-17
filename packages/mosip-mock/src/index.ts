@@ -82,13 +82,6 @@ app.post("/webhooks/opencrvs/death", {
   },
 });
 
-app.get("/esignet", {
-  handler: async (request, reply) => {
-    const { redirect_uri } = request.query as { redirect_uri: string };
-    reply.redirect(redirect_uri);
-  },
-});
-
 async function run() {
   if (env.isProd) {
     console.error(
