@@ -1,9 +1,40 @@
 // @TODO: Yet to be implemented! Placeholders for NPM publish.
 
 /**
- * E-Signet popup button form definition
+ * E-Signet REDIRECT button form definition.  Calls E-Signet /authorize
  */
-export const returnRedirectFormField = (esignetAuthUrl: string) => {
+
+
+export const returnRedirectFormField = (esignetAuthUrl: string, openIdProviderClientId: string, openIdProviderClaims: string) => {
+  // `${nidSystemSetting?.openIdProviderBaseUrl}authorize`
+  const url = new URL(esignetAuthUrl)
+
+  url.searchParams.append(
+    'client_id',
+    openIdProviderClientId || ''
+  )
+  url.searchParams.append('response_type', 'code')
+  url.searchParams.append('scope', 'openid profile')
+  url.searchParams.append('acr_values', 'mosip:idp:acr:static-code')
+  url.searchParams.append('claims', openIdProviderClaims || '')
+
+  /*
+
+  TODO: Understand from Tahmid about how to handle this:
+  
+  url.searchParams.append(
+    'redirect_uri',
+    `${window.location.origin}${OIDP_VERIFICATION_CALLBACK}`
+  )
+  const stateToBeSent: INidCallbackState = {
+    pathname: currentPathname,
+    declarationId: declarationId,
+    section: currentSection
+  }
+  url.searchParams.append('state', JSON.stringify(stateToBeSent))
+  */
+  window.location.href = url.toString()
+
   return {
     name: "redirect",
     type: "REDIRECT",
