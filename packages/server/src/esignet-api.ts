@@ -111,21 +111,21 @@ const fetchToken = async ({
   redirectUri,
   grantType = TOKEN_GRANT_TYPE,
 }: FetchTokenProps) => {
-  const reqBody: any = {
+  const body = new URLSearchParams({
     code: code,
     client_id: clientId,
     redirect_uri: redirectUri,
     grant_type: grantType,
     client_assertion_type: CLIENT_ASSERTION_TYPE,
     client_assertion: await generateSignedJwt(clientId),
-  };
+  })
 
   const request = await fetch(OIDP_TOKEN_ENDPOINT!, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
-    body: JSON.stringify(reqBody)
+    body
   });
 
   const response = await request.json();

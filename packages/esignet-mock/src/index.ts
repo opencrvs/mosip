@@ -17,6 +17,8 @@ const tokenRequestSchema = {
   },
 };
 
+// TODO: mock: oidc/userinfo
+
 app.post("/oauth/token", {
 //   schema: tokenRequestSchema,
   handler: async (request: any, reply) => {
