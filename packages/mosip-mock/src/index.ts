@@ -8,13 +8,6 @@ const app = Fastify();
 app.post("/webhooks/opencrvs/birth", { handler: opencrvsBirthHandler });
 app.post("/webhooks/opencrvs/death", { handler: deactivateNidHandler });
 
-app.get("/esignet", {
-  handler: async (request, reply) => {
-    const { redirect_uri } = request.query as { redirect_uri: string };
-    reply.redirect(redirect_uri);
-  },
-});
-
 async function run() {
   if (env.isProd) {
     console.error(

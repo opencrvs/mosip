@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mock authorizer</title>
+  </head>
+  <body>
+    <button onclick="handleClick()">Authorize person</button>
+  </body>
+  <script>
+    function handleClick() {
+      const params = new URLSearchParams(window.location.search);
+      const opencrvsDraft = params.get("opencrvsDraft");
+      const opencrvsFormPath =
+        "http://localhost:3000" +
+        "/drafts/" +
+        opencrvsDraft +
+        "/events/birth/child/group/child-view-group";
+      const destinationURL = new URL(opencrvsFormPath);
+      destinationURL.searchParams.set("authorized", true);
+      window.location.replace(destinationURL);
+    }
+  </script>
+</html>
