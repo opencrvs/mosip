@@ -118,14 +118,14 @@ const fetchToken = async ({
     grant_type: grantType,
     client_assertion_type: CLIENT_ASSERTION_TYPE,
     client_assertion: await generateSignedJwt(clientId),
-  })
+  });
 
   const request = await fetch(OIDP_TOKEN_ENDPOINT!, {
     method: "POST",
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
+      "Content-Type": "application/x-www-form-urlencoded",
     },
-    body
+    body,
   });
 
   const response = await request.json();

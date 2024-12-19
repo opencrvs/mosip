@@ -3,12 +3,14 @@ import { env } from "./constants";
 import jwt from "jsonwebtoken";
 import path from "path";
 import fastifyStatic from "@fastify/static";
+import formbody from "@fastify/formbody";
 
 const app = Fastify({ logger: true });
 
 app.register(fastifyStatic, {
   root: path.join(__dirname, "mock-authorizer"),
 });
+app.register(formbody);
 
 const tokenRequestSchema = {
   body: {
