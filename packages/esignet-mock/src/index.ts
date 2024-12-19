@@ -1,8 +1,14 @@
 import Fastify from "fastify";
 import { env } from "./constants";
 import jwt from "jsonwebtoken";
+import path from "path";
+import fastifyStatic from "@fastify/static";
 
 const app = Fastify({ logger: true });
+
+app.register(fastifyStatic, {
+  root: path.join(__dirname, "mock-authorizer"),
+});
 
 const tokenRequestSchema = {
   body: {
@@ -93,9 +99,7 @@ app.post("/oidc/userinfo", {
       expiresIn: "1h",
     });
 
-    return reply.send({
-      encodedUserInfo: encodedUserInfo,
-    });
+    return reply.send(encodedUserInfo);
   },
 });
 
@@ -103,11 +107,24 @@ app.post("/oidc/userinfo", {
 // TODO: The route is called /authorize
 // TODO: Validate the search params: https://github.com/opencrvs/mosip/blob/8e9c98b29b43a25561c8b9a0d6ae9ae4136adfe8/packages/country-config/src/forms.ts#L12 and return the correct state
 
-app.post("/authorize", {
-  handler: async (request: any, reply) => {
-    // Validate search params
+const authorizeSchema = {
+  querystring: {
+    type: "object",
+    required: ["client_id", "response_type", "scope", "acr_values", "claims"],
+    properties: {
+      client_id: { type: "string" },
+      response_type: { type: "string" },
+      scope: { type: "string" },
+      acr_values: { type: "string" },
+      claims: { type: "string" },
+    },
+  },
+};
 
-    return reply.send({ message: "Success" });
+app.post("/authorize", {
+  schema: authorizeSchema,
+  handler: async (request: any, reply) => {
+    return reply.sendFile("index.html");
   },
 });
 
