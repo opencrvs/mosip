@@ -16,7 +16,7 @@ export const env = cleanEnv(process.env, {
     desc: "The URL of the OpenCRVS GraphQL Gateway",
   }),
   GATEWAY_URL: url({ default: "http://localhost:7070" }),
-  NATIONAL_ID_OIDP_REST_URL: url({ default: undefined }),
+  NATIONAL_ID_OIDP_REST_URL: url({ default: "http://localhost:20260/" }),
   OIDP_REST_URL: url({ default: "http://localhost:20260/" }),
   OIDP_JWT_AUD_CLAIM: str({ default: undefined }),
   OIDP_CLIENT_PRIVATE_KEY: str({ default: "mock-secret" }),

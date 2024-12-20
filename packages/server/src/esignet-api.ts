@@ -127,7 +127,7 @@ const fetchToken = async ({
     },
     body,
   });
-
+  
   const response = await request.json();
   return response as { access_token?: string };
 };
@@ -222,6 +222,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
 
 export const fetchUserInfo = async (accessToken: string) => {
   const request = await fetch(OIDP_USERINFO_ENDPOINT!, {
+    method: "POST",
     headers: {
       Authorization: "Bearer " + accessToken,
     },
