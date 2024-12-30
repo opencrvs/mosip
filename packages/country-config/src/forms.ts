@@ -34,51 +34,100 @@ export const hidden = () => {
  * ```
  */
 
-export const idReader = ({ url }) => {
+export const idReader = (
+  event: string,
+  sectionId: string,
+  conditionals: any[],
+  readers: any[]
+) => {
+  const fieldName: string = 'idReader';
+  const fieldId: string = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
   return {
-    name: 'informantIDReader',
+    name: fieldName,
+    customQuestionMappingId: fieldId,
+    custom: true,
+    required: false,
     type: 'ID_READER',
-    readers: [
-      {
-        type: 'qr',
-        labels: {
-          button: {
-            id: 'id.qr.button.label',
-            defaultMessage: 'Scan ID QR code'
-          },
-          scannerDialogSupportingCopy: {
-            id: 'id.qr.scanner.supportingCopy',
-            defaultMessage:
-              "Place the Notifier's ID card in front of the camera."
-          },
-          tutorial: {
-            cameraCleanliness: {
-              id: 'id.qr.tutorial.cameraCleanliness',
-              defaultMessage: 'Ensure your camera is clean and functional.'
-            },
-            distance: {
-              id: 'id.qr.tutorial.distance',
-              defaultMessage:
-                'Hold the device steadily 6-12 inches away from the QR code.'
-            },
-            lightBalance: {
-              id: 'id.qr.tutorial.lightBalance',
-              defaultMessage:
-                'Ensure the QR code is well-lit and not damaged or blurry.'
-            }
-          }
-        }
-      }
-      // {
-      //   type: 'e-signet',
-      //   ...otherProperties
-      // }
-    ]
+    label: {
+      id: 'form.field.label.empty',
+      defaultMessage: ''
+    },
+    hideInPreview: true,
+    initialValue: '',
+    validator: [],
+    conditionals,
+    dividerLabel: {
+      id: 'views.idReader.label.or',
+      defaultMessage: 'Or'
+    },
+    manualInputInstructionLabel: {
+      id: 'views.idReader.label.manualInput',
+      defaultMessage: 'Complete fields below'
+    },
+    readers
   };
 };
+
+export const qr = () => ({
+  type: 'QR'
+});
+
 export const esignet = ({
+  url,
+  callbackFieldName
+}: {
+  url: string;
+  callbackFieldName: string;
+}) => ({
+  name: 'redirect',
+  validator: [],
+  icon: {
+    desktop: 'Globe',
+    mobile: 'Fingerprint'
+  },
+  type: 'REDIRECT',
+  label: {
+    id: 'views.idReader.label.eSignet',
+    defaultMessage: 'E-signet'
+  },
+  options: {
+    url,
+    callback: {
+      params: {
+        authorized: 'true'
+      },
+      trigger: callbackFieldName
+    }
+  }
+});
+
+export const esignetCallback = ({
+  fieldName,
   url
 }: {
-  /** URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org) */
+  fieldName: string;
   url: string;
-}) => [popupButton({ url }), hidden()];
+}) => ({
+  name: fieldName,
+  type: 'HTTP',
+  custom: true,
+  label: {
+    id: 'form.field.label.empty',
+    defaultMessage: ''
+  },
+  validator: [],
+  options: {
+    url,
+    headers: {
+      'Content-type': 'application/json'
+    },
+    method: 'GET'
+  }
+});
+
+// export const esignet = ({
+//   url
+// }: {
+//   /** URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org) */
+//   url: string;
+// }) => [popupButton({ url }), hidden()];
