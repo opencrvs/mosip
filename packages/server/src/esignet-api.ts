@@ -183,7 +183,7 @@ export const fetchLocationFromFHIR = <T = any>(
 
 const searchLocationFromFHIR = (name: string) =>
   fetchLocationFromFHIR<fhir2.Bundle>(
-    `/Location?${new URLSearchParams({ name, type: "ADMIN_STRUCTURE" })}`
+    `/locations?${new URLSearchParams({ name, type: "ADMIN_STRUCTURE" })}`
   );
 
 const findAdminStructureLocationWithName = async (name: string) => {
