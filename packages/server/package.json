@@ -4,7 +4,8 @@
   "license": "MPL-2.0",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch src/index.ts",
-    "start": "NODE_ENV=production tsx src/index.ts"
+    "start": "NODE_ENV=production tsx src/index.ts",
+    "dev:secrets:gen": "openssl genrsa -out .secrets/private-key.pem 2048 && openssl rsa -pubout -in .secrets/private-key.pem -out .secrets/public-key.pem"
   },
   "dependencies": {
     "@fastify/formbody": "^8.0.1",

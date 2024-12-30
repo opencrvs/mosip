@@ -1,4 +1,4 @@
-import { cleanEnv, str, port, url } from "envalid";
+import { cleanEnv, str, port, url, num } from "envalid";
 
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
@@ -18,6 +18,7 @@ export const env = cleanEnv(process.env, {
   GATEWAY_URL: url({ default: "http://localhost:7070" }),
   NATIONAL_ID_OIDP_REST_URL: url({ default: "http://localhost:20260/" }),
   OIDP_REST_URL: url({ default: "http://localhost:20260/" }),
-  OIDP_JWT_AUD_CLAIM: str({ default: undefined }),
-  OIDP_CLIENT_PRIVATE_KEY: str({ default: "mock-secret" }),
+  CERT_PRIVATE_KEY_PATH: str({ devDefault: ".secrets/private-key.pem" }),
+  CONFIG_TOKEN_EXPIRY_SECONDS: num({ default: 604800 }), // 1 week
+  CONFIG_SYSTEM_TOKEN_EXPIRY_SECONDS: num({ default: 600 }), // 10 minutes
 });
