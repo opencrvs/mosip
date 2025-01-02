@@ -34,6 +34,11 @@ export const hidden = () => {
  * ```
  */
 
+/**
+ *
+ * @description ID reader field definition (this field may not be supported in the latest release of OpenCRVS yet)
+ *
+ */
 export const idReader = (
   event: string,
   sectionId: string,
@@ -68,10 +73,20 @@ export const idReader = (
   };
 };
 
+/**
+ *
+ * @description QR reader type definition (this field may not be supported in the latest release of OpenCRVS yet)
+ *
+ */
 export const qr = () => ({
   type: 'QR'
 });
 
+/**
+ *
+ * @description esignet reader type definition (this field may not be supported in the latest release of OpenCRVS yet)
+ *
+ */
 export const esignet = ({
   url,
   callbackFieldName
