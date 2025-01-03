@@ -1,4 +1,6 @@
-import { cleanEnv, str, port, url, num } from "envalid";
+import { cleanEnv, str, port, url } from "envalid";
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
@@ -15,10 +17,9 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:7070/graphql",
     desc: "The URL of the OpenCRVS GraphQL Gateway",
   }),
-  GATEWAY_URL: url({ default: "http://localhost:7070" }),
-  NATIONAL_ID_OIDP_REST_URL: url({ default: "http://localhost:20260/" }),
-  OIDP_REST_URL: url({ default: "http://localhost:20260/" }),
-  CERT_PRIVATE_KEY_PATH: str({ devDefault: ".secrets/private-key.pem" }),
-  CONFIG_TOKEN_EXPIRY_SECONDS: num({ default: 604800 }), // 1 week
-  CONFIG_SYSTEM_TOKEN_EXPIRY_SECONDS: num({ default: 600 }), // 10 minutes
-});
+  GATEWAY_URL: url({ devDefault: "http://localhost:7070" }),
+  NATIONAL_ID_OIDP_REST_URL: url({ devDefault: "http://localhost:20260/" }),
+  OIDP_REST_URL: url({ devDefault: "http://localhost:20260/" }),
+  OIDP_JWT_AUD_CLAIM: str({ devDefault: undefined }),
+  OIDP_CLIENT_PRIVATE_KEY: str({ devDefault:  readFileSync(join(__dirname, './dev-secrets/jwk.txt')).toString() }),
+  });

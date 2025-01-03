@@ -4,8 +4,34 @@ import jwt from "jsonwebtoken";
 import path from "path";
 import fastifyStatic from "@fastify/static";
 import formbody from "@fastify/formbody";
+import * as jose from "jose";
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 const app = Fastify({ logger: true });
+
+const JWT_ALG = 'RS256'
+const JWT_EXPIRATION_TIME = '1h'
+
+const generateSignedJwt = async (userInfo: OIDPUserInfo) => {
+  const header = {
+    alg: JWT_ALG,
+    typ: "JWT",
+  };
+
+  const decodeKey = Buffer.from(
+    readFileSync(join(__dirname, './dev-secrets/jwk.txt')).toString(),
+    "base64"
+  )?.toString();
+  const jwkObject = JSON.parse(decodeKey);
+  const privateKey = await jose.importJWK(jwkObject, JWT_ALG);
+
+  return new jose.SignJWT(userInfo)
+    .setProtectedHeader(header)
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRATION_TIME)
+    .sign(privateKey);
+};
 
 app.register(fastifyStatic, {
   root: path.join(__dirname, "mock-authorizer"),
@@ -21,6 +47,8 @@ const tokenRequestSchema = {
       client_id: { type: "string" },
       redirect_uri: { type: "string" },
       grant_type: { type: "string" },
+      client_assertion_type: { type: "string" },
+      client_assertion: { type: "string" }
     },
   },
 };
@@ -97,11 +125,7 @@ app.post("/oidc/userinfo", {
       },
     };
 
-    const encodedUserInfo = jwt.sign(userInfo, "MOCK_SECRET", {
-      expiresIn: "1h",
-    });
-
-    return reply.send(encodedUserInfo);
+    return reply.send(await generateSignedJwt(userInfo));
   },
 });
 
@@ -126,12 +150,24 @@ const authorizeSchema = {
 app.post("/authorize", {
   schema: authorizeSchema,
   handler: async (request: any, reply) => {
-    return reply.sendFile("index.html");
+    const htmlFilePath = path.join(__dirname, './mock-authorizer/index.html');
+    const html = readFileSync(htmlFilePath, 'utf-8');
+
+    const modifiedHtml = html
+      .replace(/{{CLIENT_URL}}/g, env.CLIENT_URL)
+      .replace(/{{client_id}}/g, request.query.client_id)
+      .replace(/{{response_type}}/g, request.query.response_type)
+      .replace(/{{scope}}/g, request.query.scope)
+      .replace(/{{acr_values}}/g, request.query.acr_values)
+      .replace(/{{claims}}/g, request.query.claims)
+      .replace(/{{state}}/g, request.query.state)
+
+    return reply.type('text/html').send(modifiedHtml);
   },
 });
 
 app.post("/oauth/token", {
-  //   schema: tokenRequestSchema,
+  schema: tokenRequestSchema,
   handler: async (request: any, reply) => {
     const payload = {
       code: request.body.code,

@@ -4,8 +4,7 @@
   "license": "MPL-2.0",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch src/index.ts",
-    "start": "NODE_ENV=production tsx src/index.ts",
-    "dev:secrets:gen": "openssl genrsa -out .secrets/private-key.pem 2048 && openssl rsa -pubout -in .secrets/private-key.pem -out .secrets/public-key.pem"
+    "start": "NODE_ENV=production tsx src/index.ts"
   },
   "dependencies": {
     "@fastify/formbody": "^8.0.1",
@@ -17,8 +16,6 @@
     "fastify-type-provider-zod": "^4.0.2",
     "jose": "^5.9.6",
     "jsonwebtoken": "^9.0.2",
-    "node-fetch": "2",
-    "pino": "^9.5.0",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
     "zod": "^3.23.8"
@@ -32,6 +29,7 @@
     "eslint": "^9.13.0",
     "pino-pretty": "^11.3.0",
     "typescript": "^5.6.3",
+    "node-fetch": "^2.6.1",
     "typescript-eslint": "^8.12.1"
   }
 }

@@ -6,6 +6,13 @@
     <title>Mock authorizer</title>
   </head>
   <body>
+    <p>CLIENT_URL: {{CLIENT_URL}}</p>
+    <p>client_id: {{client_id}}</p>
+    <p>response_type: {{response_type}}</p>
+    <p>scope: {{scope}}</p>
+    <p>acr_values: {{acr_values}}</p>
+    <p>claims: {{claims}}</p>
+    <p>state: {{state}}</p>
     <button onclick="handleClick()">Authorize person</button>
   </body>
   <script>
@@ -13,12 +20,12 @@
       const params = new URLSearchParams(window.location.search);
       const opencrvsDraft = params.get("opencrvsDraft");
       const opencrvsFormPath =
-        "http://localhost:3000" +
+        "{{CLIENT_URL}}" +
         "/drafts/" +
         opencrvsDraft +
         "/events/birth/child/group/child-view-group";
       const destinationURL = new URL(opencrvsFormPath);
-      destinationURL.searchParams.set("authorized", true);
+      destinationURL.searchParams.set("code", "esignet-mock-code");
       window.location.replace(destinationURL);
     }
   </script>

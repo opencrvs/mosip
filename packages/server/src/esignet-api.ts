@@ -15,8 +15,7 @@ import fetch from "node-fetch";
 import { logger } from "./logger";
 import z from "zod";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { promisify } from "util";
-import { readFileSync } from "fs";
+import * as jose from "jose";
 
 type OIDPUserAddress = {
   formatted: string;
@@ -51,37 +50,18 @@ type OIDPUserInfo = {
   updated_at?: number;
 };
 
+const JWT_EXPIRATION_TIME = "1h";
+const JWT_ALG = "RS256";
 const OIDP_USERINFO_ENDPOINT =
   env.NATIONAL_ID_OIDP_REST_URL &&
   new URL("oidc/userinfo", env.NATIONAL_ID_OIDP_REST_URL).toString();
 const OIDP_TOKEN_ENDPOINT =
   env.OIDP_REST_URL && new URL("oauth/token", env.OIDP_REST_URL).toString();
-const CLIENT_ASSERTION_TYPE =
-  "urn:ietf:params:oauth:client-assertion-type:jwt-bearer";
-const TOKEN_GRANT_TYPE = "authorization_code";
-const cert = readFileSync(env.CERT_PRIVATE_KEY_PATH);
-const JWT_ISSUER = "opencrvs:auth-service";
-const AUDIENCE = [
-  "opencrvs:gateway-user",
-  "opencrvs:user-mgnt-user",
-  "opencrvs:auth-user",
-  "opencrvs:hearth-user",
-  "opencrvs:notification-user",
-  "opencrvs:workflow-user",
-  "opencrvs:search-user",
-  "opencrvs:metrics-user",
-  "opencrvs:countryconfig-user",
-  "opencrvs:webhooks-user",
-  "opencrvs:config-user",
-  "opencrvs:documents-user",
-  "opencrvs:notification-api-user",
-];
 
 export const OIDPUserInfoSchema = z.object({
   code: z.string(),
-  client_id: z.string(),
-  redirect_uri: z.string(),
-  grant_type: z.string(),
+  clientId: z.string(),
+  redirectUri: z.string()
 });
 
 export type OIDPUserInfoRequest = FastifyRequest<{
@@ -90,58 +70,52 @@ export type OIDPUserInfoRequest = FastifyRequest<{
 
 type FetchTokenProps = {
   code: string;
-  client_id: string;
-  redirect_uri: string;
-  grant_type?: string;
+  clientId: string;
+  redirectUri: string;
+  grantType?: string;
 };
 
-const sign = promisify<
-  Record<string, unknown>,
-  jwt.Secret,
-  jwt.SignOptions,
-  string
->(jwt.sign);
+const generateSignedJwt = async (clientId: string) => {
+  const header = {
+    alg: JWT_ALG,
+    typ: "JWT",
+  };
 
-export async function generateSignedJwt(
-  clientId: string,
-  scope: string[],
-  audience: string[],
-  issuer: string,
-  temporary?: boolean
-): Promise<string> {
-  if (typeof clientId === undefined) {
-    throw new Error("Invalid clientId found for token creation");
-  }
-  return sign({ scope }, cert, {
-    subject: clientId,
-    algorithm: "RS256",
-    expiresIn: temporary
-      ? env.CONFIG_SYSTEM_TOKEN_EXPIRY_SECONDS
-      : env.CONFIG_TOKEN_EXPIRY_SECONDS,
-    audience,
-    issuer,
-  });
-}
+  const payload = {
+    iss: clientId,
+    sub: clientId,
+    aud: env.OIDP_JWT_AUD_CLAIM,
+  };
+
+  
+  const decodeKey = Buffer.from(
+    env.OIDP_CLIENT_PRIVATE_KEY!,
+    "base64"
+  )?.toString();
+  console.log("decodeKey: ", decodeKey)
+
+  const jwkObject = JSON.parse(decodeKey);
+  const privateKey = await jose.importJWK(jwkObject, JWT_ALG);
+
+  return new jose.SignJWT(payload)
+    .setProtectedHeader(header)
+    .setIssuedAt()
+    .setExpirationTime(JWT_EXPIRATION_TIME)
+    .sign(privateKey);
+};
 
 const fetchToken = async ({
   code,
-  client_id,
-  redirect_uri,
-  grant_type = TOKEN_GRANT_TYPE,
+  clientId,
+  redirectUri,
 }: FetchTokenProps) => {
   const body = new URLSearchParams({
     code: code,
-    client_id: client_id,
-    redirect_uri: redirect_uri,
-    grant_type: grant_type,
-    client_assertion_type: CLIENT_ASSERTION_TYPE,
-    client_assertion: await generateSignedJwt(
-      client_id,
-      ["verify"],
-      AUDIENCE,
-      JWT_ISSUER,
-      false
-    ),
+    client_id: clientId,
+    redirect_uri: redirectUri,
+    grant_type: "authorization_code",
+    client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+    client_assertion: await generateSignedJwt(clientId),
   });
 
   const request = await fetch(OIDP_TOKEN_ENDPOINT!, {
@@ -160,12 +134,12 @@ export const getOIDPUserInfo = async (
   request: OIDPUserInfoRequest,
   reply: FastifyReply
 ) => {
-  const { code, client_id, redirect_uri, grant_type } = request.body;
+  const { code, clientId, redirectUri } = request.body;
+
   const tokenResponse = await fetchToken({
     code,
-    client_id,
-    redirect_uri,
-    grant_type,
+    clientId,
+    redirectUri
   });
 
   if (!tokenResponse.access_token) {

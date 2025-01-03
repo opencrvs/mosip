@@ -8,13 +8,12 @@ This package ensures a secure and a robust integration between OpenCRVS and MOSI
 ## Development
 
 ```sh
-# start the web server
-cd packages/server
+# start the server and all the mocked servers
 yarn install
 yarn dev
 
-# optionally run MOSIP mock server
-cd packages/mosip-mock
+# optionally run an individual package
+cd packages/*
 yarn install
 yarn dev
 ```

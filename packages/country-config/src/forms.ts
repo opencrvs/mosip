@@ -3,20 +3,19 @@
 /**
  * E-Signet REDIRECT button form definition.  Calls E-Signet /authorize
  */
+export const esignet = (esignetAuthUrl: string, openIdProviderClientId: string, openIdProviderClaims: string, fieldName: string, callbackFieldName: string) => {
 
-
-export const returnRedirectFormField = (esignetAuthUrl: string, openIdProviderClientId: string, openIdProviderClaims: string) => {
-  // `${nidSystemSetting?.openIdProviderBaseUrl}authorize`
   const url = new URL(esignetAuthUrl)
 
   url.searchParams.append(
     'client_id',
-    openIdProviderClientId || ''
+    openIdProviderClientId || 'mock-client_id'
   )
   url.searchParams.append('response_type', 'code')
   url.searchParams.append('scope', 'openid profile')
   url.searchParams.append('acr_values', 'mosip:idp:acr:static-code')
-  url.searchParams.append('claims', openIdProviderClaims || '')
+  url.searchParams.append('claims', openIdProviderClaims || 'mock-claims')
+  url.searchParams.append('state', 'trigger-onmount')
 
   /*
 
@@ -36,12 +35,17 @@ export const returnRedirectFormField = (esignetAuthUrl: string, openIdProviderCl
   window.location.href = url.toString()
 
   return {
-    name: "redirect",
+    name: fieldName,
+    validator: [],
+    icon: {
+      desktop: 'Globe',
+      mobile: 'Fingerprint'
+    },
     type: "REDIRECT",
     custom: true,
-    label: {
-      id: "form.field.label.redirect",
-      defaultMessage: "Click here to authorize",
+    label: {    
+      id: 'views.idReader.label.eSignet',
+      defaultMessage: 'E-signet'
     },
     hideInPreview: true,
     conditionals: [
@@ -54,31 +58,47 @@ export const returnRedirectFormField = (esignetAuthUrl: string, openIdProviderCl
       url: esignetAuthUrl,
       callback: {
         params: {
-          authorized: "true",
-        },
-        trigger: "redirectCallbackFetch",
+          code: "esignet-mock-code",
+        },      
+        trigger: callbackFieldName
       },
     },
-    validator: [],
   };
 };
 
-export const returnCallbackFormField = (esignetUserinfoUrl: string) => {
-  return {
-    name: "redirectCallbackFetch",
-    type: "HTTP",
-    custom: true,
-    label: {
-      id: "form.field.label.empty",
-      defaultMessage: " ",
+/**
+ * E-Signet callback button form definition.  Calls server/esignet-api /esignet/get-oidp-user-info
+ */
+export const esignetCallback = ({
+  fieldName,
+  getOIDPUserInfoUrl,
+  openIdProviderClientId 
+}: {
+  fieldName: string;
+  getOIDPUserInfoUrl: string;
+  openIdProviderClientId: string;
+}) => ({
+  name: fieldName,
+  type: 'HTTP',
+  custom: true,
+  label: {
+    id: 'form.field.label.empty',
+    defaultMessage: ''
+  },
+  validator: [],
+  options: {
+    getOIDPUserInfoUrl,
+    headers: {
+      'Content-type': 'application/json'
     },
-    options: {
-      url: esignetUserinfoUrl,
-      method: "GET",
+    body: {
+      code: "esignet-mock-code",
+      clientId: openIdProviderClientId,
+      redirectUri: ""
     },
-    validator: [],
-  };
-};
+    method: 'POST'
+  }
+});
 
 export const returnExpression = (fieldName: string) => {
   return {
@@ -87,35 +107,11 @@ export const returnExpression = (fieldName: string) => {
   };
 };
 
-export const hidden = () => {
+export const esignetHidden = () => {
   return {
     name: "INFORMANT_PSUT_TOKEN",
     type: "HIDDEN",
   };
 };
 
-/**
- * E-Signet popup button and hidden field form definitions
- * @example
- * ```
- * [
- *   // ...other fields
- *   ...esignet({ url: "https://opencrvs-mosip-gateway.farajaland.opencrvs.org" })
- * ]
- * ```
- */
-export const esignet = ({
-  esignetAuthUrl,
-  esignetUserinfoUrl,
-  fieldName,
-}: {
-  /** URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org) */
-  esignetAuthUrl: string;
-  esignetUserinfoUrl: string;
-  fieldName: string;
-}) => [
-  returnRedirectFormField(esignetAuthUrl),
-  returnCallbackFormField(esignetUserinfoUrl),
-  returnExpression(fieldName),
-  hidden(),
-];
+
