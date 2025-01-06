@@ -1,7 +1,20 @@
 // @TODO: Yet to be implemented! Placeholders for NPM publish.
 
 /**
- * E-Signet REDIRECT button form definition.  Calls E-Signet /authorize
+ * E-Signet popup button and hidden field form definitions
+ * @example
+ * ```
+ * [
+ *   // ...other fields
+ *   ...esignet({ url: "https://opencrvs-mosip-gateway.farajaland.opencrvs.org" })
+ * ]
+ * ```
+ */
+
+/**
+ *
+ * @description E-Signet REDIRECT button form definition.  Calls E-Signet /authorize (this field may not be supported in the latest release of OpenCRVS yet)
+ *
  */
 export const esignet = (esignetAuthUrl: string, openIdProviderClientId: string, openIdProviderClaims: string, fieldName: string, callbackFieldName: string) => {
 
@@ -66,9 +79,25 @@ export const esignet = (esignetAuthUrl: string, openIdProviderClientId: string, 
   };
 };
 
+export const popupButton = ({
+  /** URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org) */
+  url
+}: {
+  url: string;
+}) => {
+  return {
+    name: 'INFORMANT_AUTHENTICATION_POPUP_BUTTON',
+    type: 'POPUP_BUTTON',
+    url
+  };
+};
+
 /**
- * E-Signet callback button form definition.  Calls server/esignet-api /esignet/get-oidp-user-info
+ *
+ * @description esignet callback button form definition.  Calls server/esignet-api /esignet/get-oidp-user-info (this field may not be supported in the latest release of OpenCRVS yet)
+ *
  */
+
 export const esignetCallback = ({
   fieldName,
   getOIDPUserInfoUrl,
@@ -109,9 +138,54 @@ export const returnExpression = (fieldName: string) => {
 
 export const esignetHidden = () => {
   return {
-    name: "INFORMANT_PSUT_TOKEN",
-    type: "HIDDEN",
+    name: 'INFORMANT_PSUT_TOKEN',
+    type: 'HIDDEN'
   };
 };
+
+/**
+ *
+ * @description QR reader type definition (this field may not be supported in the latest release of OpenCRVS yet)
+ *
+ */
+
+export const idReader = (
+  event: string,
+  sectionId: string,
+  conditionals: any[],
+  readers: any[]
+) => {
+  const fieldName: string = 'idReader';
+  const fieldId: string = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
+  return {
+    name: fieldName,
+    customQuestionMappingId: fieldId,
+    custom: true,
+    required: false,
+    type: 'ID_READER',
+    label: {
+      id: 'form.field.label.empty',
+      defaultMessage: ''
+    },
+    hideInPreview: true,
+    initialValue: '',
+    validator: [],
+    conditionals,
+    dividerLabel: {
+      id: 'views.idReader.label.or',
+      defaultMessage: 'Or'
+    },
+    manualInputInstructionLabel: {
+      id: 'views.idReader.label.manualInput',
+      defaultMessage: 'Complete fields below'
+    },
+    readers
+  };
+};
+
+export const qr = () => ({
+  type: 'QR'
+});
+
 
 

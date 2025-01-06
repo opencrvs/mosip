@@ -38,7 +38,7 @@ export const postBirthRecord = async ({
   }>;
 };
 
-export const postDeathRecord = async ({ nid }: { nid: string }) => {
+export const deactivateNid = async ({ nid }: { nid: string }) => {
   const response = await fetch(env.MOSIP_DEATH_WEBHOOK_URL, {
     method: "POST",
     body: JSON.stringify({ nid }),
@@ -46,14 +46,6 @@ export const postDeathRecord = async ({ nid }: { nid: string }) => {
       "Content-Type": "application/json",
     },
   });
-
-  if (!response.ok) {
-    throw new MOSIPError(
-      `Failed to post record to MOSIP. Status: ${
-        response.status
-      }, response: ${await response.text()}`
-    );
-  }
 
   return response;
 };

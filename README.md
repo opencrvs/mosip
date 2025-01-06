@@ -18,10 +18,6 @@ yarn install
 yarn dev
 ```
 
-## Pull request deploys
-
-Pull requests deploy a new version to the [opencrvs/e2e](https://github.com/opencrvs/e2e/tree/mosip) -environment using `mosip` branch. It uses `develop` @ [opencrvs/opencrvs-core](https://github.com/opencrvs/opencrvs-core/tree/develop) and `mosip` @ [opencrvs/opencrvs-farajaland](https://github.com/opencrvs/opencrvs-farajaland) by default. In case the PR branch name is available in core and/or Farajaland, the respective branches are being used.
-
 ## Country configuration
 
 ```sh
