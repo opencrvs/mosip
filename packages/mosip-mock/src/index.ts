@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import { EMAIL_ENABLED, env } from "./constants";
 import { opencrvsBirthHandler } from "./webhooks/opencrvs-birth";
 import { deactivateNidHandler } from "./webhooks/deactivate-nid";
+import { authenticateNidHandler } from "./authenticate-nid";
 
 const app = Fastify();
 
@@ -14,6 +15,8 @@ app.get("/esignet", {
     reply.redirect(redirect_uri);
   },
 });
+
+app.post("/idauthentication/", { handler: authenticateNidHandler });
 
 async function run() {
   if (env.isProd) {
