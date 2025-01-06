@@ -201,6 +201,7 @@ const findAdminStructureLocationWithName = async (name: string) => {
 };
 
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
+  // TODO: refactor using shared IDs and leaf level search using Barry's work on Uganda
   const stateFhirId =
     userInfo.address?.country &&
     (await findAdminStructureLocationWithName(userInfo.address.country));
@@ -227,8 +228,6 @@ export const fetchUserInfo = async (accessToken: string) => {
 
   const response = await request.text();
   const decodedResponse = decodeUserInfoResponse(response);
-
-  logger.info(`OIDP user info response: ${JSON.stringify(decodedResponse)}`);
 
   return pickUserInfo(decodedResponse);
 };
