@@ -1,6 +1,6 @@
 # mosip-mock
 
-This simple mock is used to simulate the MOSIP API for local development. It also simulates the eSignet flow by redirecting you instantly back to the redirect_uri.
+This simple mock is used to simulate the MOSIP API for local development.
 
 ## Usage
 

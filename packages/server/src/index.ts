@@ -8,6 +8,8 @@ import { mosipHandler, mosipNidSchema } from "./webhooks/mosip";
 import { opencrvsHandler, opencrvsRecordSchema } from "./webhooks/opencrvs";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
+import { getOIDPUserInfo, OIDPUserInfoSchema } from "./esignet-api";
+import formbody from "@fastify/formbody";
 
 const envToLogger = {
   development: {
@@ -25,6 +27,7 @@ const app = Fastify({
 });
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
+app.register(formbody);
 
 openapi.register(app);
 
@@ -48,6 +51,14 @@ app.after(() => {
     handler: mosipHandler,
     schema: {
       body: mosipNidSchema,
+    },
+  });
+  app.withTypeProvider<ZodTypeProvider>().route({
+    url: "/esignet/get-oidp-user-info",
+    method: "POST",
+    handler: getOIDPUserInfo,
+    schema: {
+      body: OIDPUserInfoSchema,
     },
   });
 });
