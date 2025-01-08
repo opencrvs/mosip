@@ -16,19 +16,24 @@
  * @description E-Signet REDIRECT button form definition.  Calls E-Signet /authorize (this field may not be supported in the latest release of OpenCRVS yet)
  *
  */
-export const esignet = (esignetAuthUrl: string, openIdProviderClientId: string, openIdProviderClaims: string, fieldName: string, callbackFieldName: string) => {
-
-  const url = new URL(esignetAuthUrl)
+export const esignet = (
+  esignetAuthUrl: string,
+  openIdProviderClientId: string,
+  openIdProviderClaims: string,
+  fieldName: string,
+  callbackFieldName: string
+) => {
+  const url = new URL(esignetAuthUrl);
 
   url.searchParams.append(
     'client_id',
     openIdProviderClientId || 'mock-client_id'
-  )
-  url.searchParams.append('response_type', 'code')
-  url.searchParams.append('scope', 'openid profile')
-  url.searchParams.append('acr_values', 'mosip:idp:acr:static-code')
-  url.searchParams.append('claims', openIdProviderClaims || 'mock-claims')
-  url.searchParams.append('state', 'trigger-onmount')
+  );
+  url.searchParams.append('response_type', 'code');
+  url.searchParams.append('scope', 'openid profile');
+  url.searchParams.append('acr_values', 'mosip:idp:acr:static-code');
+  url.searchParams.append('claims', openIdProviderClaims || 'mock-claims');
+  url.searchParams.append('state', 'trigger-onmount');
 
   /*
 
@@ -45,7 +50,7 @@ export const esignet = (esignetAuthUrl: string, openIdProviderClientId: string, 
   }
   url.searchParams.append('state', JSON.stringify(stateToBeSent))
   */
-  window.location.href = url.toString()
+  window.location.href = url.toString();
 
   return {
     name: fieldName,
@@ -54,28 +59,28 @@ export const esignet = (esignetAuthUrl: string, openIdProviderClientId: string, 
       desktop: 'Globe',
       mobile: 'Fingerprint'
     },
-    type: "REDIRECT",
+    type: 'LINK_BUTTON',
     custom: true,
-    label: {    
+    label: {
       id: 'views.idReader.label.eSignet',
       defaultMessage: 'E-signet'
     },
     hideInPreview: true,
     conditionals: [
       {
-        action: "disable",
-        expression: "!!$form.redirectCallbackFetch",
-      },
+        action: 'disable',
+        expression: '!!$form.redirectCallbackFetch'
+      }
     ],
     options: {
       url: esignetAuthUrl,
       callback: {
         params: {
-          code: "esignet-mock-code",
-        },      
+          code: 'esignet-mock-code'
+        },
         trigger: callbackFieldName
-      },
-    },
+      }
+    }
   };
 };
 
@@ -101,7 +106,7 @@ export const popupButton = ({
 export const esignetCallback = ({
   fieldName,
   getOIDPUserInfoUrl,
-  openIdProviderClientId 
+  openIdProviderClientId
 }: {
   fieldName: string;
   getOIDPUserInfoUrl: string;
@@ -121,9 +126,9 @@ export const esignetCallback = ({
       'Content-type': 'application/json'
     },
     body: {
-      code: "esignet-mock-code",
+      code: 'esignet-mock-code',
       clientId: openIdProviderClientId,
-      redirectUri: ""
+      redirectUri: ''
     },
     method: 'POST'
   }
@@ -131,8 +136,8 @@ export const esignetCallback = ({
 
 export const returnExpression = (fieldName: string) => {
   return {
-    dependsOn: ["redirectCallbackFetch"],
-    expression: `$form.redirectCallbackFetch?.data?.${fieldName}`,
+    dependsOn: ['redirectCallbackFetch'],
+    expression: `$form.redirectCallbackFetch?.data?.${fieldName}`
   };
 };
 
@@ -187,5 +192,58 @@ export const qr = () => ({
   type: 'QR'
 });
 
+export const verified = (event: string, sectionId: string) => {
+  const fieldName = 'verified';
+  const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
+  return {
+    name: 'verified',
+    fieldId,
+    customQuestionMappingId: fieldId,
+    type: 'HIDDEN',
+    custom: true,
+    label: {
+      id: 'messages.empty',
+      defaultMessage: ''
+    },
+    initialValue: {
+      dependsOn: ['idReader'],
+      expression: 'Boolean($form?.idReader)? "pending":""'
+    },
+    validator: []
+  };
+};
 
+export const idPendingVerificationBanner = (
+  event: string,
+  sectionId: string
+) => {
+  const fieldName = 'verified';
+  const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
+  return {
+    name: 'idPending',
+    type: 'ID_VERIFICATION_BANNER',
+    fieldId,
+    hideInPreview: true,
+    custom: true,
+    bannerType: 'pending',
+    idFieldName: 'idReader',
+    label: {
+      id: 'messages.empty',
+      defaultMessage: ''
+    },
+    validator: [],
+    conditionals: [
+      {
+        action: 'hide',
+        expression: '$form?.verified !== "pending"'
+      }
+    ]
+  };
+};
 
+export const idVerificationFields = (event: string, sectionId: string) => {
+  return [
+    verified(event, sectionId),
+    idPendingVerificationBanner(event, sectionId)
+  ];
+};
