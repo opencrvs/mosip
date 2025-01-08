@@ -54,7 +54,7 @@ export const esignet = (esignetAuthUrl: string, openIdProviderClientId: string, 
       desktop: 'Globe',
       mobile: 'Fingerprint'
     },
-    type: "REDIRECT",
+    type: "LINK_BUTTON",
     custom: true,
     label: {    
       id: 'views.idReader.label.eSignet',
