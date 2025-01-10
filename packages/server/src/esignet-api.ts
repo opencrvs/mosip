@@ -16,7 +16,7 @@ import { logger } from "./logger";
 import z from "zod";
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as jose from "jose";
-import { isValid, format, Locale } from 'date-fns';
+import { isValid, format, Locale, parse } from 'date-fns';
 import { enGB } from 'date-fns/locale/en-GB';
 import { fr } from 'date-fns/locale/fr';
 
@@ -99,7 +99,6 @@ const generateSignedJwt = async (clientId: string) => {
     env.OIDP_CLIENT_PRIVATE_KEY!,
     "base64"
   )?.toString();
-  console.log("decodeKey: ", decodeKey)
 
   const jwkObject = JSON.parse(decodeKey);
   const privateKey = await jose.importJWK(jwkObject, JWT_ALG);
@@ -206,7 +205,8 @@ const findAdminStructureLocationWithName = async (name: string) => {
   return fhirBundleLocations.entry?.[0].resource?.id;
 };
 
-function formatDate(date: Date | number, formatStr = 'PP') {
+function formatDate(dateString: string, formatStr = 'PP') {
+  const date = parse(dateString, 'dd/MM/yyyy', new Date());
   if (!isValid(date)) {
     return ''
   }
@@ -227,7 +227,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
     familyName: userInfo.family_name,
     gender: userInfo.gender,
     ...(userInfo.birthdate && {
-      birthDate: formatDate(new Date(userInfo.birthdate), 'yyyy-MM-dd'),
+      birthDate: formatDate(userInfo.birthdate, 'yyyy-MM-dd'),
     }),
     /*stateFhirId,
     districtFhirId:
@@ -249,6 +249,5 @@ export const fetchUserInfo = async (accessToken: string) => {
 
   const response = await request.text();
   const decodedResponse = decodeUserInfoResponse(response);
-
   return pickUserInfo(decodedResponse);
 };
