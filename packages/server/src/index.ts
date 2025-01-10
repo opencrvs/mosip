@@ -4,8 +4,8 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { mosipHandler, mosipNidSchema } from "./webhooks/mosip";
-import { opencrvsHandler, opencrvsRecordSchema } from "./webhooks/opencrvs";
+import { mosipHandler, mosipNidSchema } from "./routes/mosip";
+import { opencrvsHandler, opencrvsRecordSchema } from "./routes/opencrvs";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
 import { getOIDPUserInfo, OIDPUserInfoSchema } from "./esignet-api";
@@ -38,7 +38,7 @@ app.setErrorHandler((error, request, reply) => {
 
 app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/webhooks/opencrvs",
+    url: "/routes/opencrvs",
     method: "POST",
     handler: opencrvsHandler,
     schema: {
@@ -46,7 +46,7 @@ app.after(() => {
     },
   });
   app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/webhooks/mosip",
+    url: "/routes/mosip",
     method: "POST",
     handler: mosipHandler,
     schema: {

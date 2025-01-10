@@ -9,7 +9,7 @@ import {
   getTrackingId,
 } from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
-import { generateRegistrationNumber } from "../registration-number";
+import { env } from "../constants";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -52,51 +52,21 @@ export const opencrvsHandler = async (
 
   const eventType = getEventType(request.body);
 
+  const aid  = await mosip.generateMosipAid();
   if (eventType === EVENT_TYPE.BIRTH) {
-    const { aid } = await mosip.postBirthRecord({
-      event: { id: eventId, trackingId },
-      token,
-    });
-
-    await opencrvs.upsertRegistrationIdentifier(
-      {
-        id: eventId,
-        identifierType: "MOSIP_AID",
-        identifierValue: aid,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    await mosip.postRecord(eventId, JSON.stringify(request.body), env.MOSIP_BIRTH_PROXY_CALLBACK_URL);
+  } else if (eventType === EVENT_TYPE.DEATH) {
+    await mosip.postRecord(eventId, JSON.stringify(request.body), env.MOSIP_DEATH_PROXY_CALLBACK_URL);
   }
 
-  if (eventType === EVENT_TYPE.DEATH) {
-    const nid = getDeceasedNid(request.body);
-    const response = await mosip.deactivateNid({
-      nid,
-    });
-    const registrationNumber = generateRegistrationNumber(trackingId);
-
-    let comment: string;
-    if (response.status === 404) {
-      comment = `NID "${nid}" not found`;
-    } else if (response.status === 409) {
-      comment = `NID "${nid}" already deactivated`;
-    } else if (response.ok) {
-      comment = `NID "${nid}" deactivated`;
-    } else {
-      throw new Error(
-        `NID deactivation failed in MOSIP. Response: ${response.statusText}`
-      );
-    }
-
-    await opencrvs.confirmRegistration(
-      {
-        id: eventId,
-        registrationNumber,
-        comment,
-      },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
-  }
+  await opencrvs.upsertRegistrationIdentifier(
+    {
+      id: eventId,
+      identifierType: "MOSIP_AID",
+      identifierValue: aid,
+    },
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
 
   return reply.code(202).send();
 };
