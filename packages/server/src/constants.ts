@@ -5,6 +5,7 @@ import { join } from 'path';
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
+  LOCALE: str({ devDefault: "en" }),
   MOSIP_BIRTH_WEBHOOK_URL: str({
     devDefault: "http://localhost:20240/webhooks/opencrvs/birth",
     desc: "The URL where MOSIP receives birth webhooks from OpenCRVS",

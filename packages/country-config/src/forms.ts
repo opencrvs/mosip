@@ -17,9 +17,11 @@
  *
  */
 export const esignet = (
+  event: string,
+  sectionId: string,
   esignetAuthUrl: string,
   openIdProviderClientId: string,
-  openIdProviderClaims: string,
+  openIdProviderClaims: string = "name,family_name,given_name,middle_name,birthdate,address",
   fieldName: string,
   callbackFieldName: string
 ) => {
@@ -32,24 +34,13 @@ export const esignet = (
   url.searchParams.append('response_type', 'code');
   url.searchParams.append('scope', 'openid profile');
   url.searchParams.append('acr_values', 'mosip:idp:acr:static-code');
-  url.searchParams.append('claims', openIdProviderClaims || 'mock-claims');
-  url.searchParams.append('state', 'trigger-onmount');
-
-  /*
-
-  TODO: Understand from Tahmid about how to handle this:
-  
+  url.searchParams.append('claims', openIdProviderClaims);
+  url.searchParams.append('state', 'fetch-on-mount');
   url.searchParams.append(
     'redirect_uri',
-    `${window.location.origin}${OIDP_VERIFICATION_CALLBACK}`
+    `${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}`
   )
-  const stateToBeSent: INidCallbackState = {
-    pathname: currentPathname,
-    declarationId: declarationId,
-    section: currentSection
-  }
-  url.searchParams.append('state', JSON.stringify(stateToBeSent))
-  */
+
   window.location.href = url.toString();
 
   return {
@@ -76,7 +67,7 @@ export const esignet = (
       url: esignetAuthUrl,
       callback: {
         params: {
-          code: 'esignet-mock-code'
+          state: 'fetch-on-mount'
         },
         trigger: callbackFieldName
       }
@@ -126,20 +117,12 @@ export const esignetCallback = ({
       'Content-type': 'application/json'
     },
     body: {
-      code: 'esignet-mock-code',
-      clientId: openIdProviderClientId,
-      redirectUri: ''
+      clientId: openIdProviderClientId
     },
+    
     method: 'POST'
   }
 });
-
-export const returnExpression = (fieldName: string) => {
-  return {
-    dependsOn: ['redirectCallbackFetch'],
-    expression: `$form.redirectCallbackFetch?.data?.${fieldName}`
-  };
-};
 
 export const esignetHidden = () => {
   return {
