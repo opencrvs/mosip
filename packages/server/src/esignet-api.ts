@@ -16,6 +16,11 @@ import { logger } from "./logger";
 import z from "zod";
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as jose from "jose";
+import { isValid, format, Locale, parse } from 'date-fns';
+import { enGB } from 'date-fns/locale/en-GB';
+import { fr } from 'date-fns/locale/fr';
+
+export const locales: Record<string, Locale> = { en: enGB, fr }
 
 type OIDPUserAddress = {
   formatted: string;
@@ -59,19 +64,21 @@ const OIDP_TOKEN_ENDPOINT =
   env.OIDP_REST_URL && new URL("oauth/token", env.OIDP_REST_URL).toString();
 
 export const OIDPUserInfoSchema = z.object({
+  clientId: z.string()
+});
+
+export const OIDPQuerySchema = z.object({
   code: z.string(),
-  clientId: z.string(),
-  redirectUri: z.string()
 });
 
 export type OIDPUserInfoRequest = FastifyRequest<{
   Body: z.infer<typeof OIDPUserInfoSchema>;
+  Querystring: z.infer<typeof OIDPQuerySchema>;
 }>;
 
 type FetchTokenProps = {
   code: string;
   clientId: string;
-  redirectUri: string;
   grantType?: string;
 };
 
@@ -92,7 +99,6 @@ const generateSignedJwt = async (clientId: string) => {
     env.OIDP_CLIENT_PRIVATE_KEY!,
     "base64"
   )?.toString();
-  console.log("decodeKey: ", decodeKey)
 
   const jwkObject = JSON.parse(decodeKey);
   const privateKey = await jose.importJWK(jwkObject, JWT_ALG);
@@ -106,13 +112,12 @@ const generateSignedJwt = async (clientId: string) => {
 
 const fetchToken = async ({
   code,
-  clientId,
-  redirectUri,
+  clientId
 }: FetchTokenProps) => {
   const body = new URLSearchParams({
     code: code,
     client_id: clientId,
-    redirect_uri: redirectUri,
+    redirect_uri: "", // this might be needed if token is returned to a different route to be created in server
     grant_type: "authorization_code",
     client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     client_assertion: await generateSignedJwt(clientId),
@@ -134,12 +139,12 @@ export const getOIDPUserInfo = async (
   request: OIDPUserInfoRequest,
   reply: FastifyReply
 ) => {
-  const { code, clientId, redirectUri } = request.body;
+  const { clientId } = request.body;
+  const code = request.query.code
 
   const tokenResponse = await fetchToken({
     code,
-    clientId,
-    redirectUri
+    clientId
   });
 
   if (!tokenResponse.access_token) {
@@ -200,21 +205,37 @@ const findAdminStructureLocationWithName = async (name: string) => {
   return fhirBundleLocations.entry?.[0].resource?.id;
 };
 
+function formatDate(dateString: string, formatStr = 'PP') {
+  const date = parse(dateString, 'dd/MM/yyyy', new Date());
+  if (!isValid(date)) {
+    return ''
+  }
+  return format(date, formatStr, {
+    locale: locales[env.LOCALE]
+  })
+}
+
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
-  // TODO: refactor using shared IDs and leaf level search using Barry's work on Uganda
-  const stateFhirId =
+  // TODO: refactor starting with a leaf level search
+  // Dont throw any errors if location can't be found
+  /*const stateFhirId =
     userInfo.address?.country &&
-    (await findAdminStructureLocationWithName(userInfo.address.country));
+    (await findAdminStructureLocationWithName(userInfo.address.country));*/
 
   return {
-    oidpUserInfo: userInfo,
-    stateFhirId,
+    firstName: userInfo.given_name,
+    familyName: userInfo.family_name,
+    gender: userInfo.gender,
+    ...(userInfo.birthdate && {
+      birthDate: formatDate(userInfo.birthdate, 'yyyy-MM-dd'),
+    }),
+    /*stateFhirId,
     districtFhirId:
       userInfo.address?.region &&
       (await findAdminStructureLocationWithName(userInfo.address.region)),
     locationLevel3FhirId:
       userInfo.address?.locality &&
-      (await findAdminStructureLocationWithName(userInfo.address.locality)),
+      (await findAdminStructureLocationWithName(userInfo.address.locality)),*/
   };
 };
 
@@ -228,6 +249,5 @@ export const fetchUserInfo = async (accessToken: string) => {
 
   const response = await request.text();
   const decodedResponse = decodeUserInfoResponse(response);
-
   return pickUserInfo(decodedResponse);
 };
