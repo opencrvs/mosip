@@ -5,8 +5,8 @@ import { deactivateNidHandler } from "./webhooks/deactivate-nid";
 
 const app = Fastify();
 
-app.post("/webhooks/opencrvs/birth", { handler: opencrvsBirthHandler });
-app.post("/webhooks/opencrvs/death", { handler: deactivateNidHandler });
+app.post("/routes/opencrvs/birth", { handler: opencrvsBirthHandler });
+app.post("/routes/opencrvs/death", { handler: deactivateNidHandler });
 
 async function run() {
   if (env.isProd) {

@@ -17,12 +17,12 @@ export const env = cleanEnv(process.env, {
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
   LOCALE: str({ devDefault: "en" }),
   MOSIP_BIRTH_PROXY_CALLBACK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/birth",
-    desc: "The URL where MOSIP receives birth webhooks from OpenCRVS",
+    devDefault: "http://localhost:20240/routes/opencrvs/birth",
+    desc: "The URL where MOSIP receives birth events from OpenCRVS",
   }),
   MOSIP_DEATH_PROXY_CALLBACK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/death",
-    desc: "The URL where MOSIP receives death webhooks from OpenCRVS",
+    devDefault: "http://localhost:20240/routes/opencrvs/death",
+    desc: "The URL where MOSIP receives death events from OpenCRVS",
   }),
   OPENCRVS_GRAPHQL_GATEWAY_URL: str({
     devDefault: "http://localhost:7070/graphql",

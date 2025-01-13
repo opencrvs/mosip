@@ -27,6 +27,7 @@ export const mosipHandler = async (
   request: MosipRequest,
   reply: FastifyReply
 ) => {
+  // TODO: This API endpoint should be exposed via the gateway microservice in core or is this api going to have a Traefik config?
   const { eventId, trackingId, nid, token } = request.body;
   const registrationNumber = generateRegistrationNumber(trackingId);
 
