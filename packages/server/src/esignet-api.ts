@@ -64,7 +64,8 @@ const OIDP_TOKEN_ENDPOINT =
   env.OIDP_REST_URL && new URL("oauth/token", env.OIDP_REST_URL).toString();
 
 export const OIDPUserInfoSchema = z.object({
-  clientId: z.string()
+  clientId: z.string(),
+  redirectUri: z.string()
 });
 
 export const OIDPQuerySchema = z.object({
@@ -79,6 +80,7 @@ export type OIDPUserInfoRequest = FastifyRequest<{
 type FetchTokenProps = {
   code: string;
   clientId: string;
+  redirectUri: string;
   grantType?: string;
 };
 
@@ -112,12 +114,13 @@ const generateSignedJwt = async (clientId: string) => {
 
 const fetchToken = async ({
   code,
-  clientId
+  clientId,
+  redirectUri
 }: FetchTokenProps) => {
   const body = new URLSearchParams({
     code: code,
     client_id: clientId,
-    redirect_uri: "", // this might be needed if token is returned to a different route to be created in server
+    redirect_uri: redirectUri,
     grant_type: "authorization_code",
     client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     client_assertion: await generateSignedJwt(clientId),
@@ -139,12 +142,13 @@ export const getOIDPUserInfo = async (
   request: OIDPUserInfoRequest,
   reply: FastifyReply
 ) => {
-  const { clientId } = request.body;
+  const { clientId, redirectUri } = request.body;
   const code = request.query.code
 
   const tokenResponse = await fetchToken({
     code,
-    clientId
+    clientId,
+    redirectUri
   });
 
   if (!tokenResponse.access_token) {
