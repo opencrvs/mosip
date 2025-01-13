@@ -41,7 +41,6 @@ export const esignet = (
     `${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}`
   )
 
-  window.location.href = url.toString();
 
   return {
     name: fieldName,
@@ -64,7 +63,7 @@ export const esignet = (
       }
     ],
     options: {
-      url: esignetAuthUrl,
+      url: url.toString(),
       callback: {
         params: {
           state: 'fetch-on-mount'
