@@ -2,6 +2,16 @@ import { cleanEnv, str, port, url } from "envalid";
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+export const KEY_SPLITTER = '#KEY_SPLITTER#'
+export const VERSION_RSA_2048 = 'VER_R2'
+export const SYMMETRIC_ALGORITHM = 'AES-GCM'
+export const ASYMMETRIC_ALGORITHM = 'RSA-OAEP'
+export const SYMMETRIC_KEY_SIZE: number = 32
+export const NONCE_SIZE: number = 12
+export const AAD_SIZE: number = 32
+export const GCM_TAG_LENGTH: number = 16
+export const THUMBPRINT_LENGTH: number = 32
+
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
@@ -28,17 +38,8 @@ export const env = cleanEnv(process.env, {
   MOSIP_AUTH_USER: str({ devDefault: '' }),
   MOSIP_AUTH_PASS: str({ devDefault: '' }),
   MOSIP_GENERATE_AID_URL: str({ devDefault: '' }),
-  NONCE_SIZE: str({ devDefault: '' }),
-  AAD_SIZE: str({ devDefault: '' }),
-  GCM_TAG_LENGTH: str({ devDefault: '' }),
-  KEY_SPLITTER: str({ devDefault: '' }),
-  VERSION_RSA_2048: str({ devDefault: '' }),
-  ASYMMETRIC_ALGORITHM: str({ devDefault: '' }),
-  SYMMETRIC_ALGORITHM: str({ devDefault: '' }),
-  SYMMETRIC_KEY_SIZE: str({ devDefault: '' }),
   MOSIP_PUBLIC_KEY: str({ devDefault: '' }),
   OPENCRVS_PRIV_KEY: str({ devDefault: '' }),
-  IS_THUMBRPINT: str({ devDefault: '' }),
-  THUMBPRINT_LENGTH: str({ devDefault: '' }),
+  IS_THUMBRPINT: str({ devDefault: 'false' }),
   OIDP_CLIENT_PRIVATE_KEY: str({ devDefault:  readFileSync(join(__dirname, './dev-secrets/jwk.txt')).toString() }),
   });

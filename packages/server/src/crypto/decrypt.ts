@@ -1,8 +1,8 @@
 import * as forge from 'node-forge';
-import { env } from "../constants";
+import { env, VERSION_RSA_2048, KEY_SPLITTER, THUMBPRINT_LENGTH, AAD_SIZE, NONCE_SIZE, GCM_TAG_LENGTH, ASYMMETRIC_ALGORITHM, SYMMETRIC_ALGORITHM } from "../constants";
 
 export async function decryptData(requestData: Buffer): Promise<string> {
-  const keyDemiliterIndex: number = requestData.indexOf(env.KEY_SPLITTER)
+  const keyDemiliterIndex: number = requestData.indexOf(KEY_SPLITTER)
   if (keyDemiliterIndex < 0) {
     throw new Error('Improper encrypted data format')
   }
@@ -13,58 +13,58 @@ export async function decryptData(requestData: Buffer): Promise<string> {
   let encryptedData: Buffer
   let authTag: Buffer
 
-  if (requestData.indexOf(env.VERSION_RSA_2048) === 0) {
+  if (requestData.indexOf(VERSION_RSA_2048) === 0) {
     encryptedSymmetricKey = requestData.subarray(
       env.IS_THUMBRPINT
-        ? env.VERSION_RSA_2048.length + env.THUMBPRINT_LENGTH
-        : env.VERSION_RSA_2048.length,
+        ? VERSION_RSA_2048.length + THUMBPRINT_LENGTH
+        : VERSION_RSA_2048.length,
       keyDemiliterIndex
     )
     nonce = requestData.subarray(
-      keyDemiliterIndex + env.KEY_SPLITTER.length,
-      keyDemiliterIndex + env.KEY_SPLITTER.length + env.NONCE_SIZE
+      keyDemiliterIndex + KEY_SPLITTER.length,
+      keyDemiliterIndex + KEY_SPLITTER.length + NONCE_SIZE
     )
     aad = requestData.subarray(
-      keyDemiliterIndex + env.KEY_SPLITTER.length,
-      keyDemiliterIndex + env.KEY_SPLITTER.length + env.AAD_SIZE
+      keyDemiliterIndex + KEY_SPLITTER.length,
+      keyDemiliterIndex + KEY_SPLITTER.length + AAD_SIZE
     )
     encryptedData = requestData.subarray(
-      keyDemiliterIndex + env.EY_SPLITTER.length + env.AAD_SIZE,
-      requestData.length - env.GCM_TAG_LENGTH
+      keyDemiliterIndex + KEY_SPLITTER.length + AAD_SIZE,
+      requestData.length - GCM_TAG_LENGTH
     )
     authTag = requestData.subarray(
-      requestData.length - env.GCM_TAG_LENGTH,
+      requestData.length - GCM_TAG_LENGTH,
       requestData.length
     )
   } else if (env.IS_THUMBRPINT) {
     encryptedSymmetricKey = requestData.subarray(
-      env.THUMBPRINT_LENGTH,
+      THUMBPRINT_LENGTH,
       keyDemiliterIndex
     )
     encryptedData = requestData.subarray(
-      keyDemiliterIndex + env.KEY_SPLITTER.length + env.AAD_SIZE,
-      requestData.length - env.GCM_TAG_LENGTH
+      keyDemiliterIndex + KEY_SPLITTER.length + AAD_SIZE,
+      requestData.length - GCM_TAG_LENGTH
     )
     authTag = requestData.subarray(
-      requestData.length - env.GCM_TAG_LENGTH,
+      requestData.length - GCM_TAG_LENGTH,
       requestData.length
     )
     nonce = encryptedData.subarray(
-      encryptedData.length - env.GCM_TAG_LENGTH,
+      encryptedData.length - GCM_TAG_LENGTH,
       encryptedData.length
     )
   } else {
     encryptedSymmetricKey = requestData.subarray(0, keyDemiliterIndex)
     encryptedData = requestData.subarray(
-      keyDemiliterIndex + env.KEY_SPLITTER.length,
-      requestData.length - env.GCM_TAG_LENGTH
+      keyDemiliterIndex + KEY_SPLITTER.length,
+      requestData.length - GCM_TAG_LENGTH
     )
     authTag = requestData.subarray(
-      requestData.length - env.GCM_TAG_LENGTH,
+      requestData.length - GCM_TAG_LENGTH,
       requestData.length
     )
     nonce = encryptedData.subarray(
-      encryptedData.length - env.GCM_TAG_LENGTH,
+      encryptedData.length - GCM_TAG_LENGTH,
       encryptedData.length
     )
   }
@@ -73,7 +73,7 @@ export async function decryptData(requestData: Buffer): Promise<string> {
   )
   const decryptedSymmetricKey = opencrvsPrivKey.decrypt(
     encryptedSymmetricKey.toString('binary'),
-    env.ASYMMETRIC_ALGORITHM,
+    ASYMMETRIC_ALGORITHM,
     {
       md: forge.md.sha256.create(),
       mgf1: {

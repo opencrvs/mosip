@@ -54,9 +54,9 @@ export const opencrvsHandler = async (
 
   const aid  = await mosip.generateMosipAid();
   if (eventType === EVENT_TYPE.BIRTH) {
-    await mosip.postRecord(eventId, JSON.stringify(request.body), env.MOSIP_BIRTH_PROXY_CALLBACK_URL);
+    await mosip.postRecord(eventId, JSON.stringify(request.body), token, env.MOSIP_BIRTH_PROXY_CALLBACK_URL);
   } else if (eventType === EVENT_TYPE.DEATH) {
-    await mosip.postRecord(eventId, JSON.stringify(request.body), env.MOSIP_DEATH_PROXY_CALLBACK_URL);
+    await mosip.postRecord(eventId, JSON.stringify(request.body), token, env.MOSIP_DEATH_PROXY_CALLBACK_URL);
   }
 
   await opencrvs.upsertRegistrationIdentifier(

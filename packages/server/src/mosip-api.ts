@@ -1,4 +1,5 @@
 import { env } from "./constants";
+import { encryptAndSign } from "./crypto/encrypt";
 import { logger } from "./logger";
 
 
@@ -63,7 +64,7 @@ export class MOSIPError extends Error {
   }
 }
 
-export const postRecord = async (id:string, payload: string, url: string) => {
+export const postRecord = async (id:string, payload: string, token: string, url: string) => {
   let proxyRequest: string
   try {
     const encryptionResponse = encryptAndSign(payload)
@@ -95,7 +96,7 @@ export const postRecord = async (id:string, payload: string, url: string) => {
     body: proxyRequest,
     headers: {
       'Content-Type': 'application/json',
-      cookie: `Authorization=${authToken}`
+      cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`
     }
   })
     .then(response => {

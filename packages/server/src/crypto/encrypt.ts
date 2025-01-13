@@ -1,5 +1,5 @@
 import * as forge from 'node-forge';
-import { env } from "../constants";
+import { env, VERSION_RSA_2048, KEY_SPLITTER, THUMBPRINT_LENGTH, AAD_SIZE, NONCE_SIZE, SYMMETRIC_KEY_SIZE, GCM_TAG_LENGTH, ASYMMETRIC_ALGORITHM, SYMMETRIC_ALGORITHM } from "../constants";
 
 export function encryptAndSign(requestData: string) {
   const opencrvsPrivateKey: forge.pki.rsa.PrivateKey = forge.pki.privateKeyFromPem(
@@ -9,15 +9,15 @@ export function encryptAndSign(requestData: string) {
     env.MOSIP_PUBLIC_KEY
   ).publicKey as forge.pki.rsa.PublicKey
 
-  const symmetricKey: string = forge.random.getBytesSync(env.SYMMETRIC_KEY_SIZE)
-  const nonce: string = forge.random.getBytesSync(env.NONCE_SIZE)
-  const aad: string = forge.random.getBytesSync(env.AAD_SIZE - env.NONCE_SIZE)
+  const symmetricKey: string = forge.random.getBytesSync(SYMMETRIC_KEY_SIZE)
+  const nonce: string = forge.random.getBytesSync(NONCE_SIZE)
+  const aad: string = forge.random.getBytesSync(AAD_SIZE - NONCE_SIZE)
   // putting random thumbprint temporarily
-  const thumbprint: string = forge.random.getBytesSync(env.THUMBPRINT_LENGTH)
+  const thumbprint: string = forge.random.getBytesSync(THUMBPRINT_LENGTH)
 
   const encryptedSymmetricKey: string = mosipPublicKey.encrypt(
     symmetricKey,
-    env.ASYMMETRIC_ALGORITHM,
+    ASYMMETRIC_ALGORITHM,
     {
       md: forge.md.sha256.create(),
       mgf1: {
@@ -26,21 +26,21 @@ export function encryptAndSign(requestData: string) {
     }
   )
   const encryptCipher = forge.cipher.createCipher(
-    env.SYMMETRIC_ALGORITHM,
+    SYMMETRIC_ALGORITHM,
     symmetricKey
   )
   encryptCipher.start({
     iv: nonce,
     additionalData: nonce + aad,
-    tagLength: env.GCM_TAG_LENGTH * 8
+    tagLength: GCM_TAG_LENGTH * 8
   })
   encryptCipher.update(forge.util.createBuffer(requestData))
   encryptCipher.finish()
   const encryptedData = Buffer.concat([
-    Buffer.from(env.VERSION_RSA_2048),
+    Buffer.from(VERSION_RSA_2048),
     env.IS_THUMBRPINT ? Buffer.from(thumbprint, 'binary') : Buffer.alloc(0),
     Buffer.from(encryptedSymmetricKey, 'binary'),
-    Buffer.from(env.KEY_SPLITTER),
+    Buffer.from(KEY_SPLITTER),
     Buffer.from(
       nonce +
         aad +
