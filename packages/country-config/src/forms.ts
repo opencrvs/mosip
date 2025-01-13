@@ -95,10 +95,14 @@ export const popupButton = ({
 
 export const esignetCallback = ({
   fieldName,
+  event,
+  sectionId,
   getOIDPUserInfoUrl,
   openIdProviderClientId
 }: {
   fieldName: string;
+  event: string;
+  sectionId: string;
   getOIDPUserInfoUrl: string;
   openIdProviderClientId: string;
 }) => ({
@@ -116,7 +120,8 @@ export const esignetCallback = ({
       'Content-type': 'application/json'
     },
     body: {
-      clientId: openIdProviderClientId
+      clientId: openIdProviderClientId,
+      redirectUri: `${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}`
     },
     
     method: 'POST'
