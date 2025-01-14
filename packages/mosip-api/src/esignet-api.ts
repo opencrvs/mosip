@@ -170,7 +170,7 @@ export const fetchLocationFromFHIR = <T = any>(
   method = "GET",
   body: string | undefined = undefined
 ): Promise<T> => {
-  return fetch(`${env.GATEWAY_URL}${suffix}`, {
+  return fetch(`${env.OPENCRVS_GRAPHQL_GATEWAY_URL}${suffix}`, {
     method,
     headers: {
       "Content-Type": "application/json",
