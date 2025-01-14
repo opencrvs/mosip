@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: mosip-api
 
 jobs:
   build-and-push-image:
@@ -45,7 +45,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: packages/server
+          context: packages/mosip-api
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

@@ -89,7 +89,7 @@ export const popupButton = ({
 
 /**
  *
- * @description esignet callback button form definition.  Calls server/esignet-api /esignet/get-oidp-user-info (this field may not be supported in the latest release of OpenCRVS yet)
+ * @description esignet callback button form definition.  Calls mosip-api/esignet-api /esignet/get-oidp-user-info (this field may not be supported in the latest release of OpenCRVS yet)
  *
  */
 

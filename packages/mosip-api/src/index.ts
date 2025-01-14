@@ -71,7 +71,7 @@ async function run() {
   });
 
   console.log(
-    `OpenCRVS-MOSIP server running at http://${env.HOST}:${env.PORT}`
+    `OpenCRVS-MOSIP API running at http://${env.HOST}:${env.PORT}`
   );
   console.log(
     `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation`

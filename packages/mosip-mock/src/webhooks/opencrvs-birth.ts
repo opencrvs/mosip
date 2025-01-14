@@ -23,7 +23,7 @@ const sendNid = async ({
 
   await sendEmail(`NID created for tracking ID ${trackingId}`, `NID: ${nid}`);
 
-  const response = await fetch(env.OPENCRVS_MOSIP_SERVER_URL, {
+  const response = await fetch(env.OPENCRVS_MOSIP_API_URL, {
     method: "POST",
     body: JSON.stringify({ nid, token, eventId, trackingId }),
     headers: {
