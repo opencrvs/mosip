@@ -17,4 +17,5 @@ data
 *.tar.gz
 .secrets
 .env*
+!.env.development
 .turbo

@@ -3,6 +3,10 @@
     "dev": {
       "dependsOn": [],
       "outputs": []
+    },
+    "dev:collab": {
+      "dependsOn": [],
+      "outputs": []
     }
   }
 }

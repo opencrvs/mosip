@@ -3,7 +3,8 @@
   "version": "1.7.0-alpha.6",
   "license": "MPL-2.0",
   "scripts": {
-    "dev": "NODE_ENV=development tsx watch src/index.ts",
+    "dev": "NODE_ENV=development tsx watch --env-file=.env.development src/index.ts",
+    "dev:collab": "NODE_ENV=development tsx watch --env-file=.env.collab src/index.ts",
     "start": "NODE_ENV=production tsx src/index.ts"
   },
   "dependencies": {

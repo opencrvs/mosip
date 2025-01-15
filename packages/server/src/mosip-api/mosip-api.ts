@@ -1,4 +1,4 @@
-import { env } from "./constants";
+import { env } from "../constants";
 
 export class MOSIPError extends Error {
   constructor(message: string) {

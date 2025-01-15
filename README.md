@@ -16,6 +16,10 @@ yarn dev
 cd packages/*
 yarn install
 yarn dev
+
+## run the server with deployed MOSIP Collab
+yarn install
+yarn dev:collab
 ```
 
 ## Country configuration

@@ -1,6 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
-import * as mosip from "../mosip-api";
+import * as mosip from "../mosip-api/mosip-api";
 import {
   EVENT_TYPE,
   getDeceasedNid,
