@@ -21,7 +21,7 @@ export const esignet = (
   sectionId: string,
   esignetAuthUrl: string,
   openIdProviderClientId: string,
-  openIdProviderClaims: string = "name,family_name,given_name,middle_name,birthdate,address",
+  openIdProviderClaims: string = 'name,family_name,given_name,middle_name,birthdate,address',
   fieldName: string,
   callbackFieldName: string
 ) => {
@@ -39,8 +39,7 @@ export const esignet = (
   url.searchParams.append(
     'redirect_uri',
     '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}'
-  )
-
+  );
 
   return {
     name: fieldName,
@@ -121,9 +120,10 @@ export const esignetCallback = ({
     },
     body: {
       clientId: openIdProviderClientId,
-      redirectUri: `${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}`
+      redirectUri:
+        '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}'
     },
-    
+
     method: 'POST'
   }
 });
