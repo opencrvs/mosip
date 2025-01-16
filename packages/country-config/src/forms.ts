@@ -113,8 +113,9 @@ export const esignetCallback = ({
     defaultMessage: ''
   },
   validator: [],
+  hideInPreview: true,
   options: {
-    getOIDPUserInfoUrl,
+    url: getOIDPUserInfoUrl,
     headers: {
       'Content-type': 'application/json'
     },
@@ -189,7 +190,7 @@ export const verified = (event: string, sectionId: string) => {
     type: 'HIDDEN',
     custom: true,
     label: {
-      id: 'messages.empty',
+      id: 'form.field.label.empty',
       defaultMessage: ''
     },
     initialValue: {
@@ -215,7 +216,7 @@ export const idPendingVerificationBanner = (
     bannerType: 'pending',
     idFieldName: 'idReader',
     label: {
-      id: 'messages.empty',
+      id: 'form.field.label.empty',
       defaultMessage: ''
     },
     validator: [],
