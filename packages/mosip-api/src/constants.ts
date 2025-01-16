@@ -18,9 +18,8 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:7070/graphql",
     desc: "The URL of the OpenCRVS GraphQL Gateway",
   }),
-  GATEWAY_URL: url({ devDefault: "http://localhost:7070" }),
-  NATIONAL_ID_OIDP_REST_URL: url({ devDefault: "http://localhost:20260/" }),
-  OIDP_REST_URL: url({ devDefault: "http://localhost:20260/" }),
+  ESIGNET_USERINFO_URL: url({ devDefault: "http://localhost:20260/oidc/userinfo" }),
+  ESIGNET_TOKEN_URL: url({ devDefault: "http://localhost:20260/oauth/token" }),
   OIDP_JWT_AUD_CLAIM: str({ devDefault: undefined }),
   OIDP_CLIENT_PRIVATE_KEY: str({ devDefault:  readFileSync(join(__dirname, './dev-secrets/jwk.txt')).toString() }),
   });

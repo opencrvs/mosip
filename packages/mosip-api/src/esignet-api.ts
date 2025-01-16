@@ -57,11 +57,6 @@ type OIDPUserInfo = {
 
 const JWT_EXPIRATION_TIME = "1h";
 const JWT_ALG = "RS256";
-const OIDP_USERINFO_ENDPOINT =
-  env.NATIONAL_ID_OIDP_REST_URL &&
-  new URL("oidc/userinfo", env.NATIONAL_ID_OIDP_REST_URL).toString();
-const OIDP_TOKEN_ENDPOINT =
-  env.OIDP_REST_URL && new URL("oauth/token", env.OIDP_REST_URL).toString();
 
 export const OIDPUserInfoSchema = z.object({
   clientId: z.string(),
@@ -126,7 +121,7 @@ const fetchToken = async ({
     client_assertion: await generateSignedJwt(clientId),
   });
 
-  const request = await fetch(OIDP_TOKEN_ENDPOINT!, {
+  const request = await fetch(env.ESIGNET_TOKEN_URL!, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -170,7 +165,7 @@ export const fetchLocationFromFHIR = <T = any>(
   method = "GET",
   body: string | undefined = undefined
 ): Promise<T> => {
-  return fetch(`${env.GATEWAY_URL}${suffix}`, {
+  return fetch(`${env.OPENCRVS_GRAPHQL_GATEWAY_URL}${suffix}`, {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -244,7 +239,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
 };
 
 export const fetchUserInfo = async (accessToken: string) => {
-  const request = await fetch(OIDP_USERINFO_ENDPOINT!, {
+  const request = await fetch(env.ESIGNET_USERINFO_URL!, {
     method: "POST",
     headers: {
       Authorization: "Bearer " + accessToken,

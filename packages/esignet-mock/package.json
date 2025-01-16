@@ -1,7 +1,7 @@
 {
   "name": "@opencrvs/esignet-mock",
   "license": "MPL-2.0",
-  "version": "1.7.0-alpha.8",
+  "version": "1.7.0-alpha.9",
   "main": "index.js",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch src/index.ts",
@@ -11,6 +11,7 @@
     "@fastify/formbody": "^8.0.1",
     "@fastify/static": "^8.0.3",
     "@types/node": "^22.4.1",
+    "casual": "^1.6.2",
     "envalid": "^8.0.0",
     "fastify": "^5.0.0",
     "jose": "^5.9.6",

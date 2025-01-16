@@ -7,6 +7,7 @@ import formbody from "@fastify/formbody";
 import * as jose from "jose";
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import casual from 'casual';
 
 const app = Fastify({ logger: true });
 
@@ -88,22 +89,24 @@ type OIDPUserInfo = {
 
 app.post("/oidc/userinfo", {
   handler: async (request: any, reply) => {
+    const firstName = casual.first_name
+    const lastName = casual.last_name
     const userInfo: OIDPUserInfo = {
       sub: "405710304278395",
-      name: "Niko",
-      given_name: "Simon",
-      family_name: "Bellic",
-      middle_name: "Stern",
-      nickname: "Nik",
-      preferred_username: "niko",
-      profile: "niko_bellic",
-      picture: "fnoudgoag",
-      website: "www.nikobellic.com",
-      email: "nikobel@gmail.com",
+      name: `${firstName} ${lastName}`,
+      given_name: firstName,
+      family_name: lastName,
+      middle_name: "",
+      nickname: "",
+      preferred_username: "",
+      profile: "",
+      picture: "",
+      website: "",
+      email: casual.email,
       email_verified: true,
       gender: "male",
       birthdate: "15/05/1990",
-      zoneinfo: "fsrthtst",
+      zoneinfo: "",
       locale: "en-US",
       phone_number: "0314412652",
       phone_number_verified: true,
