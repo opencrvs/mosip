@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx watch --env-file=.env.development src/index.ts",
     "dev:collab": "NODE_ENV=development tsx watch --env-file=.env.collab src/index.ts",
+    "test:collab": "NODE_ENV=development tsx watch --env-file=.env.collab src/collab.ts",
     "start": "NODE_ENV=production tsx src/index.ts"
   },
   "dependencies": {
