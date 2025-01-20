@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: mosip-api
+  IMAGE_NAME: opencrvs/mosip-api
 
 jobs:
   build-and-push-image:
@@ -49,4 +49,3 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-

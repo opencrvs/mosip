@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: esignet-mock
+  IMAGE_NAME: opencrvs/esignet-mock
 
 jobs:
   build-and-push-image:
