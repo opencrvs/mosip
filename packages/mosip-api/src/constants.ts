@@ -28,4 +28,13 @@ export const env = cleanEnv(process.env, {
       join(__dirname, "./dev-secrets/jwk.txt"),
     ).toString(),
   }),
+  MOSIP_AUTH_URL: str({ devDefault: "" }),
+  MOSIP_AUTH_CLIENT_ID: str({ devDefault: "" }),
+  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "" }),
+  MOSIP_AUTH_USER: str({ devDefault: "" }),
+  MOSIP_AUTH_PASS: str({ devDefault: "" }),
+  MOSIP_GENERATE_AID_URL: str({ devDefault: "" }),
+  MOSIP_PUBLIC_KEY: str({ devDefault: "" }),
+  OPENCRVS_PRIV_KEY: str({ devDefault: "" }),
+  IS_THUMBRPINT: str({ devDefault: "false" }),
 });
