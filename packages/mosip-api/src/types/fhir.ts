@@ -17,7 +17,7 @@ export type UUID = Nominal<string, "UUID">;
 export type ResourceIdentifier<
   Resource extends { resourceType: FhirResourceType } = {
     resourceType: FhirResourceType;
-  }
+  },
 > = `${Resource["resourceType"]}/${UUID}`;
 
 export type Address = Omit<fhir3.Address, "type" | "extension"> & {
@@ -375,7 +375,7 @@ export type SavedTask = Omit<Task, "focus" | "id"> & {
 };
 
 export function isTask<T extends Resource>(
-  resource: T
+  resource: T,
 ): resource is (T & Task) | (T & SavedTask) {
   return resource.resourceType === "Task";
 }
@@ -394,7 +394,7 @@ export function getTrackingId(record: fhir3.Bundle) {
   const task = getTaskFromSavedBundle(record);
 
   const identifier = task.identifier.find((identifier) =>
-    identifier.system.endsWith("tracking-id")
+    identifier.system.endsWith("tracking-id"),
   );
 
   if (!identifier) {
@@ -405,7 +405,7 @@ export function getTrackingId(record: fhir3.Bundle) {
 }
 
 export function isComposition<T extends Resource>(
-  resource: T
+  resource: T,
 ): resource is T & fhir3.Composition & { id: UUID } {
   return resource.resourceType === "Composition";
 }
@@ -452,7 +452,7 @@ export function getEventType(fhirBundle: fhir3.Bundle) {
     const firstEntry = fhirBundle.entry[0].resource;
     if (firstEntry.resourceType === "Composition") {
       return getCompositionEventType(
-        firstEntry as fhir3.Composition
+        firstEntry as fhir3.Composition,
       ) as EVENT_TYPE;
     } else {
       return getTaskEventType(firstEntry as Task) as EVENT_TYPE;
@@ -464,7 +464,7 @@ export function getEventType(fhirBundle: fhir3.Bundle) {
 
 function getPatientNationalId(patient: fhir3.Patient) {
   const identifier = patient.identifier?.find(
-    (identifier) => identifier.type?.coding?.[0].code === "NATIONAL_ID"
+    (identifier) => identifier.type?.coding?.[0].code === "NATIONAL_ID",
   );
   if (!identifier?.value) {
     throw new Error("National ID not found in patient");
@@ -481,7 +481,7 @@ function getFromBundleById(bundle: fhir3.Bundle, id: string) {
 
   if (!resource.fullUrl) {
     throw new Error(
-      "A resource was found but it did not have a fullUrl. This should not happen."
+      "A resource was found but it did not have a fullUrl. This should not happen.",
     );
   }
 
@@ -490,10 +490,10 @@ function getFromBundleById(bundle: fhir3.Bundle, id: string) {
 
 function findDeceasedEntry(
   composition: fhir3.Composition,
-  bundle: fhir3.Bundle
+  bundle: fhir3.Bundle,
 ) {
   const patientSection = composition.section?.find((section) =>
-    section.code?.coding?.some((coding) => coding.code === "deceased-details")
+    section.code?.coding?.some((coding) => coding.code === "deceased-details"),
   );
   if (!patientSection || !patientSection.entry) {
     throw new Error("Deceased details not found in composition");

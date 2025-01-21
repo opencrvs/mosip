@@ -13,12 +13,12 @@ const sendNid = async ({
   trackingId: string;
 }) => {
   console.log(
-    `${JSON.stringify({ eventId, trackingId }, null, 4)}, creating NID...`
+    `${JSON.stringify({ eventId, trackingId }, null, 4)}, creating NID...`,
   );
 
   const nid = await createNid();
   console.log(
-    `${JSON.stringify({ eventId, trackingId }, null, 4)}, ..."${nid}" created.`
+    `${JSON.stringify({ eventId, trackingId }, null, 4)}, ..."${nid}" created.`,
   );
 
   await sendEmail(`NID created for tracking ID ${trackingId}`, `NID: ${nid}`);
@@ -35,7 +35,7 @@ const sendNid = async ({
     throw new Error(
       `Failed to send NID to OpenCRVS. Status: ${
         response.status
-      }, response: ${await response.text()}`
+      }, response: ${await response.text()}`,
     );
   }
 
@@ -50,7 +50,7 @@ type OpenCRVSBirthEvent = {
 /** Handles the births coming from OpenCRVS */
 export const opencrvsBirthHandler: RouteHandlerMethod = async (
   request,
-  reply
+  reply,
 ) => {
   const { token, event } = request.body as {
     token: string;
@@ -60,7 +60,7 @@ export const opencrvsBirthHandler: RouteHandlerMethod = async (
   sendNid({ token, eventId: event.id, trackingId: event.trackingId }).catch(
     (e) => {
       console.error(e);
-    }
+    },
   );
 
   return reply.status(202).send({

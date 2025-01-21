@@ -5,14 +5,14 @@ import path from "path";
 import fastifyStatic from "@fastify/static";
 import formbody from "@fastify/formbody";
 import * as jose from "jose";
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import casual from 'casual';
+import { readFileSync } from "fs";
+import { join } from "path";
+import casual from "casual";
 
 const app = Fastify({ logger: true });
 
-const JWT_ALG = 'RS256'
-const JWT_EXPIRATION_TIME = '1h'
+const JWT_ALG = "RS256";
+const JWT_EXPIRATION_TIME = "1h";
 
 const generateSignedJwt = async (userInfo: OIDPUserInfo) => {
   const header = {
@@ -21,8 +21,8 @@ const generateSignedJwt = async (userInfo: OIDPUserInfo) => {
   };
 
   const decodeKey = Buffer.from(
-    readFileSync(join(__dirname, './dev-secrets/jwk.txt')).toString(),
-    "base64"
+    readFileSync(join(__dirname, "./dev-secrets/jwk.txt")).toString(),
+    "base64",
   )?.toString();
   const jwkObject = JSON.parse(decodeKey);
   const privateKey = await jose.importJWK(jwkObject, JWT_ALG);
@@ -49,7 +49,7 @@ const tokenRequestSchema = {
       redirect_uri: { type: "string" },
       grant_type: { type: "string" },
       client_assertion_type: { type: "string" },
-      client_assertion: { type: "string" }
+      client_assertion: { type: "string" },
     },
   },
 };
@@ -89,8 +89,8 @@ type OIDPUserInfo = {
 
 app.post("/oidc/userinfo", {
   handler: async (request: any, reply) => {
-    const firstName = casual.first_name
-    const lastName = casual.last_name
+    const firstName = casual.first_name;
+    const lastName = casual.last_name;
     const userInfo: OIDPUserInfo = {
       sub: "405710304278395",
       name: `${firstName} ${lastName}`,
@@ -145,8 +145,8 @@ const authorizeSchema = {
 app.post("/authorize", {
   schema: authorizeSchema,
   handler: async (request: any, reply) => {
-    const htmlFilePath = path.join(__dirname, './mock-authorizer/index.html');
-    const html = readFileSync(htmlFilePath, 'utf-8');
+    const htmlFilePath = path.join(__dirname, "./mock-authorizer/index.html");
+    const html = readFileSync(htmlFilePath, "utf-8");
 
     const modifiedHtml = html
       .replace(/{{CLIENT_URL}}/g, env.CLIENT_URL)
@@ -155,9 +155,9 @@ app.post("/authorize", {
       .replace(/{{scope}}/g, request.query.scope)
       .replace(/{{acr_values}}/g, request.query.acr_values)
       .replace(/{{claims}}/g, request.query.claims)
-      .replace(/{{state}}/g, request.query.state)
+      .replace(/{{state}}/g, request.query.state);
 
-    return reply.type('text/html').send(modifiedHtml);
+    return reply.type("text/html").send(modifiedHtml);
   },
 });
 

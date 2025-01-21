@@ -8,10 +8,11 @@
  *
  * Copyright (C) The OpenCRVS Authors located at https://github.com/opencrvs/opencrvs-core/blob/master/AUTHORS.
  */
-import pino from "pino"
-export const logger = pino()
+import pino from "pino";
+export const logger = pino();
 
-const level = process.env.NODE_ENV === 'test' ? 'silent' : process.env.LOG_LEVEL
+const level =
+  process.env.NODE_ENV === "test" ? "silent" : process.env.LOG_LEVEL;
 if (level) {
-  logger.level = level
+  logger.level = level;
 }

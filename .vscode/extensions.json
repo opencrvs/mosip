@@ -1,5 +1,3 @@
 {
-  "recommendations": [
-    "apollographql.vscode-apollo"
-  ]
+  "recommendations": ["apollographql.vscode-apollo"]
 }
