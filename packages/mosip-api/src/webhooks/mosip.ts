@@ -14,7 +14,7 @@ export const mosipNidSchema = z.object({
   token: z
     .string()
     .describe(
-      "The one-time token from OpenCRVS. MOSIP should pass this through without using it."
+      "The one-time token from OpenCRVS. MOSIP should pass this through without using it.",
     ),
 });
 
@@ -25,7 +25,7 @@ type MosipRequest = FastifyRequest<{
 /** Handles the calls coming from MOSIP */
 export const mosipHandler = async (
   request: MosipRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   const { eventId, trackingId, nid, token } = request.body;
   const registrationNumber = generateRegistrationNumber(trackingId);
@@ -36,7 +36,7 @@ export const mosipHandler = async (
       registrationNumber,
       identifiers: [{ type: "NATIONAL_ID", value: nid }],
     },
-    { headers: { Authorization: `Bearer ${token}` } }
+    { headers: { Authorization: `Bearer ${token}` } },
   );
 
   reply.code(200);

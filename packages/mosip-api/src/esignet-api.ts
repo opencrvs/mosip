@@ -16,11 +16,11 @@ import { logger } from "./logger";
 import z from "zod";
 import { FastifyReply, FastifyRequest } from "fastify";
 import * as jose from "jose";
-import { isValid, format, Locale, parse } from 'date-fns';
-import { enGB } from 'date-fns/locale/en-GB';
-import { fr } from 'date-fns/locale/fr';
+import { isValid, format, Locale, parse } from "date-fns";
+import { enGB } from "date-fns/locale/en-GB";
+import { fr } from "date-fns/locale/fr";
 
-export const locales: Record<string, Locale> = { en: enGB, fr }
+export const locales: Record<string, Locale> = { en: enGB, fr };
 
 type OIDPUserAddress = {
   formatted: string;
@@ -60,7 +60,7 @@ const JWT_ALG = "RS256";
 
 export const OIDPUserInfoSchema = z.object({
   clientId: z.string(),
-  redirectUri: z.string()
+  redirectUri: z.string(),
 });
 
 export const OIDPQuerySchema = z.object({
@@ -91,10 +91,9 @@ const generateSignedJwt = async (clientId: string) => {
     aud: env.OIDP_JWT_AUD_CLAIM,
   };
 
-  
   const decodeKey = Buffer.from(
     env.OIDP_CLIENT_PRIVATE_KEY!,
-    "base64"
+    "base64",
   )?.toString();
 
   const jwkObject = JSON.parse(decodeKey);
@@ -107,17 +106,14 @@ const generateSignedJwt = async (clientId: string) => {
     .sign(privateKey);
 };
 
-const fetchToken = async ({
-  code,
-  clientId,
-  redirectUri
-}: FetchTokenProps) => {
+const fetchToken = async ({ code, clientId, redirectUri }: FetchTokenProps) => {
   const body = new URLSearchParams({
     code: code,
     client_id: clientId,
     redirect_uri: redirectUri,
     grant_type: "authorization_code",
-    client_assertion_type: "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+    client_assertion_type:
+      "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     client_assertion: await generateSignedJwt(clientId),
   });
 
@@ -128,28 +124,28 @@ const fetchToken = async ({
     },
     body,
   });
-  
+
   const response = await request.json();
   return response as { access_token?: string };
 };
 
 export const getOIDPUserInfo = async (
   request: OIDPUserInfoRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   const { clientId, redirectUri } = request.body;
-  const code = request.query.code
+  const code = request.query.code;
 
   const tokenResponse = await fetchToken({
     code,
     clientId,
-    redirectUri
+    redirectUri,
   });
 
   if (!tokenResponse.access_token) {
     throw new Error(
       "Something went wrong with the OIDP token request. No access token was returned. Response from OIDP: " +
-        JSON.stringify(tokenResponse)
+        JSON.stringify(tokenResponse),
     );
   }
 
@@ -163,7 +159,7 @@ const decodeUserInfoResponse = (response: string) => {
 export const fetchLocationFromFHIR = <T = any>(
   suffix: string,
   method = "GET",
-  body: string | undefined = undefined
+  body: string | undefined = undefined,
 ): Promise<T> => {
   return fetch(`${env.OPENCRVS_GRAPHQL_GATEWAY_URL}${suffix}`, {
     method,
@@ -177,14 +173,14 @@ export const fetchLocationFromFHIR = <T = any>(
     })
     .catch((error) => {
       return Promise.reject(
-        new Error(`Fetch Location from FHIR request failed: ${error.message}`)
+        new Error(`Fetch Location from FHIR request failed: ${error.message}`),
       );
     });
 };
 
 const searchLocationFromFHIR = (name: string) =>
   fetchLocationFromFHIR<fhir2.Bundle>(
-    `/locations?${new URLSearchParams({ name, type: "ADMIN_STRUCTURE" })}`
+    `/locations?${new URLSearchParams({ name, type: "ADMIN_STRUCTURE" })}`,
   );
 
 const findAdminStructureLocationWithName = async (name: string) => {
@@ -192,7 +188,7 @@ const findAdminStructureLocationWithName = async (name: string) => {
 
   if ((fhirBundleLocations.entry?.length ?? 0) > 1) {
     throw new Error(
-      "Multiple admin structure locations found with the same name"
+      "Multiple admin structure locations found with the same name",
     );
   }
 
@@ -204,14 +200,14 @@ const findAdminStructureLocationWithName = async (name: string) => {
   return fhirBundleLocations.entry?.[0].resource?.id;
 };
 
-function formatDate(dateString: string, formatStr = 'PP') {
-  const date = parse(dateString, 'dd/MM/yyyy', new Date());
+function formatDate(dateString: string, formatStr = "PP") {
+  const date = parse(dateString, "dd/MM/yyyy", new Date());
   if (!isValid(date)) {
-    return ''
+    return "";
   }
   return format(date, formatStr, {
-    locale: locales[env.LOCALE]
-  })
+    locale: locales[env.LOCALE],
+  });
 }
 
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
@@ -226,7 +222,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
     familyName: userInfo.family_name,
     gender: userInfo.gender,
     ...(userInfo.birthdate && {
-      birthDate: formatDate(userInfo.birthdate, 'yyyy-MM-dd'),
+      birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
     }),
     /*stateFhirId,
     districtFhirId:

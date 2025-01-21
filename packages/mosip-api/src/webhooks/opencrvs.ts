@@ -27,7 +27,7 @@ type OpenCRVSRequest = FastifyRequest<{
 /** Handles the calls coming from OpenCRVS countryconfig */
 export const opencrvsHandler = async (
   request: OpenCRVSRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => {
   // We will receive the full bundle, but we will minimize the amount of data we send to MOSIP
 
@@ -64,7 +64,7 @@ export const opencrvsHandler = async (
         identifierType: "MOSIP_AID",
         identifierValue: aid,
       },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
   }
 
@@ -84,7 +84,7 @@ export const opencrvsHandler = async (
       comment = `NID "${nid}" deactivated`;
     } else {
       throw new Error(
-        `NID deactivation failed in MOSIP. Response: ${response.statusText}`
+        `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
       );
     }
 
@@ -94,7 +94,7 @@ export const opencrvsHandler = async (
         registrationNumber,
         comment,
       },
-      { headers: { Authorization: `Bearer ${token}` } }
+      { headers: { Authorization: `Bearer ${token}` } },
     );
   }
 

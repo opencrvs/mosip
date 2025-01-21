@@ -11,7 +11,7 @@ app.post("/webhooks/opencrvs/death", { handler: deactivateNidHandler });
 async function run() {
   if (env.isProd) {
     console.error(
-      "⚠️ You are running MOCK national ID server in production. All identifiers will be logged. ⚠️"
+      "⚠️ You are running MOCK national ID server in production. All identifiers will be logged. ⚠️",
     );
   }
 

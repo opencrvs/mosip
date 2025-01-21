@@ -3,7 +3,7 @@ import { sendEmail } from "../mailer";
 
 export const deactivateNidHandler: RouteHandlerMethod = async (
   request,
-  reply
+  reply,
 ) => {
   const { nid } = request.body as {
     nid: string;
@@ -32,7 +32,7 @@ export const deactivateNidHandler: RouteHandlerMethod = async (
   if (alreadyDeactivatedNids.includes(nid)) {
     sendEmail(
       `NID already deactivated for ${nid}`,
-      `NID conflict, already deactivated: ${nid}`
+      `NID conflict, already deactivated: ${nid}`,
     );
     return reply.status(409).send();
   }

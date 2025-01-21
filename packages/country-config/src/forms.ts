@@ -21,68 +21,68 @@ export const esignet = (
   sectionId: string,
   esignetAuthUrl: string,
   openIdProviderClientId: string,
-  openIdProviderClaims: string = 'name,family_name,given_name,middle_name,birthdate,address',
+  openIdProviderClaims: string = "name,family_name,given_name,middle_name,birthdate,address",
   fieldName: string,
-  callbackFieldName: string
+  callbackFieldName: string,
 ) => {
   const url = new URL(esignetAuthUrl);
 
   url.searchParams.append(
-    'client_id',
-    openIdProviderClientId || 'mock-client_id'
+    "client_id",
+    openIdProviderClientId || "mock-client_id",
   );
-  url.searchParams.append('response_type', 'code');
-  url.searchParams.append('scope', 'openid profile');
-  url.searchParams.append('acr_values', 'mosip:idp:acr:static-code');
-  url.searchParams.append('claims', openIdProviderClaims);
-  url.searchParams.append('state', 'fetch-on-mount');
+  url.searchParams.append("response_type", "code");
+  url.searchParams.append("scope", "openid profile");
+  url.searchParams.append("acr_values", "mosip:idp:acr:static-code");
+  url.searchParams.append("claims", openIdProviderClaims);
+  url.searchParams.append("state", "fetch-on-mount");
   url.searchParams.append(
-    'redirect_uri',
-    '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}'
+    "redirect_uri",
+    '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}',
   );
 
   return {
     name: fieldName,
     validator: [],
     icon: {
-      desktop: 'Globe',
-      mobile: 'Fingerprint'
+      desktop: "Globe",
+      mobile: "Fingerprint",
     },
-    type: 'LINK_BUTTON',
+    type: "LINK_BUTTON",
     custom: true,
     label: {
-      id: 'views.idReader.label.eSignet',
-      defaultMessage: 'E-signet'
+      id: "views.idReader.label.eSignet",
+      defaultMessage: "E-signet",
     },
     hideInPreview: true,
     conditionals: [
       {
-        action: 'disable',
-        expression: '!!$form.redirectCallbackFetch'
-      }
+        action: "disable",
+        expression: "!!$form.redirectCallbackFetch",
+      },
     ],
     options: {
       url: url.toString(),
       callback: {
         params: {
-          state: 'fetch-on-mount'
+          state: "fetch-on-mount",
         },
-        trigger: callbackFieldName
-      }
-    }
+        trigger: callbackFieldName,
+      },
+    },
   };
 };
 
 export const popupButton = ({
   /** URL to OpenCRVS-MOSIP gateway (e.g. https://opencrvs-mosip-gateway.farajaland.opencrvs.org) */
-  url
+  url,
 }: {
   url: string;
 }) => {
   return {
-    name: 'INFORMANT_AUTHENTICATION_POPUP_BUTTON',
-    type: 'POPUP_BUTTON',
-    url
+    name: "INFORMANT_AUTHENTICATION_POPUP_BUTTON",
+    type: "POPUP_BUTTON",
+    url,
   };
 };
 
@@ -97,7 +97,7 @@ export const esignetCallback = ({
   event,
   sectionId,
   getOIDPUserInfoUrl,
-  openIdProviderClientId
+  openIdProviderClientId,
 }: {
   fieldName: string;
   event: string;
@@ -106,33 +106,33 @@ export const esignetCallback = ({
   openIdProviderClientId: string;
 }) => ({
   name: fieldName,
-  type: 'HTTP',
+  type: "HTTP",
   custom: true,
   label: {
-    id: 'form.field.label.empty',
-    defaultMessage: ''
+    id: "form.field.label.empty",
+    defaultMessage: "",
   },
   validator: [],
   hideInPreview: true,
   options: {
     url: getOIDPUserInfoUrl,
     headers: {
-      'Content-type': 'application/json'
+      "Content-type": "application/json",
     },
     body: {
       clientId: openIdProviderClientId,
       redirectUri:
-        '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}'
+        '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}',
     },
 
-    method: 'POST'
-  }
+    method: "POST",
+  },
 });
 
 export const esignetHidden = () => {
   return {
-    name: 'INFORMANT_PSUT_TOKEN',
-    type: 'HIDDEN'
+    name: "INFORMANT_PSUT_TOKEN",
+    type: "HIDDEN",
   };
 };
 
@@ -146,92 +146,92 @@ export const idReader = (
   event: string,
   sectionId: string,
   conditionals: any[],
-  readers: any[]
+  readers: any[],
 ) => {
-  const fieldName: string = 'idReader';
+  const fieldName: string = "idReader";
   const fieldId: string = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
   return {
     name: fieldName,
     customQuestionMappingId: fieldId,
     custom: true,
     required: false,
-    type: 'ID_READER',
+    type: "ID_READER",
     label: {
-      id: 'form.field.label.empty',
-      defaultMessage: ''
+      id: "form.field.label.empty",
+      defaultMessage: "",
     },
     hideInPreview: true,
-    initialValue: '',
+    initialValue: "",
     validator: [],
     conditionals,
     dividerLabel: {
-      id: 'views.idReader.label.or',
-      defaultMessage: 'Or'
+      id: "views.idReader.label.or",
+      defaultMessage: "Or",
     },
     manualInputInstructionLabel: {
-      id: 'views.idReader.label.manualInput',
-      defaultMessage: 'Complete fields below'
+      id: "views.idReader.label.manualInput",
+      defaultMessage: "Complete fields below",
     },
-    readers
+    readers,
   };
 };
 
 export const qr = () => ({
-  type: 'QR'
+  type: "QR",
 });
 
 export const verified = (event: string, sectionId: string) => {
-  const fieldName = 'verified';
+  const fieldName = "verified";
   const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
   return {
-    name: 'verified',
+    name: "verified",
     fieldId,
     customQuestionMappingId: fieldId,
-    type: 'HIDDEN',
+    type: "HIDDEN",
     custom: true,
     label: {
-      id: 'form.field.label.empty',
-      defaultMessage: ''
+      id: "form.field.label.empty",
+      defaultMessage: "",
     },
     initialValue: {
-      dependsOn: ['idReader'],
-      expression: 'Boolean($form?.idReader)? "pending":""'
+      dependsOn: ["idReader"],
+      expression: 'Boolean($form?.idReader)? "pending":""',
     },
-    validator: []
+    validator: [],
   };
 };
 
 export const idPendingVerificationBanner = (
   event: string,
-  sectionId: string
+  sectionId: string,
 ) => {
-  const fieldName = 'verified';
+  const fieldName = "verified";
   const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
   return {
-    name: 'idPending',
-    type: 'ID_VERIFICATION_BANNER',
+    name: "idPending",
+    type: "ID_VERIFICATION_BANNER",
     fieldId,
     hideInPreview: true,
     custom: true,
-    bannerType: 'pending',
-    idFieldName: 'idReader',
+    bannerType: "pending",
+    idFieldName: "idReader",
     label: {
-      id: 'form.field.label.empty',
-      defaultMessage: ''
+      id: "form.field.label.empty",
+      defaultMessage: "",
     },
     validator: [],
     conditionals: [
       {
-        action: 'hide',
-        expression: '$form?.verified !== "pending"'
-      }
-    ]
+        action: "hide",
+        expression: '$form?.verified !== "pending"',
+      },
+    ],
   };
 };
 
 export const idVerificationFields = (event: string, sectionId: string) => {
   return [
     verified(event, sectionId),
-    idPendingVerificationBanner(event, sectionId)
+    idPendingVerificationBanner(event, sectionId),
   ];
 };

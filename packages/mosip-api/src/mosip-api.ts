@@ -29,7 +29,7 @@ export const postBirthRecord = async ({
     throw new MOSIPError(
       `Failed to post record to MOSIP. Status: ${
         response.status
-      }, response: ${await response.text()}`
+      }, response: ${await response.text()}`,
     );
   }
 

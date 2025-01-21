@@ -31,7 +31,7 @@ const post = async ({
 
   if (!response.ok) {
     throw new OpenCRVSError(
-      `POST to OpenCRVS GraphQL Gateway not ok: ${await response.text()}`
+      `POST to OpenCRVS GraphQL Gateway not ok: ${await response.text()}`,
     );
   }
 
@@ -50,7 +50,7 @@ export const confirmRegistration = (
     registrationNumber: string;
     comment?: string;
   },
-  { headers }: { headers: Record<string, any> }
+  { headers }: { headers: Record<string, any> },
 ) =>
   post({
     query: /* GraphQL */ `
@@ -75,7 +75,7 @@ export const confirmRegistration = (
 export const rejectRegistration = (
   id: string,
   { reason, comment }: { reason: string; comment: string },
-  { headers }: { headers: Record<string, any> }
+  { headers }: { headers: Record<string, any> },
 ) =>
   post({
     query: /* GraphQL */ `
@@ -106,7 +106,7 @@ export const upsertRegistrationIdentifier = (
     identifierType: string;
     identifierValue: string;
   },
-  { headers }: { headers: Record<string, any> }
+  { headers }: { headers: Record<string, any> },
 ) =>
   post({
     query: /* GraphQL */ `
