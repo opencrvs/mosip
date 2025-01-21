@@ -1,9 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended", ":semanticCommits"],
-  "lockFileMaintenance": {
-    "enabled": true
-  },
   "pruneStaleBranches": false,
   "timezone": "Europe/London",
   "schedule": ["after 5pm every weekday"],
