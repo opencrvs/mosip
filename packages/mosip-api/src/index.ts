@@ -4,8 +4,8 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { mosipHandler, mosipNidSchema } from "./webhooks/mosip";
-import { opencrvsHandler, opencrvsRecordSchema } from "./webhooks/opencrvs";
+import { mosipHandler, mosipNidSchema } from "./routes/mosip";
+import { opencrvsHandler, opencrvsRecordSchema } from "./routes/opencrvs";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
 import { getOIDPUserInfo, OIDPUserInfoSchema } from "./esignet-api";
