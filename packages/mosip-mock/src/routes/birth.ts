@@ -48,10 +48,7 @@ type OpenCRVSBirthEvent = {
 };
 
 /** Handles the births coming from OpenCRVS */
-export const opencrvsBirthHandler: RouteHandlerMethod = async (
-  request,
-  reply,
-) => {
+export const birthHandler: RouteHandlerMethod = async (request, reply) => {
   const { token, event } = request.body as {
     token: string;
     event: OpenCRVSBirthEvent;

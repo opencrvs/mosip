@@ -38,7 +38,7 @@ app.setErrorHandler((error, request, reply) => {
 
 app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/webhooks/opencrvs",
+    url: "/events/registration",
     method: "POST",
     handler: opencrvsHandler,
     schema: {
@@ -46,7 +46,7 @@ app.after(() => {
     },
   });
   app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/webhooks/mosip",
+    url: "/events/mosip",
     method: "POST",
     handler: mosipHandler,
     schema: {

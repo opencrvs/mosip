@@ -3,7 +3,8 @@ import fetch from "node-fetch";
 
 export const mosipRegistrationHandler = ({ url }: { url: string }) =>
   (async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    const OPENCRVS_MOSIP_GATEWAY_URL = new URL("./webhooks/opencrvs", url);
+    // Corresponds to `packages/mosip-api` /events/registration -route
+    const OPENCRVS_MOSIP_GATEWAY_URL = new URL("./events/registration", url);
 
     const response = await fetch(OPENCRVS_MOSIP_GATEWAY_URL, {
       method: "POST",
