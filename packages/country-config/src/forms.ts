@@ -38,7 +38,7 @@ export const esignet = (
   url.searchParams.append("state", "fetch-on-mount");
   url.searchParams.append(
     "redirect_uri",
-    '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}',
+    '${window.location.href}',
   );
 
   return {
