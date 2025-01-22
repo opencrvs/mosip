@@ -142,7 +142,7 @@ const authorizeSchema = {
   },
 };
 
-app.post("/authorize", {
+app.get("/authorize", {
   schema: authorizeSchema,
   handler: async (request: any, reply) => {
     const htmlFilePath = path.join(__dirname, "./mock-authorizer/index.html");
