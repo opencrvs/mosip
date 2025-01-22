@@ -80,7 +80,7 @@ export async function decryptData(requestData: Buffer): Promise<string> {
     );
   }
   const opencrvsPrivKey: forge.pki.rsa.PrivateKey = forge.pki.privateKeyFromPem(
-    env.OPENCRVS_PRIV_KEY,
+    env.OPENCRVS_PRIVATE_KEY,
   );
   const decryptedSymmetricKey = opencrvsPrivKey.decrypt(
     encryptedSymmetricKey.toString("binary"),

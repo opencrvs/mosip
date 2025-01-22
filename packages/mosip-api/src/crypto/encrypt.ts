@@ -14,7 +14,7 @@ const THUMBPRINT_LENGTH = 32;
 
 export function encryptAndSign(requestData: string) {
   const opencrvsPrivateKey: forge.pki.rsa.PrivateKey =
-    forge.pki.privateKeyFromPem(env.OPENCRVS_PRIV_KEY);
+    forge.pki.privateKeyFromPem(env.OPENCRVS_PRIVATE_KEY);
   const mosipPublicKey: forge.pki.rsa.PublicKey = forge.pki.certificateFromPem(
     env.MOSIP_PUBLIC_KEY,
   ).publicKey as forge.pki.rsa.PublicKey;

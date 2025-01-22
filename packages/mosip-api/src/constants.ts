@@ -35,6 +35,13 @@ export const env = cleanEnv(process.env, {
   MOSIP_AUTH_PASS: str({ devDefault: "mosip-mock" }),
   MOSIP_GENERATE_AID_URL: str({ devDefault: "http://localhost:20240/aid" }),
   MOSIP_PUBLIC_KEY: str({ devDefault: "" }),
-  OPENCRVS_PRIV_KEY: str({ devDefault: "" }),
-  IS_THUMBRPINT: str({ devDefault: "false" }),
+
+  OPENCRVS_PRIVATE_KEY: str({
+    // NOTE! It's a BAD practice to store the private key in a .pem file.
+    // This is a temporary solution before the application is refactored to read .p12 files.
+    devDefault: readFileSync(
+      join(__dirname, "./dev-secrets/keystore.p12.private-key.pem"),
+    ).toString(),
+    desc: "Private key of the OpenCRVS ",
+  }),
 });
