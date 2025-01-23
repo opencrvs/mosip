@@ -129,3 +129,19 @@ export const upsertRegistrationIdentifier = (
     },
     headers,
   });
+
+export const updateField = (
+  id: string,
+  fieldId: string,
+  valueBoolean: boolean,
+  { headers }: { headers: Record<string, any> },
+) =>
+  post({
+    query: /* GraphQL */ `
+      mutation updateField($id: ID!, $details: UpdateFieldInput!) {
+        updateField(id: $id, details: $details)
+      }
+    `,
+    variables: { id, details: { fieldId, valueBoolean } },
+    headers,
+  });

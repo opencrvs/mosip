@@ -25,7 +25,7 @@ type OpenCRVSRequest = FastifyRequest<{
 }>;
 
 /** Handles the calls coming from OpenCRVS countryconfig */
-export const opencrvsHandler = async (
+export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {

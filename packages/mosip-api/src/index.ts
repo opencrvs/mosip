@@ -4,12 +4,16 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { mosipHandler, mosipNidSchema } from "./webhooks/mosip";
-import { opencrvsHandler, opencrvsRecordSchema } from "./webhooks/opencrvs";
+import { mosipHandler, mosipNidSchema } from "./routes/mosip";
+import {
+  registrationEventHandler,
+  opencrvsRecordSchema,
+} from "./routes/event-registration";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
 import { getOIDPUserInfo, OIDPUserInfoSchema } from "./esignet-api";
 import formbody from "@fastify/formbody";
+import { reviewEventHandler } from "./routes/event-review";
 
 const envToLogger = {
   development: {
@@ -38,9 +42,17 @@ app.setErrorHandler((error, request, reply) => {
 
 app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/webhooks/opencrvs",
+    url: "/events/registration",
     method: "POST",
-    handler: opencrvsHandler,
+    handler: registrationEventHandler,
+    schema: {
+      body: opencrvsRecordSchema,
+    },
+  });
+  app.withTypeProvider<ZodTypeProvider>().route({
+    url: "/events/review",
+    method: "POST",
+    handler: reviewEventHandler,
     schema: {
       body: opencrvsRecordSchema,
     },
