@@ -96,8 +96,6 @@ export const esignetCallback = ({
   openIdProviderClientId,
 }: {
   fieldName: string;
-  event: string;
-  sectionId: string;
   mosipAPIUserInfoUrl: string;
   openIdProviderClientId: string;
 }) => ({
