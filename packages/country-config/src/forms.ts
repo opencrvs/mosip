@@ -17,8 +17,6 @@
  *
  */
 export const esignet = (
-  event: string,
-  sectionId: string,
   esignetAuthUrl: string,
   openIdProviderClientId: string,
   openIdProviderClaims: string = "name,family_name,given_name,middle_name,birthdate,address",
@@ -38,7 +36,7 @@ export const esignet = (
   url.searchParams.append("state", "fetch-on-mount");
   url.searchParams.append(
     "redirect_uri",
-    '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}',
+    '${window.location.href}',
   );
 
   return {
@@ -88,21 +86,17 @@ export const popupButton = ({
 
 /**
  *
- * @description esignet callback button form definition.  Calls mosip-api/esignet-api /esignet/get-oidp-user-info (this field may not be supported in the latest release of OpenCRVS yet)
+ * @description esignet callback button form definition.  Calls https://mosip-api.{{hostname}}/esignet/get-oidp-user-info
  *
  */
 
 export const esignetCallback = ({
   fieldName,
-  event,
-  sectionId,
-  getOIDPUserInfoUrl,
+  mosipAPIUserInfoUrl,
   openIdProviderClientId,
 }: {
   fieldName: string;
-  event: string;
-  sectionId: string;
-  getOIDPUserInfoUrl: string;
+  mosipAPIUserInfoUrl: string;
   openIdProviderClientId: string;
 }) => ({
   name: fieldName,
@@ -115,14 +109,14 @@ export const esignetCallback = ({
   validator: [],
   hideInPreview: true,
   options: {
-    url: getOIDPUserInfoUrl,
+    url: mosipAPIUserInfoUrl,
     headers: {
       "Content-type": "application/json",
     },
     body: {
       clientId: openIdProviderClientId,
       redirectUri:
-        '${window.location.origin}/drafts/${window.location.pathname.split("/")[2]}/events/${event}/${sectionId}/group/${sectionId}',
+        '${window.location.href}',
     },
 
     method: "POST",
