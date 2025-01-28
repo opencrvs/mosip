@@ -34,10 +34,7 @@ export const esignet = (
   url.searchParams.append("acr_values", "mosip:idp:acr:static-code");
   url.searchParams.append("claims", openIdProviderClaims);
   url.searchParams.append("state", "fetch-on-mount");
-  url.searchParams.append(
-    "redirect_uri",
-    '${window.location.href}',
-  );
+  url.searchParams.append("redirect_uri", "${window.location.href}");
 
   return {
     name: fieldName,
@@ -115,8 +112,7 @@ export const esignetCallback = ({
     },
     body: {
       clientId: openIdProviderClientId,
-      redirectUri:
-        '${window.location.href}',
+      redirectUri: "${window.location.href}",
     },
 
     method: "POST",
@@ -170,8 +166,22 @@ export const idReader = (
   };
 };
 
-export const qr = () => ({
+type MessageDescriptor = {
+  id: string;
+  defaultMessage: string;
+  description?: string;
+};
+
+export const qr = ({
+  validation,
+}: {
+  validation: {
+    rule: Record<string, unknown>;
+    errorMessage: MessageDescriptor;
+  };
+}) => ({
   type: "QR",
+  validation,
 });
 
 export const verified = (event: string, sectionId: string) => {
