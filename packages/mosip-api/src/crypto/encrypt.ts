@@ -1,6 +1,6 @@
 import * as forge from "node-forge";
 import { env } from "../constants";
-import { IS_THUMBPRINT } from "./crypto-constants";
+import { IS_THUMBPRINT, OPENCRVS_PRIVATE_KEY } from "./crypto-constants";
 
 const KEY_SPLITTER = "#KEY_SPLITTER#";
 const VERSION_RSA_2048 = "VER_R2";
@@ -14,9 +14,9 @@ const THUMBPRINT_LENGTH = 32;
 
 export function encryptAndSign(requestData: string) {
   const opencrvsPrivateKey: forge.pki.rsa.PrivateKey =
-    forge.pki.privateKeyFromPem(env.OPENCRVS_PRIVATE_KEY);
+    forge.pki.privateKeyFromPem(OPENCRVS_PRIVATE_KEY);
   const mosipPublicKey: forge.pki.rsa.PublicKey = forge.pki.certificateFromPem(
-    env.MOSIP_PUBLIC_KEY,
+    env.MOSIP_CERTIFICATE,
   ).publicKey as forge.pki.rsa.PublicKey;
 
   const symmetricKey: string = forge.random.getBytesSync(SYMMETRIC_KEY_SIZE);

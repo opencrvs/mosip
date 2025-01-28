@@ -1,5 +1,4 @@
 import * as forge from "node-forge";
-import { env } from "../constants";
 import {
   KEY_SPLITTER,
   VERSION_RSA_2048,
@@ -10,9 +9,20 @@ import {
   ASYMMETRIC_ALGORITHM,
   SYMMETRIC_ALGORITHM,
   IS_THUMBPRINT,
+  OPENCRVS_PRIVATE_KEY,
 } from "./crypto-constants";
+import { env } from "../constants";
 
-export async function decryptData(requestData: Buffer): Promise<string> {
+export async function decryptData(data: string): Promise<{
+  eventId: string;
+  uinToken: string;
+  trackingId: string;
+}> {
+  if (env.DANGEROUSLY_BYPASS_ENCRYPTION) {
+    return JSON.parse(data);
+  }
+
+  const requestData = Buffer.from(data, "base64url");
   const keyDemiliterIndex: number = requestData.indexOf(KEY_SPLITTER);
   if (keyDemiliterIndex < 0) {
     throw new Error("Improper encrypted data format");
@@ -79,9 +89,8 @@ export async function decryptData(requestData: Buffer): Promise<string> {
       encryptedData.length,
     );
   }
-  const opencrvsPrivKey: forge.pki.rsa.PrivateKey = forge.pki.privateKeyFromPem(
-    env.OPENCRVS_PRIVATE_KEY,
-  );
+  const opencrvsPrivKey: forge.pki.rsa.PrivateKey =
+    forge.pki.privateKeyFromPem(OPENCRVS_PRIVATE_KEY);
   const decryptedSymmetricKey = opencrvsPrivKey.decrypt(
     encryptedSymmetricKey.toString("binary"),
     ASYMMETRIC_ALGORITHM,
@@ -107,5 +116,8 @@ export async function decryptData(requestData: Buffer): Promise<string> {
   if (!pass) {
     throw new Error("Unable to decrypt data");
   }
-  return Buffer.from(decipher.output.getBytes(), "binary").toString("utf8");
+
+  return JSON.parse(
+    Buffer.from(decipher.output.getBytes(), "binary").toString("utf8"),
+  );
 }

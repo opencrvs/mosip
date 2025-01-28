@@ -1,5 +1,5 @@
 import { RouteHandlerMethod } from "fastify";
-import { createAid, createNid } from "../random-identifiers";
+import { createNid } from "../random-identifiers";
 import { sendEmail } from "../mailer";
 import { env } from "../constants";
 
@@ -25,9 +25,9 @@ const sendNid = async ({
 
   const response = await fetch(env.OPENCRVS_MOSIP_API_URL, {
     method: "POST",
-    body: JSON.stringify({ nid, token, eventId, trackingId }),
+    body: JSON.stringify({ eventId, uinToken: nid, trackingId }),
     headers: {
-      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 
@@ -45,22 +45,21 @@ const sendNid = async ({
 type OpenCRVSBirthEvent = {
   id: string;
   trackingId: string;
+  requestTime: string;
+  token: string;
+
+  /** encrypted data */
+  data: string;
+  signature: string;
 };
 
 /** Handles the births coming from OpenCRVS */
 export const birthHandler: RouteHandlerMethod = async (request, reply) => {
-  const { token, event } = request.body as {
-    token: string;
-    event: OpenCRVSBirthEvent;
-  };
+  const { id: eventId, trackingId, token } = request.body as OpenCRVSBirthEvent;
 
-  sendNid({ token, eventId: event.id, trackingId: event.trackingId }).catch(
-    (e) => {
-      console.error(e);
-    },
-  );
-
-  return reply.status(202).send({
-    aid: createAid(),
+  sendNid({ eventId, trackingId, token }).catch((e) => {
+    console.error(e);
   });
+
+  return reply.status(202).send();
 };

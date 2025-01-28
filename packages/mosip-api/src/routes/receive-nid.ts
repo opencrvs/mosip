@@ -2,39 +2,39 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as opencrvs from "../opencrvs-api";
 import { generateRegistrationNumber } from "../registration-number";
+import { decryptData } from "../crypto/decrypt";
 
-export const mosipNidSchema = z.object({
-  eventId: z
-    .string()
-    .describe("The identifier for the event (record) from OpenCRVS"),
-  trackingId: z
-    .string()
-    .describe("The tracking ID for the event (record) from OpenCRVS"),
-  nid: z.string().describe("The identifier for the registration from MOSIP"),
-  token: z
-    .string()
-    .describe(
-      "The one-time token from OpenCRVS. MOSIP should pass this through without using it.",
-    ),
-});
+/** Encrypted payload from MOSIP */
+export const mosipNidSchema = z.string();
 
 type MosipRequest = FastifyRequest<{
   Body: z.infer<typeof mosipNidSchema>;
 }>;
 
 /** Handles the calls coming from MOSIP */
-export const mosipHandler = async (
+export const receiveNidHandler = async (
   request: MosipRequest,
   reply: FastifyReply,
 ) => {
-  const { eventId, trackingId, nid, token } = request.body;
+  if (!request.headers.authorization) {
+    return reply.code(401).send({ error: "Authorization header is missing" });
+  }
+
+  const token = request.headers.authorization.split(" ")[1];
+  if (!token) {
+    return reply
+      .code(401)
+      .send({ error: "Token is missing in Authorization header" });
+  }
+
+  const { eventId, uinToken, trackingId } = await decryptData(request.body);
   const registrationNumber = generateRegistrationNumber(trackingId);
 
   await opencrvs.confirmRegistration(
     {
       id: eventId,
       registrationNumber,
-      identifiers: [{ type: "NATIONAL_ID", value: nid }],
+      identifiers: [{ type: "NATIONAL_ID", value: uinToken }],
     },
     { headers: { Authorization: `Bearer ${token}` } },
   );

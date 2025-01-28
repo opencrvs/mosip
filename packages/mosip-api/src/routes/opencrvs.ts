@@ -29,8 +29,6 @@ export const opencrvsHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  // We will receive the full bundle, but we will minimize the amount of data we send to MOSIP
-
   const trackingId = getTrackingId(request.body);
   const { id: eventId } = getComposition(request.body);
 
@@ -48,7 +46,7 @@ export const opencrvsHandler = async (
   // We can trust the token as when `confirmRegistration` or `rejectRegistration` are called, the token is verified by OpenCRVS
   // This server should also only be deployed in the local network so no external calls can be made.
 
-  request.log.info({ trackingId }, "Received record from OpenCRVS");
+  request.log.info({ eventId, trackingId }, "Received record from OpenCRVS");
 
   const eventType = getEventType(request.body);
 
@@ -56,14 +54,16 @@ export const opencrvsHandler = async (
   if (eventType === EVENT_TYPE.BIRTH) {
     await mosip.postRecord(
       eventId,
-      JSON.stringify(request.body),
+      trackingId,
+      request.body,
       token,
       env.MOSIP_BIRTH_WEBHOOK_URL,
     );
   } else if (eventType === EVENT_TYPE.DEATH) {
     await mosip.postRecord(
       eventId,
-      JSON.stringify(request.body),
+      trackingId,
+      request.body,
       token,
       env.MOSIP_DEATH_WEBHOOK_URL,
     );

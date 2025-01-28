@@ -1,10 +1,12 @@
 import { bool, cleanEnv, email, port, str } from "envalid";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 20240 }),
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
   OPENCRVS_MOSIP_API_URL: str({
-    devDefault: "http://localhost:2024/webhooks/mosip",
+    devDefault: "http://localhost:2024/birthReceiveNid",
     desc: "The URL where @opencrvs/mosip/mosip-api receives webhooks from MOSIP",
   }),
 

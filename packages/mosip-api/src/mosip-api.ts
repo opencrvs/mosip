@@ -53,49 +53,42 @@ export async function generateMosipAid() {
 
 export const postRecord = async (
   id: string,
-  payload: string,
+  trackingId: string,
+  payload: fhir3.Bundle,
   token: string,
   url: string,
 ) => {
-  let proxyRequest: string;
-  try {
-    const encryptionResponse = encryptAndSign(payload);
-    proxyRequest = JSON.stringify({
-      id,
-      requestTime: new Date().toISOString(),
-      data: encryptionResponse.data,
-      signature: encryptionResponse.signature,
-    });
-  } catch (e) {
-    logger.error(`Error encrypting and signing data: ${e}`);
-    return;
-  }
+  const encryptionResponse = encryptAndSign(JSON.stringify(payload));
+  const proxyRequest = JSON.stringify({
+    id,
+    trackingId,
+    requestTime: new Date().toISOString(),
+    data: encryptionResponse.data,
+    signature: encryptionResponse.signature,
+  });
 
-  logger.info(`Encryting Payload Complete. Here is the payload id : ${id}`);
+  logger.info(`Encrypting payload complete. Here is payload id ${id}`);
 
   const authToken = await getMosipAuthToken();
-  if (!authToken) {
-    throw new MOSIPError(
-      `Failed getting mosip auth token. response: ${JSON.stringify(authToken)}`,
-    );
-  }
 
   logger.info(`ID - ${id}. Received MOSIP Auth token`);
 
-  const res = await fetch(url, {
+  const response = await fetch(url, {
     method: "POST",
     body: proxyRequest,
     headers: {
       "Content-Type": "application/json",
       cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`,
     },
-  })
-    .then((response) => {
-      return response.text();
-    })
-    .catch((error) => {
-      logger.error(`failed sending data to mosip: ${error.message}`);
-      return undefined;
-    });
-  logger.info(`ID - ${id}. Sent data to Mosip. Response: ${res}`);
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await response.text()}`,
+    );
+  }
+
+  logger.info(
+    `ID - ${id}. Sent data to Mosip. Response: ${await response.text()}`,
+  );
 };

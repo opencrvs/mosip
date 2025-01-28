@@ -21,7 +21,7 @@ const generateSignedJwt = async (userInfo: OIDPUserInfo) => {
   };
 
   const decodeKey = Buffer.from(
-    readFileSync(join(__dirname, "./dev-secrets/jwk.txt")).toString(),
+    readFileSync(join(__dirname, "../../../config/jwk.txt")).toString(),
     "base64",
   )?.toString();
   const jwkObject = JSON.parse(decodeKey);
