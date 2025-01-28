@@ -205,19 +205,24 @@ export const verified = (event: string, sectionId: string) => {
   };
 };
 
-export const idPendingVerificationBanner = (
+function capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+export const idVerificationBanner = (
   event: string,
   sectionId: string,
+  status: "pending" | "verified" | "failed",
 ) => {
   const fieldName = "verified";
   const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
   return {
-    name: "idPending",
+    name: `id${capitalize(status)}.`,
     type: "ID_VERIFICATION_BANNER",
     fieldId,
     hideInPreview: true,
     custom: true,
-    bannerType: "pending",
+    bannerType: status,
     idFieldName: "idReader",
     label: {
       id: "form.field.label.empty",
@@ -227,7 +232,7 @@ export const idPendingVerificationBanner = (
     conditionals: [
       {
         action: "hide",
-        expression: '$form?.verified !== "pending"',
+        expression: `$form?.verified !== "${status}"`,
       },
     ],
   };
@@ -236,6 +241,8 @@ export const idPendingVerificationBanner = (
 export const idVerificationFields = (event: string, sectionId: string) => {
   return [
     verified(event, sectionId),
-    idPendingVerificationBanner(event, sectionId),
+    idVerificationBanner(event, sectionId, "pending"),
+    idVerificationBanner(event, sectionId, "verified"),
+    idVerificationBanner(event, sectionId, "failed"),
   ];
 };
