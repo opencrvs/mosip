@@ -1,5 +1,5 @@
 // Copypasted types from @opencrvs/commons
-// In 1.8.0 we'll move importing these from @opencrvs/toolkit
+// For this reason, here are shortcuts and `!` assertions, as we haven't copypasted ALL types from @opencrvs/commons
 
 declare const __nominal__type: unique symbol;
 export type Nominal<Type, Identifier extends string> = Type & {
@@ -507,3 +507,56 @@ export const getDeceasedNid = (bundle: fhir3.Bundle) => {
   const deceased = findDeceasedEntry(composition, bundle);
   return getPatientNationalId(deceased as fhir3.Patient);
 };
+
+export function findCompositionSection<T extends fhir3.Composition>(
+  code: string,
+  composition: T,
+) {
+  return composition.section!.find((section) =>
+    section.code!.coding!.some((coding) => coding.code === code),
+  );
+}
+
+export function resourceIdentifierToUUID(
+  resourceIdentifier: ResourceIdentifier,
+) {
+  const urlParts = resourceIdentifier.split("/");
+  return urlParts[urlParts.length - 1] as UUID;
+}
+
+export type URNReference = `urn:uuid:${UUID}`;
+
+export function isURNReference(id: string): id is URNReference {
+  return id.startsWith("urn:uuid:");
+}
+
+export function isSaved<T extends Resource>(resource: T) {
+  return resource.id !== undefined;
+}
+
+export function findEntryFromBundle(
+  bundle: fhir3.Bundle,
+  reference: fhir3.Reference["reference"],
+) {
+  return isURNReference(reference!)
+    ? bundle.entry!.find((entry) => entry.fullUrl === reference)
+    : bundle.entry!.find(
+        (entry) =>
+          isSaved(entry.resource!) &&
+          entry.resource!.id ===
+            resourceIdentifierToUUID(reference as ResourceIdentifier),
+      );
+}
+
+export function getInformantType(record: fhir3.Bundle) {
+  const compositionSection = findCompositionSection(
+    "informant-details",
+    getComposition(record),
+  );
+  if (!compositionSection) return undefined;
+  const personSectionEntry = compositionSection.entry![0];
+  const personEntry = findEntryFromBundle(record, personSectionEntry.reference);
+
+  return (personEntry?.resource as fhir3.RelatedPerson).relationship
+    ?.coding?.[0].code;
+}
