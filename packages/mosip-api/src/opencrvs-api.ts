@@ -133,7 +133,7 @@ export const upsertRegistrationIdentifier = (
 export const updateField = (
   id: string,
   fieldId: string,
-  valueBoolean: boolean,
+  valueString: string,
   { headers }: { headers: Record<string, any> },
 ) =>
   post({
@@ -142,6 +142,6 @@ export const updateField = (
         updateField(id: $id, details: $details)
       }
     `,
-    variables: { id, details: { fieldId, valueBoolean } },
+    variables: { id, details: { fieldId, valueString } },
     headers,
   });

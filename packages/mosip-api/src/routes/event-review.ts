@@ -26,11 +26,10 @@ export const reviewEventHandler = async (
 
   // Initial test of the verification, we will verify only other informants than mother and father
   if (informantType !== "mother" && informantType !== "father") {
-    console.log("here");
     await updateField(
       eventId,
       `birth.informant.informant-view-group.verified`,
-      true,
+      'verified',
       { headers: { Authorization: `Bearer ${token}` } },
     );
   }
