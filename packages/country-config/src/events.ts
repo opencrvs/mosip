@@ -62,3 +62,9 @@ export const mosipRegistrationForReviewHandler = ({ url }: { url: string }) =>
 
     return h.response({ success: true }).code(200);
   }) satisfies Hapi.ServerRoute["handler"];
+
+/**
+ * Replaces `/events/{event}/actions/sent-for-approval` handler in country config
+ * Currently the same as `/events/{event}/actions/sent-notification-for-review`
+ */
+export const mosipRegistrationForApprovalHandler = mosipRegistrationForReviewHandler
