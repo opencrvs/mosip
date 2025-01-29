@@ -1,12 +1,20 @@
 import Fastify from "fastify";
 import { EMAIL_ENABLED, env } from "./constants";
-import { opencrvsBirthHandler } from "./webhooks/opencrvs-birth";
-import { deactivateNidHandler } from "./webhooks/deactivate-nid";
+import { birthHandler } from "./routes/birth";
+import { deactivateNidHandler } from "./routes/deactivate-nid";
+import { aidHandler } from "./routes/aid";
+import { oauthHandler } from "./routes/oauth";
+import formbody from "@fastify/formbody";
 
 const app = Fastify();
 
-app.post("/webhooks/opencrvs/birth", { handler: opencrvsBirthHandler });
-app.post("/webhooks/opencrvs/death", { handler: deactivateNidHandler });
+// MOSIP's auth endpoint uses application/x-www-form-urlencoded so for simplicity we'll use this plugin
+app.register(formbody);
+
+app.post("/events/birth", { handler: birthHandler });
+app.post("/events/death", { handler: deactivateNidHandler });
+app.post("/oauth/token", { handler: oauthHandler });
+app.get("/aid", { handler: aidHandler });
 
 async function run() {
   if (env.isProd) {

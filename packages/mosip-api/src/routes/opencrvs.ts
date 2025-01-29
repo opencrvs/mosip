@@ -9,7 +9,7 @@ import {
   getTrackingId,
 } from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
-import { generateRegistrationNumber } from "../registration-number";
+import { env } from "../constants";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -29,8 +29,6 @@ export const opencrvsHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  // We will receive the full bundle, but we will minimize the amount of data we send to MOSIP
-
   const trackingId = getTrackingId(request.body);
   const { id: eventId } = getComposition(request.body);
 
@@ -48,55 +46,37 @@ export const opencrvsHandler = async (
   // We can trust the token as when `confirmRegistration` or `rejectRegistration` are called, the token is verified by OpenCRVS
   // This server should also only be deployed in the local network so no external calls can be made.
 
-  request.log.info({ trackingId }, "Received record from OpenCRVS");
+  request.log.info({ eventId, trackingId }, "Received record from OpenCRVS");
 
   const eventType = getEventType(request.body);
 
+  const aid = await mosip.generateMosipAid();
   if (eventType === EVENT_TYPE.BIRTH) {
-    const { aid } = await mosip.postBirthRecord({
-      event: { id: eventId, trackingId },
+    await mosip.postRecord(
+      eventId,
+      trackingId,
+      request.body,
       token,
-    });
-
-    await opencrvs.upsertRegistrationIdentifier(
-      {
-        id: eventId,
-        identifierType: "MOSIP_AID",
-        identifierValue: aid,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
+      env.MOSIP_BIRTH_WEBHOOK_URL,
+    );
+  } else if (eventType === EVENT_TYPE.DEATH) {
+    await mosip.postRecord(
+      eventId,
+      trackingId,
+      request.body,
+      token,
+      env.MOSIP_DEATH_WEBHOOK_URL,
     );
   }
 
-  if (eventType === EVENT_TYPE.DEATH) {
-    const nid = getDeceasedNid(request.body);
-    const response = await mosip.deactivateNid({
-      nid,
-    });
-    const registrationNumber = generateRegistrationNumber(trackingId);
-
-    let comment: string;
-    if (response.status === 404) {
-      comment = `NID "${nid}" not found`;
-    } else if (response.status === 409) {
-      comment = `NID "${nid}" already deactivated`;
-    } else if (response.ok) {
-      comment = `NID "${nid}" deactivated`;
-    } else {
-      throw new Error(
-        `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
-      );
-    }
-
-    await opencrvs.confirmRegistration(
-      {
-        id: eventId,
-        registrationNumber,
-        comment,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-  }
+  await opencrvs.upsertRegistrationIdentifier(
+    {
+      id: eventId,
+      identifierType: "MOSIP_AID",
+      identifierValue: aid,
+    },
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
 
   return reply.code(202).send();
 };
