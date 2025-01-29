@@ -184,7 +184,7 @@ export const qr = ({
   validation,
 });
 
-export const verified = (event: string, sectionId: string) => {
+export const verified = (event: string, sectionId: string, mapping: any) => {
   const fieldName = "verified";
   const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
   return {
@@ -202,6 +202,7 @@ export const verified = (event: string, sectionId: string) => {
       expression: 'Boolean($form?.idReader)? "pending":""',
     },
     validator: [],
+    mapping
   };
 };
 
@@ -238,9 +239,9 @@ export const idVerificationBanner = (
   };
 };
 
-export const idVerificationFields = (event: string, sectionId: string) => {
+export const idVerificationFields = (event: string, sectionId: string, mapping: any) => {
   return [
-    verified(event, sectionId),
+    verified(event, sectionId, mapping),
     idVerificationBanner(event, sectionId, "pending"),
     idVerificationBanner(event, sectionId, "verified"),
     idVerificationBanner(event, sectionId, "failed"),
