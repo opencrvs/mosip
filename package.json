@@ -14,6 +14,7 @@
   },
   "scripts": {
     "dev": "turbo run dev",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "set-version": "node -e \"const fs=require('fs'),v=process.argv[1];['package.json',...fs.readdirSync('packages').map(d=>'packages/'+d+'/package.json')].forEach(f=>fs.writeFileSync(f,JSON.stringify({...require('./'+f),version:v},null,2)+'\\n'))\""
   }
 }

@@ -1,0 +1,20 @@
+{
+  "name": "@opencrvs/mosip-crypto",
+  "license": "MPL-2.0",
+  "version": "1.7.0-alpha.16",
+  "main": "index.js",
+  "dependencies": {
+    "@fastify/formbody": "^8.0.1",
+    "@fastify/static": "^8.0.3",
+    "@types/node": "^22.4.1",
+    "@types/node-forge": "^1.3.11",
+    "casual": "^1.6.2",
+    "envalid": "^8.0.0",
+    "fastify": "^5.0.0",
+    "jose": "^5.9.6",
+    "jsonwebtoken": "^9.0.2",
+    "node-forge": "^1.3.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3"
+  }
+}

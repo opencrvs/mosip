@@ -16,6 +16,9 @@ yarn dev
 cd packages/*
 yarn install
 yarn dev
+
+# bump package.json versions
+yarn set-version 1.7.0-alpha.16
 ```
 
 ## Country configuration
