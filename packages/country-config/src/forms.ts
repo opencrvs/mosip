@@ -172,17 +172,30 @@ type MessageDescriptor = {
   description?: string;
 };
 
-export const qr = ({
-  validation,
-}: {
-  validation: {
-    rule: Record<string, unknown>;
-    errorMessage: MessageDescriptor;
-  };
-}) => ({
+interface QRValidation {
+  rule: Record<string, unknown>;
+  errorMessage: MessageDescriptor;
+}
+
+interface QRConfig {
+  validation: QRValidation;
+}
+
+export const qr = ({ validation }: QRConfig) => ({
   type: "QR",
   validation,
 });
+
+interface ESignetConfig {
+  esignetAuthUrl: string;
+  openIdProviderClientId: string;
+  openIdProviderClaims: string | undefined;
+  fieldName: string;
+  callback: {
+    fieldName: string;
+    mosipAPIUserInfoUrl: string;
+  };
+}
 
 export const verified = (event: string, sectionId: string, mapping: any) => {
   const fieldName = "verified";
@@ -202,7 +215,7 @@ export const verified = (event: string, sectionId: string, mapping: any) => {
       expression: 'Boolean($form?.idReader)? "pending":""',
     },
     validator: [],
-    mapping
+    mapping,
   };
 };
 
@@ -239,10 +252,62 @@ export const idVerificationBanner = (
   };
 };
 
-export const idVerificationFields = (event: string, sectionId: string, mapping: any) => {
+export const getInitialValueFromIDReader = (fieldNameInReader: string) => ({
+  dependsOn: ["idReader", "esignetCallback"],
+  expression: `$form?.idReader?.${fieldNameInReader} || $form?.esignetCallback?.data?.${fieldNameInReader} || ""`,
+});
+
+export const idReaderFields = (
+  event: "birth" | "death",
+  section: "informant" | "mother" | "father",
+  qrConfig: QRConfig,
+  esignetConfig: ESignetConfig | undefined,
+  verifiedCustomFieldMapping: any,
+  conditionals: any[] = [],
+) => {
+  const readers: any[] = [qr(qrConfig)];
+  const fields: any[] = [
+    idReader(
+      event,
+      section,
+      conditionals.concat({
+        action: "hide",
+        expression:
+          "$form?.verified === 'verified' || $form?.verified === 'authenticated' || $form?.verified === 'failed'",
+      }),
+      readers,
+    ),
+  ];
+  if (esignetConfig) {
+    readers.push(
+      esignet(
+        esignetConfig.esignetAuthUrl,
+        esignetConfig.openIdProviderClientId,
+        esignetConfig.openIdProviderClaims,
+        esignetConfig.fieldName,
+        esignetConfig.callback.fieldName,
+      ),
+    );
+    fields.push(
+      esignetCallback({
+        fieldName: esignetConfig.callback.fieldName,
+        mosipAPIUserInfoUrl: esignetConfig.callback.mosipAPIUserInfoUrl,
+        openIdProviderClientId: esignetConfig.openIdProviderClientId,
+      }),
+    );
+  }
+  return [
+    ...fields,
+    ...idVerificationFields(event, section, verifiedCustomFieldMapping),
+  ];
+};
+export const idVerificationFields = (
+  event: string,
+  sectionId: string,
+  mapping: any,
+) => {
   return [
     verified(event, sectionId, mapping),
-    idVerificationBanner(event, sectionId, "pending"),
     idVerificationBanner(event, sectionId, "verified"),
     idVerificationBanner(event, sectionId, "failed"),
   ];
