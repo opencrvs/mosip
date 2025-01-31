@@ -226,7 +226,7 @@ function capitalize(str: string) {
 export const idVerificationBanner = (
   event: string,
   sectionId: string,
-  status: "pending" | "verified" | "failed",
+  status: "verified" | "failed" | "authenticated",
 ) => {
   const fieldName = "verified";
   const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
@@ -310,5 +310,6 @@ export const idVerificationFields = (
     verified(event, sectionId, mapping),
     idVerificationBanner(event, sectionId, "verified"),
     idVerificationBanner(event, sectionId, "failed"),
+    idVerificationBanner(event, sectionId, "authenticated"),
   ];
 };
