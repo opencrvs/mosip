@@ -131,13 +131,15 @@ app.post("/oidc/userinfo", {
 const authorizeSchema = {
   querystring: {
     type: "object",
-    required: ["client_id", "response_type", "scope", "acr_values", "claims"],
+    required: ["client_id", "response_type", "scope", "acr_values", "claims", "state", "redirect_uri"],
     properties: {
       client_id: { type: "string" },
       response_type: { type: "string" },
       scope: { type: "string" },
       acr_values: { type: "string" },
       claims: { type: "string" },
+      state: { type: "string" },
+      redirect_uri: { type: "string" },
     },
   },
 };
@@ -149,13 +151,13 @@ app.get("/authorize", {
     const html = readFileSync(htmlFilePath, "utf-8");
 
     const modifiedHtml = html
-      .replace(/{{CLIENT_URL}}/g, env.CLIENT_URL)
       .replace(/{{client_id}}/g, request.query.client_id)
       .replace(/{{response_type}}/g, request.query.response_type)
       .replace(/{{scope}}/g, request.query.scope)
       .replace(/{{acr_values}}/g, request.query.acr_values)
       .replace(/{{claims}}/g, request.query.claims)
-      .replace(/{{state}}/g, request.query.state);
+      .replace(/{{state}}/g, request.query.state)
+      .replace(/{{redirect_uri}}/g, request.query.redirect_uri);
 
     return reply.type("text/html").send(modifiedHtml);
   },
