@@ -560,3 +560,24 @@ export function getInformantType(record: fhir3.Bundle) {
   return (personEntry?.resource as fhir3.RelatedPerson).relationship
     ?.coding?.[0].code;
 }
+
+function getInformantPatient(record: fhir3.Bundle) {
+  const compositionSection = findCompositionSection(
+    "informant-details",
+    getComposition(record),
+  );
+  if (!compositionSection) return undefined;
+  const personSectionEntry = compositionSection.entry![0];
+  const relatedPersonEntry = findEntryFromBundle(
+    record,
+    personSectionEntry.reference,
+  );
+  const reference = (relatedPersonEntry?.resource as fhir3.RelatedPerson)
+    .patient.reference;
+  return getFromBundleById(record, reference!.split("/")[1]).resource;
+}
+
+export function getInformantNationalId(record: fhir3.Bundle) {
+  const informantPatient = getInformantPatient(record);
+  return getPatientNationalId(informantPatient as fhir3.Patient);
+}
