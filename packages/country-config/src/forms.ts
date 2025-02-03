@@ -147,8 +147,8 @@ export const idReader = (
     required: false,
     type: "ID_READER",
     label: {
-      id: "form.field.label.empty",
-      defaultMessage: "",
+      id: "form.field.label.idReader",
+      defaultMessage: "ID verification",
     },
     hideInPreview: true,
     initialValue: "",
