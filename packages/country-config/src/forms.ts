@@ -162,6 +162,11 @@ export const idReader = (
       id: "views.idReader.label.manualInput",
       defaultMessage: "Complete fields below",
     },
+    mapping: {
+      mutation: {
+        operation: "ignoreFieldTransformer",
+      },
+    },
     readers,
   };
 };
