@@ -41,11 +41,18 @@ export const reviewEventHandler = async (
   }
 
   // Initial test of the verification, we will verify only other informants than mother and father
-  if (!stubValidNIDs.includes(informantNationalID)) {
+  if (stubValidNIDs.includes(informantNationalID)) {
     await updateField(
       eventId,
       `birth.informant.informant-view-group.verified`,
       'verified',
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+  } else {
+    await updateField(
+      eventId,
+      `birth.informant.informant-view-group.verified`,
+      'failed',
       { headers: { Authorization: `Bearer ${token}` } },
     );
   }
