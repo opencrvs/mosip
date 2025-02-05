@@ -33,6 +33,7 @@ export const reviewEventHandler = async (
     response: { authStatus },
   } = await verifyNid({
     nid: informantNationalID,
+    // @TODO: Figure out the actual DOB
     dob: "1992/04/29",
   });
 
