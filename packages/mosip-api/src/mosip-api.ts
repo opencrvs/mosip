@@ -49,8 +49,3 @@ export const deactivateNid = async ({ nid }: { nid: string }) => {
 
   return response;
 };
-
-export const verifyNid = async ({ nid: _nid }: { nid: string }) => {
-  // @TODO: Implement verification via mock MOSIP API & actual MOSIP API
-  return true;
-};
