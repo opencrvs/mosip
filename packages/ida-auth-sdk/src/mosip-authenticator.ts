@@ -1,7 +1,6 @@
 import {
   encryptAuthData,
   extractKeysFromPkcs12,
-  getPemCertificateThumbprint,
   signAuthRequestData,
   urlSafeCertificateThumbprint,
 } from "@opencrvs/mosip-crypto";
@@ -100,21 +99,6 @@ export default class MOSIPAuthenticator {
     );
 
     const fullIdaAuthUrl = `${this.config.idaAuthUrl}/${this.config.partnerMispLk}/${this.config.partnerId}/${this.config.partnerApiKey}`;
-
-    console.log("# URL: ", fullIdaAuthUrl);
-    console.log("# Body: ", fullRequestJson);
-    console.log(
-      "# Headers: ",
-      JSON.stringify(
-        {
-          Authorization: "Authorization",
-          "content-type": "application/json",
-          Signature: signatureHeader,
-        },
-        null,
-        2,
-      ),
-    );
 
     return fetch(fullIdaAuthUrl, {
       method: "POST",
