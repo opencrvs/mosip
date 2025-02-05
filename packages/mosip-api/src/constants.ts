@@ -1,6 +1,5 @@
 import { cleanEnv, str, port, url } from "envalid";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync } from "node:fs";
 
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
@@ -27,10 +26,8 @@ export const env = cleanEnv(process.env, {
   }),
   ESIGNET_TOKEN_URL: url({ devDefault: "http://localhost:20260/oauth/token" }),
   OIDP_JWT_AUD_CLAIM: str({ devDefault: undefined }),
-  OIDP_CLIENT_PRIVATE_KEY: str({
-    devDefault: readFileSync(
-      join(__dirname, "./dev-secrets/jwk.txt"),
-    ).toString(),
+  OIDP_CLIENT_PRIVATE_KEY_PATH: str({
+    devDefault: "../../certs/esignet-jwk.txt",
   }),
 
   // NOTE: Following files and credentials are generally created by MOSIP and their assistance.
