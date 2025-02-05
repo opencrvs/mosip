@@ -1,13 +1,23 @@
 {
   "compilerOptions": {
-    "target": "es2016",
-    "module": "Node16",
-    "moduleResolution": "Node16",
+    "module": "ES2015",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["fhir"]
+    "types": [
+      "fhir",
+      "node"
+    ],
+    "paths": {
+      "@mosip/ida-auth-sdk": [
+        "../ida-auth-sdk/src"
+      ]
+    }
   },
-  "include": ["src/**/*.ts", "eslint.config.mjs"]
+  "include": [
+    "src/**/*.ts",
+    "eslint.config.mjs"
+  ]
 }
