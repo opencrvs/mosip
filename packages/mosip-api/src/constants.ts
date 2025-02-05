@@ -50,9 +50,9 @@ export const env = cleanEnv(process.env, {
   // MOSIP Crypto encrypt
   ENCRYPT_CERT_PATH: str({ devDefault: "../../certs/ida-partner.crt" }),
   DECRYPT_P12_FILE_PATH: str({ devDefault: "../../certs/keystore.p12" }),
-  DECRYPT_P12_FILE_PASSWORD: str({ devDefault: "password-123" }),
+  DECRYPT_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
 
   // MOSIP Crypto signature
   SIGN_P12_FILE_PATH: str({ devDefault: "../../certs/keystore.p12" }),
-  SIGN_P12_FILE_PASSWORD: str({ devDefault: "password-123" }),
+  SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
 });
