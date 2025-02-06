@@ -1,6 +1,5 @@
-import { cleanEnv, str, port, url, bool } from "envalid";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { cleanEnv, str, port, url } from "envalid";
+import { join } from "node:path";
 
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
@@ -27,10 +26,8 @@ export const env = cleanEnv(process.env, {
   }),
   ESIGNET_TOKEN_URL: url({ devDefault: "http://localhost:20260/oauth/token" }),
   OIDP_JWT_AUD_CLAIM: str({ devDefault: undefined }),
-  OIDP_CLIENT_PRIVATE_KEY: str({
-    devDefault: readFileSync(
-      join(__dirname, "../../../config/jwk.txt"),
-    ).toString(),
+  OIDP_CLIENT_PRIVATE_KEY_PATH: str({
+    devDefault: join(__dirname, "../../../certs/esignet-jwk.txt"),
   }),
 
   // NOTE: Following files and credentials are generally created by MOSIP and their assistance.
@@ -48,12 +45,18 @@ export const env = cleanEnv(process.env, {
   }),
 
   // MOSIP Crypto encrypt
-  ENCRYPT_CERT_PATH: str({ devDefault: "../../certs/ida-partner.crt" }),
-  DECRYPT_P12_FILE_PATH: str({ devDefault: "../../certs/keystore.p12" }),
+  ENCRYPT_CERT_PATH: str({
+    devDefault: join(__dirname, "../../../certs/ida-partner.crt"),
+  }),
+  DECRYPT_P12_FILE_PATH: str({
+    devDefault: join(__dirname, "../../../certs/keystore.p12"),
+  }),
   DECRYPT_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
 
   // MOSIP Crypto signature
-  SIGN_P12_FILE_PATH: str({ devDefault: "../../certs/keystore.p12" }),
+  SIGN_P12_FILE_PATH: str({
+    devDefault: join(__dirname, "../../../certs/keystore.p12"),
+  }),
   SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
 
   // MOSIP Java mediator details
