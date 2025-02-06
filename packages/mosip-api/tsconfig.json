@@ -13,6 +13,9 @@
     "paths": {
       "@mosip/ida-auth-sdk": [
         "../ida-auth-sdk/src"
+      ],
+      "@opencrvs/crypto": [
+        "../crypto/src"
       ]
     }
   },

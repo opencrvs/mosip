@@ -1,6 +1,3 @@
-import { env } from "../constants";
-import { extractKeysFromPkcs12 } from "./extract-p12";
-
 export const KEY_SPLITTER = "#KEY_SPLITTER#";
 export const VERSION_RSA_2048 = "VER_R2";
 export const SYMMETRIC_ALGORITHM = "AES-GCM";
@@ -13,8 +10,3 @@ export const THUMBPRINT_LENGTH = 32;
 
 /** @TODO: Figure out if this is actually ever configured, as earlier it was from the environment? */
 export const IS_THUMBPRINT = false;
-
-export const { privateKey: OPENCRVS_PRIVATE_KEY } = extractKeysFromPkcs12(
-  env.PKCS12_FILE_PATH,
-  env.PKCS12_PASSWORD,
-);

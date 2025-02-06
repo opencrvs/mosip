@@ -1,6 +1,5 @@
 import * as forge from "node-forge";
-import { env } from "../constants";
-import { IS_THUMBPRINT, OPENCRVS_PRIVATE_KEY } from "./crypto-constants";
+import { IS_THUMBPRINT } from "./crypto-constants";
 
 const KEY_SPLITTER = "#KEY_SPLITTER#";
 const VERSION_RSA_2048 = "VER_R2";
@@ -12,11 +11,17 @@ const AAD_SIZE = 32;
 const GCM_TAG_LENGTH = 16;
 const THUMBPRINT_LENGTH = 32;
 
-export function encryptAndSign(requestData: string) {
+export function encryptAndSignPacket(
+  requestData: string,
+  /** Private key as PEM string */
+  credentialPartnerPrivateKey: string,
+  /** Certificate as PEM string */
+  credentialPartnerCertificate: string,
+) {
   const opencrvsPrivateKey: forge.pki.rsa.PrivateKey =
-    forge.pki.privateKeyFromPem(OPENCRVS_PRIVATE_KEY);
+    forge.pki.privateKeyFromPem(credentialPartnerPrivateKey);
   const mosipPublicKey: forge.pki.rsa.PublicKey = forge.pki.certificateFromPem(
-    env.MOSIP_CERTIFICATE,
+    credentialPartnerCertificate,
   ).publicKey as forge.pki.rsa.PublicKey;
 
   const symmetricKey: string = forge.random.getBytesSync(SYMMETRIC_KEY_SIZE);

@@ -9,19 +9,17 @@ import {
   ASYMMETRIC_ALGORITHM,
   SYMMETRIC_ALGORITHM,
   IS_THUMBPRINT,
-  OPENCRVS_PRIVATE_KEY,
 } from "./crypto-constants";
-import { env } from "../constants";
 
-export async function decryptData(data: string): Promise<{
+export async function decryptData(
+  data: string,
+  /** Private key as PEM */
+  credentialPartnerPrivateKey: string,
+): Promise<{
   eventId: string;
   uinToken: string;
   trackingId: string;
 }> {
-  if (env.DANGEROUSLY_BYPASS_ENCRYPTION) {
-    return JSON.parse(data);
-  }
-
   const requestData = Buffer.from(data, "base64url");
   const keyDemiliterIndex: number = requestData.indexOf(KEY_SPLITTER);
   if (keyDemiliterIndex < 0) {
@@ -89,8 +87,9 @@ export async function decryptData(data: string): Promise<{
       encryptedData.length,
     );
   }
-  const opencrvsPrivKey: forge.pki.rsa.PrivateKey =
-    forge.pki.privateKeyFromPem(OPENCRVS_PRIVATE_KEY);
+  const opencrvsPrivKey: forge.pki.rsa.PrivateKey = forge.pki.privateKeyFromPem(
+    credentialPartnerPrivateKey,
+  );
   const decryptedSymmetricKey = opencrvsPrivKey.decrypt(
     encryptedSymmetricKey.toString("binary"),
     ASYMMETRIC_ALGORITHM,

@@ -66,4 +66,10 @@ export const env = cleanEnv(process.env, {
   MOSIP_AUTH_USER: str({ devDefault: "mosip-mock" }),
   MOSIP_AUTH_PASS: str({ devDefault: "mosip-mock" }),
   MOSIP_GENERATE_AID_URL: str({ devDefault: "http://localhost:20240/aid" }),
+  CREDENTIAL_PARTNER_PRIVATE_KEY_PATH: str({
+    devDefault: join(__dirname, "../../../certs/credential-partner.pem"),
+  }),
+  CREDENTIAL_PARTNER_CERTIFICATE_PATH: str({
+    devDefault: join(__dirname, "../../../certs/credential-partner.csr"),
+  }),
 });

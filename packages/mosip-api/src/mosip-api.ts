@@ -1,7 +1,8 @@
 import { env } from "./constants";
-import { encryptAndSign } from "./crypto/encrypt";
+import { encryptAndSignPacket } from "@opencrvs/crypto";
 import { logger } from "./logger";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
+import { readFileSync } from "node:fs";
 
 export class MOSIPError extends Error {
   constructor(message: string) {
@@ -9,6 +10,13 @@ export class MOSIPError extends Error {
     this.name = "MOSIPError";
   }
 }
+
+const CREDENTIAL_PARTNER_PRIVATE_KEY = readFileSync(
+  env.CREDENTIAL_PARTNER_PRIVATE_KEY_PATH,
+).toString();
+const CREDENTIAL_PARTNER_CERTIFICATE = readFileSync(
+  env.CREDENTIAL_PARTNER_CERTIFICATE_PATH,
+).toString();
 
 export async function getMosipAuthToken() {
   const response = await fetch(env.MOSIP_AUTH_URL, {
@@ -59,7 +67,11 @@ export const postRecord = async (
   token: string,
   url: string,
 ) => {
-  const encryptionResponse = encryptAndSign(JSON.stringify(payload));
+  const encryptionResponse = encryptAndSignPacket(
+    JSON.stringify(payload),
+    CREDENTIAL_PARTNER_PRIVATE_KEY,
+    CREDENTIAL_PARTNER_CERTIFICATE,
+  );
   const proxyRequest = JSON.stringify({
     id,
     trackingId,
