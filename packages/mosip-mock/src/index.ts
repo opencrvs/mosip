@@ -3,6 +3,7 @@ import { EMAIL_ENABLED, env } from "./constants";
 import { birthHandler } from "./routes/birth";
 import { deactivateNidHandler } from "./routes/deactivate-nid";
 import { aidHandler } from "./routes/aid";
+import { idAuthenticationHandler } from "./routes/id-authentication";
 import { oauthHandler } from "./routes/oauth";
 import formbody from "@fastify/formbody";
 
@@ -14,7 +15,10 @@ app.register(formbody);
 app.post("/events/birth", { handler: birthHandler });
 app.post("/events/death", { handler: deactivateNidHandler });
 app.post("/oauth/token", { handler: oauthHandler });
-app.get("/aid", { handler: aidHandler });
+app.post("/aid", { handler: aidHandler });
+app.post("/idauthentication/v1/auth/:mispLk/:partnerId/:apiKey", {
+  handler: idAuthenticationHandler,
+});
 
 async function run() {
   if (env.isProd) {

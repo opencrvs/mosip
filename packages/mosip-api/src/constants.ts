@@ -6,6 +6,12 @@ export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
   LOCALE: str({ devDefault: "en" }),
+  OPENCRVS_GRAPHQL_GATEWAY_URL: str({
+    devDefault: "http://localhost:7070/graphql",
+    desc: "The URL of the OpenCRVS GraphQL Gateway",
+  }),
+
+  // MOSIP Birth & Death packets
   MOSIP_BIRTH_WEBHOOK_URL: str({
     devDefault: "http://localhost:20240/events/birth",
     desc: "The URL where MOSIP receives birth webhooks from OpenCRVS",
@@ -14,10 +20,8 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:20240/events/death",
     desc: "The URL where MOSIP receives death webhooks from OpenCRVS",
   }),
-  OPENCRVS_GRAPHQL_GATEWAY_URL: str({
-    devDefault: "http://localhost:7070/graphql",
-    desc: "The URL of the OpenCRVS GraphQL Gateway",
-  }),
+
+  // E-Signet
   ESIGNET_USERINFO_URL: url({
     devDefault: "http://localhost:20260/oidc/userinfo",
   }),
@@ -28,29 +32,35 @@ export const env = cleanEnv(process.env, {
       join(__dirname, "../../../config/jwk.txt"),
     ).toString(),
   }),
+
+  // NOTE: Following files and credentials are generally created by MOSIP and their assistance.
+  // MOSIP Auth
+  PARTNER_APIKEY: str({ devDefault: "123456" }),
+  PARTNER_MISP_LK: str({
+    devDefault: "aaaaaAAAAAbbbbbBBBBBcccccCCCCCdddddDDDDD",
+  }),
+  PARTNER_ID: str({ devDefault: "crvs-partner" }),
+
+  // MOSIP IDA auth server
+  IDA_AUTH_DOMAIN_URI: str({ devDefault: "http://localhost:20240" }),
+  IDA_AUTH_URL: str({
+    devDefault: "http://localhost:20240/idauthentication/v1/auth",
+  }),
+
+  // MOSIP Crypto encrypt
+  ENCRYPT_CERT_PATH: str({ devDefault: "../../certs/ida-partner.crt" }),
+  DECRYPT_P12_FILE_PATH: str({ devDefault: "../../certs/keystore.p12" }),
+  DECRYPT_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
+
+  // MOSIP Crypto signature
+  SIGN_P12_FILE_PATH: str({ devDefault: "../../certs/keystore.p12" }),
+  SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
+
+  // MOSIP Java mediator details
   MOSIP_AUTH_URL: str({ devDefault: "http://localhost:20240/oauth/token" }),
   MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-mock" }),
   MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "mosip-mock" }),
   MOSIP_AUTH_USER: str({ devDefault: "mosip-mock" }),
   MOSIP_AUTH_PASS: str({ devDefault: "mosip-mock" }),
   MOSIP_GENERATE_AID_URL: str({ devDefault: "http://localhost:20240/aid" }),
-
-  PKCS12_FILE_PATH: str({
-    devDefault: join(__dirname, "../../../config/keystore.p12"),
-  }),
-  PKCS12_PASSWORD: str({ devDefault: "mosip123" }),
-
-  MOSIP_CERTIFICATE: str({
-    // NOTE! Generated in dev from `./dev-secrets/mosip-private-key.pem`, if needed for future.
-    // In reality, the private key would never be shared with OpenCRVS
-    devDefault: readFileSync(
-      join(__dirname, "../../../config/mosip-certificate.pem"),
-    ).toString(),
-    desc: "Used to encrypt the symmetric key that MOSIP can use to decrypt the payload.",
-  }),
-
-  DANGEROUSLY_BYPASS_ENCRYPTION: bool({
-    default: false,
-    desc: "DO _NOT_ USE IN PRODUCTION",
-  }),
 });
