@@ -1,4 +1,5 @@
 import MOSIPAuthenticator from "./mosip-authenticator";
+import { join } from "node:path";
 
 const main = async () => {
   const authenticator = new MOSIPAuthenticator({
@@ -12,12 +13,12 @@ const main = async () => {
     idaAuthUrl: "https://api.collab.mosip.net/idauthentication/v1/auth",
 
     // Crypto encrypt
-    encryptCertPath: "../../certs/ida-partner.crt",
-    decryptP12FilePath: "../../certs/keystore.p12",
+    encryptCertPath: join(__dirname, "../../../certs/ida-partner.crt"),
+    decryptP12FilePath: join(__dirname, "../../../certs/keystore.p12"),
     decryptP12FilePassword: "",
 
     // Crypto signature
-    signP12FilePath: "../../certs/keystore.p12",
+    signP12FilePath: join(__dirname, "../../../certs/keystore.p12"),
     signP12FilePassword: "",
   });
 

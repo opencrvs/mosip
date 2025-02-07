@@ -18,7 +18,11 @@ import * as jose from "jose";
 import { isValid, format, Locale, parse } from "date-fns";
 import { enGB } from "date-fns/locale/en-GB";
 import { fr } from "date-fns/locale/fr";
+import fs from "node:fs";
 
+const OIDP_CLIENT_PRIVATE_KEY = fs
+  .readFileSync(env.OIDP_CLIENT_PRIVATE_KEY_PATH)
+  .toString();
 export const locales: Record<string, Locale> = { en: enGB, fr };
 
 type OIDPUserAddress = {
@@ -90,11 +94,7 @@ const generateSignedJwt = async (clientId: string) => {
     aud: env.OIDP_JWT_AUD_CLAIM,
   };
 
-  const decodeKey = Buffer.from(
-    env.OIDP_CLIENT_PRIVATE_KEY!,
-    "base64",
-  )?.toString();
-
+  const decodeKey = Buffer.from(OIDP_CLIENT_PRIVATE_KEY, "base64")?.toString();
   const jwkObject = JSON.parse(decodeKey);
   const privateKey = await jose.importJWK(jwkObject, JWT_ALG);
 
