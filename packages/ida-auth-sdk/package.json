@@ -1,7 +1,7 @@
 {
   "name": "@opencrvs/mosip-ida-auth-sdk",
   "license": "MPL-2.0",
-  "version": "1.7.0-alpha.19",
+  "version": "1.7.0-alpha.20",
   "main": "src/index.ts",
   "scripts": {
     "demo": "tsx src/demo.ts"
