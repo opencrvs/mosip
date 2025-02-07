@@ -2,11 +2,15 @@ import Fastify from "fastify";
 import { EMAIL_ENABLED, env } from "./constants";
 import { opencrvsBirthHandler } from "./webhooks/opencrvs-birth";
 import { deactivateNidHandler } from "./webhooks/deactivate-nid";
+import { idAuthenticationHandler } from "./webhooks/id-authentication";
 
 const app = Fastify();
 
 app.post("/webhooks/opencrvs/birth", { handler: opencrvsBirthHandler });
 app.post("/webhooks/opencrvs/death", { handler: deactivateNidHandler });
+app.post("/idauthentication/v1/auth/:mispLk/:partnerId/:apiKey", {
+  handler: idAuthenticationHandler,
+});
 
 async function run() {
   if (env.isProd) {

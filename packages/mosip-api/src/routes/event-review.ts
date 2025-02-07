@@ -5,23 +5,12 @@ import {
   getInformantType,
 } from "../types/fhir";
 import { updateField } from "../opencrvs-api";
+import { verifyNid } from "../mosip-api";
 
 type OpenCRVSRequest = FastifyRequest<{
   Body: fhir3.Bundle;
 }>;
 
-const stubValidNIDs = [
-  "1234567890",
-  "1210563847",
-  "1223948576",
-  "1238475062",
-  "1249583720",
-  "1256074839",
-  "1263849205",
-  "1275093846",
-  "1283749502",
-  "1295067384",
-];
 export const reviewEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
@@ -40,19 +29,26 @@ export const reviewEventHandler = async (
       .send({ error: "Token is missing in Authorization header" });
   }
 
-  // Initial test of the verification, we will verify only other informants than mother and father
-  if (stubValidNIDs.includes(informantNationalID)) {
+  const {
+    response: { authStatus },
+  } = await verifyNid({
+    nid: informantNationalID,
+    // @TODO: Figure out the actual DOB
+    dob: "1992/04/29",
+  });
+
+  if (authStatus) {
     await updateField(
       eventId,
       `birth.informant.informant-view-group.verified`,
-      'verified',
+      "verified",
       { headers: { Authorization: `Bearer ${token}` } },
     );
   } else {
     await updateField(
       eventId,
       `birth.informant.informant-view-group.verified`,
-      'failed',
+      "failed",
       { headers: { Authorization: `Bearer ${token}` } },
     );
   }

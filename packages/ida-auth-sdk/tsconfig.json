@@ -11,8 +11,8 @@
       "node"
     ],
     "paths": {
-      "@mosip/ida-auth-sdk": [
-        "../ida-auth-sdk/src"
+      "@opencrvs/mosip-crypto": [
+        "../crypto/src"
       ]
     }
   },

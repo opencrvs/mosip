@@ -5,7 +5,7 @@ import path from "path";
 import fastifyStatic from "@fastify/static";
 import formbody from "@fastify/formbody";
 import * as jose from "jose";
-import { readFileSync } from "fs";
+import { readFileSync } from "node:fs";
 import { join } from "path";
 import casual from "casual";
 
@@ -13,6 +13,9 @@ const app = Fastify({ logger: true });
 
 const JWT_ALG = "RS256";
 const JWT_EXPIRATION_TIME = "1h";
+const OIDP_CLIENT_PRIVATE_KEY = readFileSync(
+  env.OIDP_CLIENT_PRIVATE_KEY_PATH,
+).toString();
 
 const generateSignedJwt = async (userInfo: OIDPUserInfo) => {
   const header = {
@@ -20,10 +23,7 @@ const generateSignedJwt = async (userInfo: OIDPUserInfo) => {
     typ: "JWT",
   };
 
-  const decodeKey = Buffer.from(
-    readFileSync(join(__dirname, "./dev-secrets/jwk.txt")).toString(),
-    "base64",
-  )?.toString();
+  const decodeKey = Buffer.from(OIDP_CLIENT_PRIVATE_KEY, "base64").toString();
   const jwkObject = JSON.parse(decodeKey);
   const privateKey = await jose.importJWK(jwkObject, JWT_ALG);
 
