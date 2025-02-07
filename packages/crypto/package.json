@@ -1,7 +1,7 @@
 {
   "name": "@opencrvs/mosip-crypto",
   "license": "MPL-2.0",
-  "version": "1.7.0-alpha.19",
+  "version": "1.7.0-alpha.20",
   "main": "src/index.ts",
   "dependencies": {
     "@types/node-forge": "^1.3.11",
