@@ -209,7 +209,7 @@
   dependencies:
     fast-json-stringify "^6.0.0"
 
-"@fastify/formbody@^8.0.1":
+"@fastify/formbody@^8.0.1", "@fastify/formbody@^8.0.2":
   version "8.0.2"
   resolved "https://registry.yarnpkg.com/@fastify/formbody/-/formbody-8.0.2.tgz#7f97c8ab25933db77760bbeaacd2ff5355a54682"
   integrity sha512-84v5J2KrkXzjgBpYnaNRPqwgMsmY7ZDjuj0YVuMR3NXCJRCgKEZy/taSP1wUYGn0onfxJpLyRGDLa+NMaDJtnA==

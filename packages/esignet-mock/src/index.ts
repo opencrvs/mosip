@@ -6,7 +6,6 @@ import fastifyStatic from "@fastify/static";
 import formbody from "@fastify/formbody";
 import * as jose from "jose";
 import { readFileSync } from "node:fs";
-import { join } from "path";
 import casual from "casual";
 
 const app = Fastify({ logger: true });

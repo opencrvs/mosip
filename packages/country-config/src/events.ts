@@ -6,6 +6,7 @@ import fetch from "node-fetch";
  */
 export const mosipRegistrationHandler = ({ url }: { url: string }) =>
   (async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    // Corresponds to `packages/mosip-api` /events/registration -route
     const MOSIP_API_REGISTRATION_EVENT_URL = new URL(
       "./events/registration",
       url,
@@ -67,4 +68,5 @@ export const mosipRegistrationForReviewHandler = ({ url }: { url: string }) =>
  * Replaces `/events/{event}/actions/sent-for-approval` handler in country config
  * Currently the same as `/events/{event}/actions/sent-notification-for-review`
  */
-export const mosipRegistrationForApprovalHandler = mosipRegistrationForReviewHandler
+export const mosipRegistrationForApprovalHandler =
+  mosipRegistrationForReviewHandler;

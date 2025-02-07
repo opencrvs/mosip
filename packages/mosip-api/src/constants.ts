@@ -12,12 +12,12 @@ export const env = cleanEnv(process.env, {
 
   // MOSIP Birth & Death packets
   MOSIP_BIRTH_WEBHOOK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/birth",
-    desc: "The URL where MOSIP receives birth webhooks from OpenCRVS",
+    devDefault: "http://localhost:20240/opencrvs/v1/birth",
+    desc: "The URL where MOSIP receives birth packets from OpenCRVS",
   }),
   MOSIP_DEATH_WEBHOOK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/death",
-    desc: "The URL where MOSIP receives death webhooks from OpenCRVS",
+    devDefault: "http://localhost:20240/opencrvs/v1/death",
+    desc: "The URL where MOSIP receives death packets from OpenCRVS",
   }),
 
   // E-Signet
@@ -58,4 +58,23 @@ export const env = cleanEnv(process.env, {
     devDefault: join(__dirname, "../../../certs/keystore.p12"),
   }),
   SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
+
+  // MOSIP Java mediator details
+  MOSIP_AUTH_URL: str({
+    devDefault:
+      "http://localhost:20240/auth/realms/mosip/protocol/openid-connect/token",
+  }),
+  MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-mock" }),
+  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "mosip-mock" }),
+  MOSIP_AUTH_USER: str({ devDefault: "mosip-mock" }),
+  MOSIP_AUTH_PASS: str({ devDefault: "mosip-mock" }),
+  MOSIP_GENERATE_AID_URL: str({
+    devDefault: "http://localhost:20240/generateAid",
+  }),
+  CREDENTIAL_PARTNER_PRIVATE_KEY_PATH: str({
+    devDefault: join(__dirname, "../../../certs/credential-partner.pem"),
+  }),
+  CREDENTIAL_PARTNER_CERTIFICATE_PATH: str({
+    devDefault: join(__dirname, "../../../certs/credential-partner.csr"),
+  }),
 });
