@@ -2,6 +2,12 @@ import { RouteHandlerMethod } from "fastify";
 import { createNid } from "../random-identifiers";
 import { sendEmail } from "../mailer";
 import { env } from "../constants";
+import { encryptAndSignPacket, decryptData } from "@opencrvs/crypto";
+import { readFileSync } from "node:fs";
+
+export const CREDENTIAL_PARTNER_PRIVATE_KEY = readFileSync(
+  env.CREDENTIAL_PARTNER_PRIVATE_KEY_PATH,
+).toString();
 
 const sendNid = async ({
   token,
@@ -55,7 +61,14 @@ type OpenCRVSBirthEvent = {
 
 /** Handles the births coming from OpenCRVS */
 export const birthHandler: RouteHandlerMethod = async (request, reply) => {
-  const { id: eventId, trackingId, token } = request.body as OpenCRVSBirthEvent;
+  const {
+    id: eventId,
+    trackingId,
+    token,
+    data,
+  } = request.body as OpenCRVSBirthEvent;
+
+  const decryptedData = decryptData(data, CREDENTIAL_PARTNER_PRIVATE_KEY);
 
   sendNid({ eventId, trackingId, token }).catch((e) => {
     console.error(e);

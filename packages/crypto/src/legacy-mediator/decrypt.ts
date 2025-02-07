@@ -11,15 +11,15 @@ import {
   IS_THUMBPRINT,
 } from "./crypto-constants";
 
-export async function decryptData(
+export function decryptData(
   data: string,
   /** Private key as PEM */
   credentialPartnerPrivateKey: string,
-): Promise<{
+): {
   eventId: string;
   uinToken: string;
   trackingId: string;
-}> {
+} {
   const requestData = Buffer.from(data, "base64url");
   const keyDemiliterIndex: number = requestData.indexOf(KEY_SPLITTER);
   if (keyDemiliterIndex < 0) {

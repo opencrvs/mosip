@@ -42,6 +42,18 @@ app.setErrorHandler((error, request, reply) => {
 
 app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
+    url: "/esignet/get-oidp-user-info",
+    method: "POST",
+    handler: getOIDPUserInfo,
+    schema: {
+      body: OIDPUserInfoSchema,
+    },
+  });
+
+  /*
+   * OpenCRVS country-config receivers
+   */
+  app.withTypeProvider<ZodTypeProvider>().route({
     url: "/events/registration",
     method: "POST",
     handler: registrationEventHandler,
@@ -57,14 +69,10 @@ app.after(() => {
       body: opencrvsRecordSchema,
     },
   });
-  app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/esignet/get-oidp-user-info",
-    method: "POST",
-    handler: getOIDPUserInfo,
-    schema: {
-      body: OIDPUserInfoSchema,
-    },
-  });
+
+  /*
+   * MOSIP Java Mediator receiver
+   */
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/birthReceiveNid",
     method: "POST",

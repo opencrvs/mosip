@@ -2,7 +2,8 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as opencrvs from "../opencrvs-api";
 import { generateRegistrationNumber } from "../registration-number";
-import { decryptData } from "../crypto/decrypt";
+import { decryptData } from "@opencrvs/crypto";
+import { CREDENTIAL_PARTNER_PRIVATE_KEY } from "../mosip-api";
 
 /** Encrypted payload from MOSIP */
 export const mosipNidSchema = z.string();
@@ -27,7 +28,10 @@ export const receiveNidHandler = async (
       .send({ error: "Token is missing in Authorization header" });
   }
 
-  const { eventId, uinToken, trackingId } = await decryptData(request.body);
+  const { eventId, uinToken, trackingId } = decryptData(
+    request.body,
+    CREDENTIAL_PARTNER_PRIVATE_KEY,
+  );
   const registrationNumber = generateRegistrationNumber(trackingId);
 
   await opencrvs.confirmRegistration(

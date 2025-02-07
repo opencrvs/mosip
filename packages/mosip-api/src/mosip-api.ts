@@ -11,7 +11,7 @@ export class MOSIPError extends Error {
   }
 }
 
-const CREDENTIAL_PARTNER_PRIVATE_KEY = readFileSync(
+export const CREDENTIAL_PARTNER_PRIVATE_KEY = readFileSync(
   env.CREDENTIAL_PARTNER_PRIVATE_KEY_PATH,
 ).toString();
 const CREDENTIAL_PARTNER_CERTIFICATE = readFileSync(
@@ -51,9 +51,9 @@ export async function generateMosipAid() {
 
   if (!response.ok) {
     throw new MOSIPError(
-      `Failed receiving Aid. response: ${
+      `Failed receiving AID. response: ${
         response.status
-      }, response: ${response.text()}`,
+      }, response: ${await response.text()}`,
     );
   }
 

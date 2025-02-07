@@ -1,5 +1,4 @@
 import { bool, cleanEnv, email, port, str } from "envalid";
-import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 export const env = cleanEnv(process.env, {
@@ -9,7 +8,6 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:2024/birthReceiveNid",
     desc: "The URL where @opencrvs/mosip/mosip-api receives webhooks from MOSIP",
   }),
-
   SENDER_EMAIL_ADDRESS: email({
     default: "noreply@opencrvs.org",
     desc: "The email address that will be used to send emails such as mock NID card and NID (de)activation.",
@@ -26,6 +24,9 @@ export const env = cleanEnv(process.env, {
   SMTP_USERNAME: str({ devDefault: undefined }),
   SMTP_PASSWORD: str({ devDefault: undefined }),
   SMTP_SECURE: bool({ devDefault: false }),
+  CREDENTIAL_PARTNER_PRIVATE_KEY_PATH: str({
+    devDefault: join(__dirname, "../../../certs/credential-partner.pem"),
+  }),
 });
 
 export const EMAIL_ENABLED = Boolean(env.SMTP_HOST);

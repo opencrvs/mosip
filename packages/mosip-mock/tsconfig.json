@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "module": "ES2015",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": [
+      "fhir",
+      "node"
+    ],
+    "paths": {
+      "@opencrvs/crypto": [
+        "../crypto/src"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*.ts",
+    "eslint.config.mjs"
+  ]
+}
