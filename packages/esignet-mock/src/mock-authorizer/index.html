@@ -6,7 +6,6 @@
     <title>Mock authorizer</title>
   </head>
   <body>
-    <p>CLIENT_URL: {{CLIENT_URL}}</p>
     <p>client_id: {{client_id}}</p>
     <p>response_type: {{response_type}}</p>
     <p>scope: {{scope}}</p>
@@ -21,7 +20,8 @@
       const params = new URLSearchParams(window.location.search);
       const destinationURL = new URL(params.get("redirect_uri"));
       destinationURL.searchParams.set("code", "esignet-mock-code");
-      window.location.replace(destinationURL);
+      destinationURL.searchParams.set("state", params.get("state"));
+      window.location.replace(destinationURL.href);
     }
   </script>
 </html>
