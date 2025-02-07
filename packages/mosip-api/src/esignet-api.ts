@@ -11,7 +11,6 @@
 
 import * as jwt from "jsonwebtoken";
 import { env } from "./constants";
-import fetch from "node-fetch";
 import { logger } from "./logger";
 import z from "zod";
 import { FastifyReply, FastifyRequest } from "fastify";
