@@ -462,7 +462,7 @@ export function getEventType(fhirBundle: fhir3.Bundle) {
   throw new Error("Invalid FHIR bundle found");
 }
 
-function getPatientNationalId(patient: fhir3.Patient) {
+export function getPatientNationalId(patient: fhir3.Patient) {
   const identifier = patient.identifier?.find(
     (identifier) => identifier.type?.coding?.[0].code === "NATIONAL_ID",
   );
@@ -580,4 +580,17 @@ function getInformantPatient(record: fhir3.Bundle) {
 export function getInformantNationalId(record: fhir3.Bundle) {
   const informantPatient = getInformantPatient(record);
   return getPatientNationalId(informantPatient as fhir3.Patient);
+}
+
+export function findEntry(
+  code: string,
+  composition: fhir3.Composition,
+  bundle: fhir3.Bundle,
+) {
+  const patientSection = findCompositionSection(code, composition);
+  if (!patientSection || !patientSection.entry) {
+    return undefined;
+  }
+  const reference = patientSection.entry[0].reference;
+  return getFromBundleById(bundle, reference!.split("/")[1]).resource;
 }
