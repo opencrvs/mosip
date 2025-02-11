@@ -67,4 +67,6 @@ export const mosipRegistrationForReviewHandler = ({ url }: { url: string }) =>
  * Replaces `/events/{event}/actions/sent-for-approval` handler in country config
  * Currently the same as `/events/{event}/actions/sent-notification-for-review`
  */
-export const mosipRegistrationForApprovalHandler = mosipRegistrationForReviewHandler
+export const mosipRegistrationForApprovalHandler =
+  mosipRegistrationForReviewHandler;
+export const verify = mosipRegistrationForReviewHandler;
