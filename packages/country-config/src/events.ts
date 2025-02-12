@@ -29,7 +29,7 @@ export const mosipRegistrationHandler = ({ url }: { url: string }) =>
         .code(500);
     }
 
-    return h.response(await response.json()).code(200);
+    return h.response({ success: true }).code(200);
   }) satisfies Hapi.ServerRoute["handler"];
 
 /**
