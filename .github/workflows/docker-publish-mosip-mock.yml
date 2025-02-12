@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 env:
   REGISTRY: ghcr.io
@@ -40,6 +43,9 @@ jobs:
             type=sha,prefix=
         env:
           DOCKER_METADATA_SHORT_SHA_LENGTH: 7
+
+      - name: Copy yarn.lock to docker build context
+        run: cp yarn.lock packages/mosip-mock/yarn.lock
 
       - name: Build and push Docker image
         id: push
