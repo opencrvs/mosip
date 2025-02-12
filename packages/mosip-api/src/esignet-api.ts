@@ -11,7 +11,6 @@
 
 import * as jwt from "jsonwebtoken";
 import { env } from "./constants";
-import fetch from "node-fetch";
 import { logger } from "./logger";
 import z from "zod";
 import { FastifyReply, FastifyRequest } from "fastify";
@@ -92,7 +91,7 @@ const generateSignedJwt = async (clientId: string) => {
   const payload = {
     iss: clientId,
     sub: clientId,
-    aud: env.OIDP_JWT_AUD_CLAIM,
+    aud: env.OPENID_PROVIDER_CLAIMS,
   };
 
   const decodeKey = Buffer.from(OIDP_CLIENT_PRIVATE_KEY, "base64")?.toString();

@@ -2,7 +2,7 @@ import { RouteHandlerMethod } from "fastify";
 import { createNid } from "../random-identifiers";
 import { sendEmail } from "../mailer";
 import { env } from "../constants";
-import { encryptAndSignPacket, decryptData } from "@opencrvs/crypto";
+import { encryptAndSignPacket, decryptData } from "@opencrvs/mosip-crypto";
 import { readFileSync } from "node:fs";
 
 export const CREDENTIAL_PARTNER_PRIVATE_KEY = readFileSync(

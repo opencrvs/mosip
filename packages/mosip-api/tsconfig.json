@@ -6,21 +6,11 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [
-      "fhir",
-      "node"
-    ],
+    "types": ["fhir", "node"],
     "paths": {
-      "@mosip/ida-auth-sdk": [
-        "../ida-auth-sdk/src"
-      ],
-      "@opencrvs/crypto": [
-        "../crypto/src"
-      ]
+      "@mosip/ida-auth-sdk": ["./src/ida-auth-sdk"],
+      "@opencrvs/mosip-crypto": ["./src/crypto"]
     }
   },
-  "include": [
-    "src/**/*.ts",
-    "eslint.config.mjs"
-  ]
+  "include": ["src/**/*.ts", "eslint.config.mjs"]
 }

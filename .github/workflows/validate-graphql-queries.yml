@@ -24,12 +24,6 @@ jobs:
         with:
           path: ".tmp"
 
-      - name: Get core key from compatibility.md
-        id: get-core-key
-        run: |
-          core_version=$(grep '^core:' .tmp/docs/compatibility.md | cut -d ' ' -f 2)
-          echo "core_version=$core_version" >> $GITHUB_ENV
-
       - name: Run codegen
         # Run using the `develop` branch. If there is an error, it does not imply the current versions aren't compatible, but prepares us for a future release.
         run: |

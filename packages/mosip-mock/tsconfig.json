@@ -6,18 +6,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [
-      "fhir",
-      "node"
-    ],
+    "types": ["fhir", "node"],
     "paths": {
-      "@opencrvs/crypto": [
-        "../crypto/src"
-      ]
+      "@opencrvs/mosip-crypto": ["./src/crypto"]
     }
   },
-  "include": [
-    "src/**/*.ts",
-    "eslint.config.mjs"
-  ]
+  "include": ["src/**/*.ts", "eslint.config.mjs"]
 }

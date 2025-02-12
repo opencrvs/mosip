@@ -25,7 +25,7 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:20260/oidc/userinfo",
   }),
   ESIGNET_TOKEN_URL: url({ devDefault: "http://localhost:20260/oauth/token" }),
-  OIDP_JWT_AUD_CLAIM: str({ devDefault: undefined }),
+  OPENID_PROVIDER_CLAIMS: str({ devDefault: undefined }),
   OIDP_CLIENT_PRIVATE_KEY_PATH: str({
     devDefault: join(__dirname, "../../../certs/esignet-jwk.txt"),
   }),

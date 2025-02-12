@@ -2,7 +2,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as opencrvs from "../opencrvs-api";
 import { generateRegistrationNumber } from "../registration-number";
-import { decryptData } from "@opencrvs/crypto";
+import { decryptData } from "@opencrvs/mosip-crypto";
 import { CREDENTIAL_PARTNER_PRIVATE_KEY } from "../mosip-api";
 
 /** Encrypted payload from MOSIP */
