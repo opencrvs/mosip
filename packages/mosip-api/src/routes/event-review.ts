@@ -69,12 +69,6 @@ export const reviewEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  const informantType = getInformantType(request.body);
-  const informantNationalID = getInformantNationalId(request.body);
-
-  const composition = getComposition(request.body);
-  const { id: eventId } = composition;
-
   if (!request.headers.authorization) {
     return reply.code(401).send({ error: "Authorization header is missing" });
   }
@@ -85,6 +79,10 @@ export const reviewEventHandler = async (
       .code(401)
       .send({ error: "Token is missing in Authorization header" });
   }
+
+  const informantType = getInformantType(request.body);
+  const composition = getComposition(request.body);
+  const { id: eventId } = composition;
 
   logger.info(
     { eventId },
@@ -107,14 +105,27 @@ export const reviewEventHandler = async (
    * Update informant's details if it's not MOTHER or FATHER
    */
   if (informantType !== "MOTHER" && informantType !== "FATHER") {
-    const result = await verifyAndUpdateRecord({
-      eventId,
-      event,
-      section: "informant",
-      nid: informantNationalID,
-      token,
-    });
-    verificationStatus.informant = result;
+    let informantNationalID;
+
+    try {
+      getInformantNationalId(request.body);
+    } catch (e) {
+      logger.info(
+        { eventId },
+        "Couldn't find the informant's NID. This is non-fatal - it likely wasn't submitted.",
+      );
+    }
+
+    if (informantNationalID) {
+      const result = await verifyAndUpdateRecord({
+        eventId,
+        event,
+        section: "informant",
+        nid: informantNationalID,
+        token,
+      });
+      verificationStatus.informant = result;
+    }
   }
 
   /*
