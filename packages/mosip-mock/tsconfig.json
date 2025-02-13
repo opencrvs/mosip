@@ -8,7 +8,6 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["fhir", "node"],
     "paths": {
-      "@mosip/ida-auth-sdk": ["./src/ida-auth-sdk"],
       "@opencrvs/mosip-crypto": ["./src/crypto"]
     }
   },
