@@ -108,7 +108,7 @@ export const reviewEventHandler = async (
     let informantNationalID;
 
     try {
-      getInformantNationalId(request.body);
+      informantNationalID = getInformantNationalId(request.body);
     } catch (e) {
       logger.info(
         { eventId },
