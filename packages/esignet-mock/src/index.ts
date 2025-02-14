@@ -6,7 +6,6 @@ import fastifyStatic from "@fastify/static";
 import formbody from "@fastify/formbody";
 import * as jose from "jose";
 import { readFileSync } from "node:fs";
-import { join } from "path";
 import casual from "casual";
 
 const app = Fastify({ logger: true });
@@ -131,7 +130,15 @@ app.post("/oidc/userinfo", {
 const authorizeSchema = {
   querystring: {
     type: "object",
-    required: ["client_id", "response_type", "scope", "acr_values", "claims", "state", "redirect_uri"],
+    required: [
+      "client_id",
+      "response_type",
+      "scope",
+      "acr_values",
+      "claims",
+      "state",
+      "redirect_uri",
+    ],
     properties: {
       client_id: { type: "string" },
       response_type: { type: "string" },
