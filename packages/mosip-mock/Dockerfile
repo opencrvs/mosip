@@ -3,6 +3,7 @@ WORKDIR /usr/src/app
 
 COPY package.json package.json
 COPY yarn.lock yarn.lock
+COPY tsconfig.json tsconfig.json
 RUN yarn install --production --frozen-lockfile
 COPY src/ src/
 

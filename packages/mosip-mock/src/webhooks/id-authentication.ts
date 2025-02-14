@@ -1,5 +1,5 @@
 import { RouteHandlerMethod } from "fastify";
-import { allInvalidNids } from "../mock-nids";
+import identities from "../mock-identities.json" assert { type: "json" };
 
 export const idAuthenticationHandler: RouteHandlerMethod = async (
   request,
@@ -11,30 +11,30 @@ export const idAuthenticationHandler: RouteHandlerMethod = async (
     individualIdType: "UIN" | "VID";
   };
 
-  if (allInvalidNids.includes(individualId)) {
+  if (identities.some(({ nid }) => nid === individualId)) {
     return reply.status(200).send({
-      transactionID,
-      version: "1.0",
-      id: "mosip.identity.auth",
-      errors: [
-        {
-          errorCode: "IDA-MLC-002",
-          errorMessage: "Invalid UIN",
-          actionMessage: "Please retry with the correct UIN",
-        },
-      ],
       responseTime: new Date().toISOString(),
-      response: { authStatus: false, authToken: null },
+      response: {
+        authStatus: true,
+        authToken: new Array({ length: 36 })
+          .map(() => Math.floor(Math.random() * 10))
+          .join(""),
+      },
     });
   }
 
   return reply.status(200).send({
+    transactionID,
+    version: "1.0",
+    id: "mosip.identity.auth",
+    errors: [
+      {
+        errorCode: "IDA-MLC-002",
+        errorMessage: "Invalid UIN",
+        actionMessage: "Please retry with the correct UIN",
+      },
+    ],
     responseTime: new Date().toISOString(),
-    response: {
-      authStatus: true,
-      authToken: new Array({ length: 36 })
-        .map(() => Math.floor(Math.random() * 10))
-        .join(""),
-    },
+    response: { authStatus: false, authToken: null },
   });
 };
