@@ -1,5 +1,3 @@
-// @TODO: Yet to be implemented! Placeholders for NPM publish.
-
 /**
  * E-Signet popup button and hidden field form definitions
  * @example

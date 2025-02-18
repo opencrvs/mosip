@@ -43,7 +43,7 @@ const verifyAndUpdateRecord = async ({
       `Person verified. ✅ Updating '${event}.${section}.${section}-view-group.verified'...`,
     );
 
-    return updateField(
+    await updateField(
       eventId,
       `${event}.${section}.${section}-view-group.verified`,
       "verified",
@@ -55,25 +55,20 @@ const verifyAndUpdateRecord = async ({
       `Person verification failed. ❌ Updating '${event}.${section}.${section}-view-group.verified'...`,
     );
 
-    return updateField(
+    await updateField(
       eventId,
       `${event}.${section}.${section}-view-group.verified`,
       "failed",
       { headers: { Authorization: `Bearer ${token}` } },
     );
   }
+  return authStatus;
 };
 
 export const reviewEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  const informantType = getInformantType(request.body);
-  const informantNationalID = getInformantNationalId(request.body);
-
-  const composition = getComposition(request.body);
-  const { id: eventId } = composition;
-
   if (!request.headers.authorization) {
     return reply.code(401).send({ error: "Authorization header is missing" });
   }
@@ -85,10 +80,20 @@ export const reviewEventHandler = async (
       .send({ error: "Token is missing in Authorization header" });
   }
 
+  const informantType = getInformantType(request.body);
+  const composition = getComposition(request.body);
+  const { id: eventId } = composition;
+
   logger.info(
     { eventId },
     "Received a review event, calling IDA Auth SDK for the persons in record...",
   );
+
+  const verificationStatus = {
+    father: false,
+    mother: false,
+    informant: false,
+  };
 
   // @NOTE: Marriage not supported yet
   // @NOTE: The following code is very verbose, but rather not abstract if not needed. For events v2 we'll have to rework this.
@@ -100,13 +105,27 @@ export const reviewEventHandler = async (
    * Update informant's details if it's not MOTHER or FATHER
    */
   if (informantType !== "MOTHER" && informantType !== "FATHER") {
-    await verifyAndUpdateRecord({
-      eventId,
-      event,
-      section: "informant",
-      nid: informantNationalID,
-      token,
-    });
+    let informantNationalID;
+
+    try {
+      informantNationalID = getInformantNationalId(request.body);
+    } catch (e) {
+      logger.info(
+        { eventId },
+        "Couldn't find the informant's NID. This is non-fatal - it likely wasn't submitted.",
+      );
+    }
+
+    if (informantNationalID) {
+      const result = await verifyAndUpdateRecord({
+        eventId,
+        event,
+        section: "informant",
+        nid: informantNationalID,
+        token,
+      });
+      verificationStatus.informant = result;
+    }
   }
 
   /*
@@ -134,14 +153,16 @@ export const reviewEventHandler = async (
     );
   }
 
-  if (motherNid)
-    await verifyAndUpdateRecord({
+  if (motherNid) {
+    const result = await verifyAndUpdateRecord({
       eventId,
       event,
       section: "mother",
       nid: motherNid,
       token,
     });
+    verificationStatus.mother = result;
+  }
 
   let fatherNid;
 
@@ -154,14 +175,16 @@ export const reviewEventHandler = async (
     );
   }
 
-  if (fatherNid)
-    await verifyAndUpdateRecord({
+  if (fatherNid) {
+    const result = await verifyAndUpdateRecord({
       eventId,
       event,
       section: "father",
       nid: fatherNid,
       token,
     });
+    verificationStatus.father = result;
+  }
 
-  return reply.code(202).send({ success: true });
+  return reply.code(202).send(verificationStatus);
 };

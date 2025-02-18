@@ -1,6 +1,12 @@
 import type * as Hapi from "@hapi/hapi";
 import fetch from "node-fetch";
 
+interface VerificationStatus {
+  father: boolean;
+  mother: boolean;
+  informant: boolean;
+}
+
 /**
  * Replaces event registration handler in country config
  */
@@ -39,29 +45,19 @@ export const mosipRegistrationHandler = ({ url }: { url: string }) =>
 export const mosipRegistrationForReviewHandler = ({ url }: { url: string }) =>
   (async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     // Corresponds to `packages/mosip-api` /events/review -route
-    const MOSIP_API_REVIEW_EVENT_URL = new URL("./events/review", url);
-
-    console.info(request.headers);
-
-    const response = await fetch(MOSIP_API_REVIEW_EVENT_URL, {
-      method: "POST",
-      body: JSON.stringify(request.payload),
-      headers: {
-        ...request.headers,
-        "content-type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
+    let response;
+    try {
+      response = await verify({ url, request });
+    } catch (error) {
       return h
         .response({
           error: "OpenCRVS-MOSIP event review route did not return a 200",
-          response: await response.text(),
+          response: error instanceof Error ? error.message : "Unknown error",
         })
         .code(500);
     }
 
-    return h.response({ success: true }).code(200);
+    return h.response(response).code(200);
   }) satisfies Hapi.ServerRoute["handler"];
 
 /**
@@ -70,3 +66,28 @@ export const mosipRegistrationForReviewHandler = ({ url }: { url: string }) =>
  */
 export const mosipRegistrationForApprovalHandler =
   mosipRegistrationForReviewHandler;
+
+export const verify = async ({
+  url,
+  request,
+}: {
+  url: string;
+  request: Hapi.Request;
+}): Promise<Partial<VerificationStatus>> => {
+  const MOSIP_API_REVIEW_EVENT_URL = new URL("./events/review", url);
+
+  const response = await fetch(MOSIP_API_REVIEW_EVENT_URL, {
+    method: "POST",
+    body: JSON.stringify(request.payload),
+    headers: {
+      ...request.headers,
+      "content-type": "application/json",
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(await response.text());
+  }
+
+  return (await response.json()) satisfies Partial<VerificationStatus>;
+};

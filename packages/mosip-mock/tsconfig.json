@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
-    "module": "ES2015",
+    "module": "ESNext",
     "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": ["fhir", "node"],
-    "paths": {
-      "@opencrvs/mosip-crypto": ["./src/crypto"]
-    }
+    "types": [
+      "fhir",
+      "node"
+    ]
   },
-  "include": ["src/**/*.ts", "eslint.config.mjs"]
+  "include": [
+    "src/**/*.ts"
+  ]
 }
