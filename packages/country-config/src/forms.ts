@@ -262,7 +262,7 @@ export const getInitialValueFromIDReader = (fieldNameInReader: string) => ({
 
 export const idReaderFields = (
   event: "birth" | "death",
-  section: "informant" | "mother" | "father",
+  section: "informant" | "mother" | "father" | "spouse" | "deceased",
   qrConfig: QRConfig,
   esignetConfig: ESignetConfig | undefined,
   verifiedCustomFieldMapping: any,
