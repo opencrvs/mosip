@@ -27,6 +27,9 @@ export const env = cleanEnv(process.env, {
   CREDENTIAL_PARTNER_PRIVATE_KEY_PATH: str({
     devDefault: join(__dirname, "../../../certs/credential-partner.pem"),
   }),
+  CREDENTIAL_PARTNER_CERTIFICATE_PATH: str({
+    devDefault: join(__dirname, "../../../certs/credential-partner.csr"),
+  }),
 });
 
 export const EMAIL_ENABLED = Boolean(env.SMTP_HOST);

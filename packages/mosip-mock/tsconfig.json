@@ -6,12 +6,10 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [
-      "fhir",
-      "node"
-    ]
+    "types": ["fhir", "node"],
+    "paths": {
+      "@opencrvs/mosip-crypto": ["./src/crypto"]
+    }
   },
-  "include": [
-    "src/**/*.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }

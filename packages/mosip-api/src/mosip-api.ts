@@ -62,7 +62,6 @@ export async function generateMosipAid() {
 
 export const postRecord = async (
   id: string,
-  trackingId: string,
   payload: fhir3.Bundle,
   token: string,
   url: string,
@@ -74,10 +73,11 @@ export const postRecord = async (
   );
   const proxyRequest = JSON.stringify({
     id,
-    trackingId,
     requestTime: new Date().toISOString(),
     data: encryptionResponse.data,
     signature: encryptionResponse.signature,
+    // NOTE! This is a new addition to the payload
+    token,
   });
 
   logger.info(`Encrypting payload complete. Here is payload id ${id}`);

@@ -3,12 +3,14 @@ import { z } from "zod";
 import * as mosip from "../mosip-api";
 import {
   EVENT_TYPE,
+  findEntry,
   getComposition,
   getEventType,
   getTrackingId,
 } from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
 import { env } from "../constants";
+import { generateRegistrationNumber } from "../registration-number";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -50,18 +52,65 @@ export const registrationEventHandler = async (
   const eventType = getEventType(request.body);
 
   const aid = await mosip.generateMosipAid();
+
   if (eventType === EVENT_TYPE.BIRTH) {
+    // NOTE!
+    // Usually the BRN is not created before birth registration happening in `opencrvs.confirmRegistration`. In a Phase 1 implementation it's sent to MOSIP here to allow authenticating with a BRN in addition to a NID.
+    const birthRegistrationNumber = generateRegistrationNumber(trackingId);
+    const composition = getComposition(request.body);
+    const child = findEntry(
+      "child-details",
+      composition,
+      request.body,
+    ) as fhir3.Patient;
+    child.identifier ||= [];
+    child.identifier.push({
+      type: {
+        coding: [
+          {
+            system: "http://opencrvs.org/specs/identifier-type",
+            code: "BIRTH_REGISTRATION_NUMBER",
+          },
+        ],
+      },
+      value: birthRegistrationNumber,
+    });
+
+    request.log.info(
+      { eventId, trackingId },
+      "Updating `BIRTH_CONFIGURABLE_IDENTIFIER_1` with birth registration number",
+    );
+
+    await opencrvs.upsertRegistrationIdentifier(
+      {
+        id: eventId,
+        identifierType: "BIRTH_CONFIGURABLE_IDENTIFIER_1",
+        identifierValue: birthRegistrationNumber,
+      },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    // !NOTE
+    // pre-mature BRN creation finishes
+
+    request.log.info(
+      { eventId, trackingId },
+      "Posting the encrypted birth record to MOSIP",
+    );
+
     await mosip.postRecord(
       eventId,
-      trackingId,
       request.body,
       token,
       env.MOSIP_BIRTH_WEBHOOK_URL,
     );
   } else if (eventType === EVENT_TYPE.DEATH) {
+    request.log.info(
+      { eventId, trackingId },
+      "Posting the encrypted death record to MOSIP",
+    );
+
     await mosip.postRecord(
       eventId,
-      trackingId,
       request.body,
       token,
       env.MOSIP_DEATH_WEBHOOK_URL,

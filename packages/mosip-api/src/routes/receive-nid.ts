@@ -4,9 +4,13 @@ import * as opencrvs from "../opencrvs-api";
 import { generateRegistrationNumber } from "../registration-number";
 import { decryptData } from "@opencrvs/mosip-crypto";
 import { CREDENTIAL_PARTNER_PRIVATE_KEY } from "../mosip-api";
+import { getRecordId } from "../token";
 
 /** Encrypted payload from MOSIP */
-export const mosipNidSchema = z.string();
+export const mosipNidSchema = z.object({
+  data: z.string(),
+  signature: z.string(),
+});
 
 type MosipRequest = FastifyRequest<{
   Body: z.infer<typeof mosipNidSchema>;
@@ -28,16 +32,16 @@ export const receiveNidHandler = async (
       .send({ error: "Token is missing in Authorization header" });
   }
 
-  const { eventId, uinToken, trackingId } = decryptData(
-    request.body,
+  const recordId = getRecordId(token);
+  const { uinToken, opencrvsBRN } = decryptData(
+    request.body.data,
     CREDENTIAL_PARTNER_PRIVATE_KEY,
   );
-  const registrationNumber = generateRegistrationNumber(trackingId);
 
   await opencrvs.confirmRegistration(
     {
-      id: eventId,
-      registrationNumber,
+      id: recordId,
+      registrationNumber: opencrvsBRN,
       identifiers: [{ type: "NATIONAL_ID", value: uinToken }],
     },
     { headers: { Authorization: `Bearer ${token}` } },
