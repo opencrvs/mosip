@@ -62,7 +62,7 @@ export async function generateMosipAid() {
 
 export const postRecord = async (
   id: string,
-  payload: fhir3.Bundle,
+  payload: unknown,
   token: string,
   url: string,
 ) => {

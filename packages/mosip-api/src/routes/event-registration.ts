@@ -58,7 +58,11 @@ export const registrationEventHandler = async (
     // NOTE!
     // Usually the BRN is not created before birth registration happening in `opencrvs.confirmRegistration`. In a Phase 1 implementation it's sent to MOSIP in the FHIR Bundle to allow authenticating with a BRN in addition to a NID.
     const birthRegistrationNumber = generateRegistrationNumber(trackingId);
-    const record = convertToLegacyBundle(request.body, birthRegistrationNumber);
+    const record = convertToLegacyBundle(
+      eventId,
+      request.body,
+      birthRegistrationNumber,
+    );
 
     request.log.info(
       { eventId, trackingId },
