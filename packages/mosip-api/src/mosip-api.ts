@@ -86,6 +86,10 @@ export const postRecord = async (
 
   logger.info(`ID - ${id}. Received MOSIP Auth token`);
 
+  // @NOTE: ONLY FOR DEBUGGING PURPOSES
+  // @WARNING: REMOVE THIS BEFORE DEPLOYING TO AN ACTUAL ENVIRONMENT
+  console.log(JSON.stringify(proxyRequest, null, 4));
+
   const response = await fetch(url, {
     method: "POST",
     body: proxyRequest,
