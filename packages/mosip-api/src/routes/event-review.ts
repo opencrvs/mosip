@@ -4,13 +4,14 @@ import {
   findEntry,
   getComposition,
   getEventType,
-  getInformantNationalId,
   getInformantType,
+  getDemographics,
   getPatientNationalId,
 } from "../types/fhir";
 import { updateField } from "../opencrvs-api";
 import { verifyNid } from "../mosip-api";
 import { logger } from "../logger";
+import { format } from "date-fns/format";
 
 type OpenCRVSRequest = FastifyRequest<{
   Body: fhir3.Bundle;
@@ -20,12 +21,18 @@ const verifyAndUpdateRecord = async ({
   event,
   eventId,
   nid,
+  name,
+  dob,
+  gender,
   section,
   token,
 }: {
   event: "birth" | "death";
   eventId: string;
   nid: string;
+  dob: string | undefined;
+  name: { value: string; language: string }[] | undefined;
+  gender: { value: string; language: string }[] | undefined;
   section: string;
   token: string;
 }) => {
@@ -33,8 +40,9 @@ const verifyAndUpdateRecord = async ({
     response: { authStatus },
   } = await verifyNid({
     nid,
-    // @TODO: Figure out the actual DOB
-    dob: "1992/04/29",
+    dob,
+    name,
+    gender,
   });
 
   if (authStatus) {
@@ -107,10 +115,16 @@ export const reviewEventHandler = async (
    * Update informant's details if it's not MOTHER or FATHER
    */
   if (informantType !== "MOTHER" && informantType !== "FATHER") {
-    let informantNationalID;
+    let informant = findEntry(
+      "informant-details",
+      composition,
+      request.body,
+    ) as fhir3.Patient;
+    let informantNID;
+    const informantDemographics = getDemographics(informant);
 
     try {
-      informantNationalID = getInformantNationalId(request.body);
+      informantNID = getPatientNationalId(informant);
     } catch (e) {
       logger.info(
         { eventId },
@@ -118,12 +132,15 @@ export const reviewEventHandler = async (
       );
     }
 
-    if (informantNationalID) {
+    if (informantNID) {
       const result = await verifyAndUpdateRecord({
         eventId,
         event,
         section: "informant",
-        nid: informantNationalID,
+        nid: informantNID,
+        name: informantDemographics.name,
+        dob: informantDemographics.dob,
+        gender: informantDemographics.gender,
         token,
       });
       verificationStatus.informant = result;
@@ -140,6 +157,7 @@ export const reviewEventHandler = async (
   ) as fhir3.Patient;
 
   let motherNid;
+  const motherDemographics = getDemographics(mother);
 
   try {
     motherNid = getPatientNationalId(mother);
@@ -156,6 +174,9 @@ export const reviewEventHandler = async (
       event,
       section: "mother",
       nid: motherNid,
+      name: motherDemographics.name,
+      dob: motherDemographics.dob,
+      gender: motherDemographics.gender,
       token,
     });
     verificationStatus.mother = result;
@@ -168,6 +189,7 @@ export const reviewEventHandler = async (
   ) as fhir3.Patient;
 
   let fatherNid;
+  const fatherDemographics = getDemographics(father);
 
   try {
     fatherNid = getPatientNationalId(father);
@@ -184,6 +206,9 @@ export const reviewEventHandler = async (
       event,
       section: "father",
       nid: fatherNid,
+      name: fatherDemographics.name,
+      dob: fatherDemographics.dob,
+      gender: fatherDemographics.gender,
       token,
     });
     verificationStatus.father = result;
