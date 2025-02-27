@@ -55,7 +55,7 @@ export const registrationEventHandler = async (
 
   if (eventType === EVENT_TYPE.BIRTH) {
     // NOTE!
-    // Usually the BRN is not created before birth registration happening in `opencrvs.confirmRegistration`. In a Phase 1 implementation it's sent to MOSIP here to allow authenticating with a BRN in addition to a NID.
+    // Usually the BRN is not created before birth registration happening in `opencrvs.confirmRegistration`. In a Phase 1 implementation it's sent to MOSIP in the FHIR Bundle to allow authenticating with a BRN in addition to a NID.
     const birthRegistrationNumber = generateRegistrationNumber(trackingId);
     const composition = getComposition(request.body);
     const child = findEntry(
@@ -80,17 +80,6 @@ export const registrationEventHandler = async (
       { eventId, trackingId },
       "Updating `BIRTH_CONFIGURABLE_IDENTIFIER_1` with birth registration number",
     );
-
-    await opencrvs.upsertRegistrationIdentifier(
-      {
-        id: eventId,
-        identifierType: "BIRTH_CONFIGURABLE_IDENTIFIER_1",
-        identifierValue: birthRegistrationNumber,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-    // !NOTE
-    // pre-mature BRN creation finishes
 
     request.log.info(
       { eventId, trackingId },
