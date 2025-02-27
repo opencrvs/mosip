@@ -11,6 +11,7 @@ import {
 import * as opencrvs from "../opencrvs-api";
 import { env } from "../constants";
 import { generateRegistrationNumber } from "../registration-number";
+import { convertToLegacyBundle } from "@opencrvs/java-mediator-interop";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -57,41 +58,14 @@ export const registrationEventHandler = async (
     // NOTE!
     // Usually the BRN is not created before birth registration happening in `opencrvs.confirmRegistration`. In a Phase 1 implementation it's sent to MOSIP in the FHIR Bundle to allow authenticating with a BRN in addition to a NID.
     const birthRegistrationNumber = generateRegistrationNumber(trackingId);
-    const composition = getComposition(request.body);
-    const child = findEntry(
-      "child-details",
-      composition,
-      request.body,
-    ) as fhir3.Patient;
-    child.identifier ||= [];
-    child.identifier.push({
-      type: {
-        coding: [
-          {
-            system: "http://opencrvs.org/specs/identifier-type",
-            code: "BIRTH_REGISTRATION_NUMBER",
-          },
-        ],
-      },
-      value: birthRegistrationNumber,
-    });
-
-    request.log.info(
-      { eventId, trackingId },
-      "Updating `BIRTH_CONFIGURABLE_IDENTIFIER_1` with birth registration number",
-    );
+    const record = convertToLegacyBundle(request.body, birthRegistrationNumber);
 
     request.log.info(
       { eventId, trackingId },
       "Posting the encrypted birth record to MOSIP",
     );
 
-    await mosip.postRecord(
-      eventId,
-      request.body,
-      token,
-      env.MOSIP_BIRTH_WEBHOOK_URL,
-    );
+    await mosip.postRecord(eventId, record, token, env.MOSIP_BIRTH_WEBHOOK_URL);
   } else if (eventType === EVENT_TYPE.DEATH) {
     request.log.info(
       { eventId, trackingId },

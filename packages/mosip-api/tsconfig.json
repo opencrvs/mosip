@@ -9,7 +9,8 @@
     "types": ["fhir", "node"],
     "paths": {
       "@mosip/ida-auth-sdk": ["./src/ida-auth-sdk"],
-      "@opencrvs/mosip-crypto": ["./src/crypto"]
+      "@opencrvs/mosip-crypto": ["./src/crypto"],
+      "@opencrvs/java-mediator-interop": ["./src/java-mediator-interop"]
     }
   },
   "include": ["src/**/*.ts", "eslint.config.mjs"]

@@ -1,5 +1,5 @@
 import { env } from "./constants";
-import { encryptAndSignPacket } from "@opencrvs/mosip-crypto";
+import { encryptAndSignPacket } from "@opencrvs/java-mediator-interop";
 import { logger } from "./logger";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
 import { readFileSync } from "node:fs";

@@ -2,7 +2,10 @@ import { RouteHandlerMethod } from "fastify";
 import { createNid } from "../random-identifiers";
 import { sendEmail } from "../mailer";
 import { env } from "../constants";
-import { encryptAndSignPacket, decryptData } from "@opencrvs/mosip-crypto";
+import {
+  encryptAndSignPacket,
+  decryptData,
+} from "@opencrvs/java-mediator-interop";
 import { readFileSync } from "node:fs";
 import { findEntry, getComposition } from "../types/fhir";
 import { randomUUID } from "node:crypto";

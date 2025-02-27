@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as opencrvs from "../opencrvs-api";
-import { decryptData } from "@opencrvs/mosip-crypto";
+import { decryptData } from "@opencrvs/java-mediator-interop";
 import { CREDENTIAL_PARTNER_PRIVATE_KEY } from "../mosip-api";
 import { getRecordId } from "../token";
 
