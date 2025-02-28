@@ -93,6 +93,8 @@ export const reviewEventHandler = async (
     father: false,
     mother: false,
     informant: false,
+    deceased: false,
+    spouse: false,
   };
 
   // @NOTE: Marriage not supported yet
@@ -136,11 +138,6 @@ export const reviewEventHandler = async (
     composition,
     request.body,
   ) as fhir3.Patient;
-  const father = findEntry(
-    "father-details",
-    composition,
-    request.body,
-  ) as fhir3.Patient;
 
   let motherNid;
 
@@ -164,6 +161,12 @@ export const reviewEventHandler = async (
     verificationStatus.mother = result;
   }
 
+  const father = findEntry(
+    "father-details",
+    composition,
+    request.body,
+  ) as fhir3.Patient;
+
   let fatherNid;
 
   try {
@@ -184,6 +187,62 @@ export const reviewEventHandler = async (
       token,
     });
     verificationStatus.father = result;
+  }
+
+  let deceasedNid;
+
+  const deceased = findEntry(
+    "deceased-details",
+    composition,
+    request.body,
+  ) as fhir3.Patient;
+
+  try {
+    deceasedNid = getPatientNationalId(deceased);
+  } catch (e) {
+    logger.info(
+      { eventId },
+      "Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted.",
+    );
+  }
+
+  if (deceasedNid) {
+    const result = await verifyAndUpdateRecord({
+      eventId,
+      event,
+      section: "deceased",
+      nid: deceasedNid,
+      token,
+    });
+    verificationStatus.deceased = result;
+  }
+
+  let spouseNid;
+
+  const spouse = findEntry(
+    "spouse-details",
+    composition,
+    request.body,
+  ) as fhir3.Patient;
+
+  try {
+    spouseNid = getPatientNationalId(spouse);
+  } catch (e) {
+    logger.info(
+      { eventId },
+      "Couldn't find the spouse's NID. This is non-fatal - it likely wasn't submitted.",
+    );
+  }
+
+  if (spouseNid) {
+    const result = await verifyAndUpdateRecord({
+      eventId,
+      event,
+      section: "spouse",
+      nid: spouseNid,
+      token,
+    });
+    verificationStatus.spouse = result;
   }
 
   return reply.code(202).send(verificationStatus);
