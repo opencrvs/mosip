@@ -20,10 +20,16 @@ interface MOSIPAuthenticatorConfig {
   signP12FilePassword: string;
 }
 
+type IdentityInfo = { value: string; language: string };
+
 interface AuthParams {
   individualId: string;
   individualIdType: string;
-  demographicData: { dob: string };
+  demographicData: {
+    dob: string | undefined;
+    name: IdentityInfo[] | undefined;
+    gender: IdentityInfo[] | undefined;
+  };
   consent: boolean;
 }
 
