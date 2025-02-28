@@ -68,6 +68,7 @@ export const OIDPUserInfoSchema = z.object({
 
 export const OIDPQuerySchema = z.object({
   code: z.string(),
+  state: z.string(),
 });
 
 export type OIDPUserInfoRequest = FastifyRequest<{

@@ -11,9 +11,10 @@ import {
 } from "./routes/event-registration";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
-import { getOIDPUserInfo, OIDPUserInfoSchema } from "./esignet-api";
+import { getOIDPUserInfo, OIDPUserInfoSchema, OIDPQuerySchema } from "./esignet-api";
 import formbody from "@fastify/formbody";
 import { reviewEventHandler } from "./routes/event-review";
+import cors from "@fastify/cors";
 
 const envToLogger = {
   development: {
@@ -29,9 +30,18 @@ const envToLogger = {
 const app = Fastify({
   logger: envToLogger[env.isProd ? "production" : "development"],
 });
+let whitelist: string[] = [env.DOMAIN]
+if (env.DOMAIN[0] !== '*') {
+  whitelist = [env.CLIENT_APP_URL, env.COUNTRY_CONFIG_URL]
+}
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 app.register(formbody);
+app.register(cors, {
+  origin: whitelist,
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+});
 
 openapi.register(app);
 
@@ -71,6 +81,7 @@ app.after(() => {
     handler: getOIDPUserInfo,
     schema: {
       body: OIDPUserInfoSchema,
+      querystring: OIDPQuerySchema,
     },
   });
 });
