@@ -597,7 +597,7 @@ export function findEntry(
   return getFromBundleById(bundle, reference!.split("/")[1]).resource;
 }
 
-function transformFhirNameIntoLocalizedValue(name: fhir3.HumanName) {
+function transformFhirNameIntoIdentityInfo(name: fhir3.HumanName) {
   return {
     value: [name.given?.join(" ").trim(), name.family].join(" ").trim(),
     language: name.use!,
@@ -610,7 +610,7 @@ export function getDemographics(patient: fhir3.Patient): {
   dob: string | undefined;
 } {
   const name = patient.name
-    ? patient.name.map(transformFhirNameIntoLocalizedValue)
+    ? patient.name.map(transformFhirNameIntoIdentityInfo)
     : undefined;
   const gender = patient.gender
     ? [{ value: patient.gender, language: "en" }]
