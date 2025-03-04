@@ -24,14 +24,10 @@ export function encryptAndSignPacket(
     credentialPartnerCertificate,
   ).publicKey as forge.pki.rsa.PublicKey;
 
-  console.log("credentialPartnerPrivateKey", credentialPartnerPrivateKey);
-  console.log("credentialPartnerCertificate", credentialPartnerCertificate);
-
-  const symmetricKey: string = forge.random.getBytesSync(SYMMETRIC_KEY_SIZE);
-  const nonce: string = forge.random.getBytesSync(NONCE_SIZE);
-  const aad: string = forge.random.getBytesSync(AAD_SIZE - NONCE_SIZE);
-  // putting random thumbprint temporarily
-  const thumbprint: string = forge.random.getBytesSync(THUMBPRINT_LENGTH);
+  const symmetricKey: string = "A".repeat(SYMMETRIC_KEY_SIZE);
+  const nonce: string = "B".repeat(NONCE_SIZE);
+  const aad: string = "C".repeat(AAD_SIZE - NONCE_SIZE);
+  const thumbprint: string = "D".repeat(THUMBPRINT_LENGTH);
 
   const encryptedSymmetricKey: string = mosipPublicKey.encrypt(
     symmetricKey,
