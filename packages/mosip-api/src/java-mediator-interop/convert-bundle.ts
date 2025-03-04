@@ -7,8 +7,6 @@ import {
   resourceIdentifierToUUID,
 } from "../types/fhir";
 
-const ACCEPTABLE_RESOURCE_TYPES = ["Task", "Patient"];
-
 const NATIONAL_ID_BIRTH_PERMISSIONS = [
   "mother-details",
   "father-details",
@@ -26,6 +24,20 @@ const NATIONAL_ID_DEATH_PERMISSIONS = [
   "death-encounter",
 ];
 
+const withLegacyPatient = (patient: fhir3.Patient) => {
+  if ((patient.name ?? []).length === 0) return patient;
+
+  return {
+    ...patient,
+    name: [
+      {
+        ...patient.name![0],
+        family: [patient.name![0].family] as any as string,
+      },
+    ],
+  } satisfies fhir3.Patient;
+};
+
 const getPermissionsBundle = (bundle: fhir3.Bundle, permissions: string[]) => {
   const composition = getComposition(bundle);
   const allowedSections = composition.section!.filter((section) =>
@@ -39,12 +51,18 @@ const getPermissionsBundle = (bundle: fhir3.Bundle, permissions: string[]) => {
 
   return {
     ...bundle,
-    entry: bundle.entry!.filter(
-      ({ resource }) =>
-        (allowedReferences.includes(resource!.id as UUID) &&
-          ACCEPTABLE_RESOURCE_TYPES.includes(resource!.resourceType)) ||
-        isTask(resource!),
-    ),
+    entry: bundle
+      .entry!.filter(
+        ({ resource }) =>
+          allowedReferences.includes(resource!.id as UUID) || isTask(resource!),
+      )
+      .map((entry) => {
+        if (entry.resource?.resourceType === "Patient") {
+          return { resource: withLegacyPatient(entry.resource) };
+        }
+
+        return entry;
+      }),
   };
 };
 
