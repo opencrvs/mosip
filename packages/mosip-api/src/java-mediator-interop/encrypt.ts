@@ -1,4 +1,5 @@
 import * as forge from "node-forge";
+import crypto from "node:crypto";
 import { IS_THUMBPRINT } from "./crypto-constants";
 
 const KEY_SPLITTER = "#KEY_SPLITTER#";
@@ -10,6 +11,17 @@ const NONCE_SIZE = 12;
 const AAD_SIZE = 32;
 const GCM_TAG_LENGTH = 16;
 const THUMBPRINT_LENGTH = 32;
+
+function encryptRSA(publicKey: string, data: Buffer): Buffer {
+  return crypto.publicEncrypt(
+    {
+      key: publicKey,
+      padding: crypto.constants.RSA_PKCS1_OAEP_PADDING,
+      oaepHash: "sha256",
+    },
+    data,
+  );
+}
 
 export function encryptAndSignPacket(
   requestData: string,
@@ -29,15 +41,9 @@ export function encryptAndSignPacket(
   const aad: string = "C".repeat(AAD_SIZE - NONCE_SIZE);
   const thumbprint: string = "D".repeat(THUMBPRINT_LENGTH);
 
-  const encryptedSymmetricKey: string = mosipPublicKey.encrypt(
-    symmetricKey,
-    ASYMMETRIC_ALGORITHM,
-    {
-      md: forge.md.sha256.create(),
-      mgf1: {
-        md: forge.md.sha256.create(),
-      },
-    },
+  const encryptedSymmetricKey = encryptRSA(
+    credentialPartnerCertificate,
+    Buffer.from(symmetricKey),
   );
   const encryptCipher = forge.cipher.createCipher(
     SYMMETRIC_ALGORITHM,
@@ -53,7 +59,7 @@ export function encryptAndSignPacket(
   const encryptedData = Buffer.concat([
     Buffer.from(VERSION_RSA_2048),
     IS_THUMBPRINT ? Buffer.from(thumbprint, "binary") : Buffer.alloc(0),
-    Buffer.from(encryptedSymmetricKey, "binary"),
+    encryptedSymmetricKey,
     Buffer.from(KEY_SPLITTER),
     Buffer.from(
       nonce +
