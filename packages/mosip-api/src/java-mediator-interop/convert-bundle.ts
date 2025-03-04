@@ -94,6 +94,15 @@ export const convertToLegacyBundle = (
     },
     value: birthRegistrationNumber,
   });
+  const mother = findEntry("mother-details", composition, bundle);
+
+  bundle.entry!.sort((a, b) => {
+    if (a.resource!.id === child.id) return -1; // Child should come first
+    if (b.resource!.id === child.id) return 1; // Child should come first
+    if (a.resource!.id === mother?.id) return -1; // Mother should come second
+    if (b.resource!.id === mother?.id) return 1; // Mother should come second
+    return 0; // Keep the rest as is
+  });
 
   return {
     timestamp: new Date().toISOString(),
