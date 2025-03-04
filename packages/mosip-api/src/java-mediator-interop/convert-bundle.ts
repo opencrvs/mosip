@@ -7,6 +7,8 @@ import {
   resourceIdentifierToUUID,
 } from "../types/fhir";
 
+const ACCEPTABLE_RESOURCE_TYPES = ["Task", "Patient"];
+
 const NATIONAL_ID_BIRTH_PERMISSIONS = [
   "mother-details",
   "father-details",
@@ -39,7 +41,9 @@ const getPermissionsBundle = (bundle: fhir3.Bundle, permissions: string[]) => {
     ...bundle,
     entry: bundle.entry!.filter(
       ({ resource }) =>
-        allowedReferences.includes(resource!.id as UUID) || isTask(resource!),
+        (allowedReferences.includes(resource!.id as UUID) &&
+          ACCEPTABLE_RESOURCE_TYPES.includes(resource!.resourceType)) ||
+        isTask(resource!),
     ),
   };
 };

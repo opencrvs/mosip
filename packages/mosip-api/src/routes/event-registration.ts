@@ -63,8 +63,6 @@ export const registrationEventHandler = async (
       birthRegistrationNumber,
     );
 
-    console.log(JSON.stringify(record, null, 2));
-
     request.log.info(
       { eventId, trackingId },
       "Posting the encrypted birth record to MOSIP",
