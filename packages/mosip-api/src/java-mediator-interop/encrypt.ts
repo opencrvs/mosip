@@ -24,6 +24,9 @@ export function encryptAndSignPacket(
     credentialPartnerCertificate,
   ).publicKey as forge.pki.rsa.PublicKey;
 
+  console.log("credentialPartnerPrivateKey", credentialPartnerPrivateKey);
+  console.log("credentialPartnerCertificate", credentialPartnerCertificate);
+
   const symmetricKey: string = forge.random.getBytesSync(SYMMETRIC_KEY_SIZE);
   const nonce: string = forge.random.getBytesSync(NONCE_SIZE);
   const aad: string = forge.random.getBytesSync(AAD_SIZE - NONCE_SIZE);
