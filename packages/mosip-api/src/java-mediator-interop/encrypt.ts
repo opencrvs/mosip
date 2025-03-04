@@ -48,7 +48,7 @@ export function encryptAndSignPacket(
     additionalData: nonce + aad,
     tagLength: GCM_TAG_LENGTH * 8,
   });
-  encryptCipher.update(forge.util.createBuffer(requestData));
+  encryptCipher.update(forge.util.createBuffer(requestData, "utf8"));
   encryptCipher.finish();
   const encryptedData = Buffer.concat([
     Buffer.from(VERSION_RSA_2048),
@@ -69,7 +69,7 @@ export function encryptAndSignPacket(
   const sign = opencrvsPrivateKey.sign(digestSign);
 
   return {
-    data: encryptedData.toString("base64"),
+    data: forge.util.encode64(encryptedData.toString("binary")),
     signature: forge.util.encode64(sign),
   };
 }
