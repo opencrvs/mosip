@@ -3,7 +3,6 @@ import { z } from "zod";
 import * as mosip from "../mosip-api";
 import {
   EVENT_TYPE,
-  findEntry,
   getComposition,
   getEventType,
   getTrackingId,

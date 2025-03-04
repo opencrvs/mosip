@@ -1,41 +1,48 @@
-import { findEntry, getComposition } from "../types/fhir";
+import {
+  ResourceIdentifier,
+  UUID,
+  findEntry,
+  getComposition,
+  isTask,
+  resourceIdentifierToUUID,
+} from "../types/fhir";
 
-// const NATIONAL_ID_BIRTH_PERMISSIONS = [
-//   "mother-details",
-//   "father-details",
-//   "child-details",
-//   "supporting-documents",
-//   "informant-details",
-// ];
+const NATIONAL_ID_BIRTH_PERMISSIONS = [
+  "mother-details",
+  "father-details",
+  "child-details",
+  "supporting-documents",
+  "informant-details",
+];
 
 // The old webhook behaviour documented here if death package needs to be filtered as well
 
-// const NATIONAL_ID_DEATH_PERMISSIONS = [
-//   "deceased-details",
-//   "supporting-documents",
-//   "informant-details",
-//   "death-encounter",
-// ];
+const NATIONAL_ID_DEATH_PERMISSIONS = [
+  "deceased-details",
+  "supporting-documents",
+  "informant-details",
+  "death-encounter",
+];
 
-// const getPermissionsBundle = (bundle: fhir3.Bundle, permissions: string[]) => {
-//   const composition = getComposition(bundle);
-//   const allowedSections = composition.section!.filter((section) =>
-//     section.code!.coding!.some(({ code }) => permissions.includes(code!)),
-//   );
-//   const allowedReferences = allowedSections.flatMap((section) =>
-//     section.entry!.map(({ reference }) =>
-//       resourceIdentifierToUUID(reference as ResourceIdentifier),
-//     ),
-//   );
+const getPermissionsBundle = (bundle: fhir3.Bundle, permissions: string[]) => {
+  const composition = getComposition(bundle);
+  const allowedSections = composition.section!.filter((section) =>
+    section.code!.coding!.some(({ code }) => permissions.includes(code!)),
+  );
+  const allowedReferences = allowedSections.flatMap((section) =>
+    section.entry!.map(({ reference }) =>
+      resourceIdentifierToUUID(reference as ResourceIdentifier),
+    ),
+  );
 
-//   return {
-//     ...bundle,
-//     entry: bundle.entry!.filter(
-//       ({ resource }) =>
-//         allowedReferences.includes(resource!.id as UUID) || isTask(resource!),
-//     ),
-//   };
-// };
+  return {
+    ...bundle,
+    entry: bundle.entry!.filter(
+      ({ resource }) =>
+        allowedReferences.includes(resource!.id as UUID) || isTask(resource!),
+    ),
+  };
+};
 
 /**
  * Converts the bundle to the Java mediator shape
@@ -73,7 +80,7 @@ export const convertToLegacyBundle = (
       hub: {
         topic: "BIRTH_REGISTERED",
       },
-      context: [bundle],
+      context: [getPermissionsBundle(bundle, NATIONAL_ID_BIRTH_PERMISSIONS)],
     },
   };
 };
