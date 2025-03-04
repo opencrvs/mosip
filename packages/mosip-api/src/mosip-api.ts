@@ -88,7 +88,7 @@ export const postRecord = async (
 
   // @NOTE: ONLY FOR DEBUGGING PURPOSES
   // @WARNING: REMOVE THIS BEFORE DEPLOYING TO AN ACTUAL ENVIRONMENT
-  console.log(JSON.stringify(payload, null, 4));
+  console.log("pure payload", JSON.stringify(payload, null, 4));
 
   const response = await fetch(url, {
     method: "POST",
@@ -98,6 +98,8 @@ export const postRecord = async (
       cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`,
     },
   });
+
+  console.log("encrypted", proxyRequest);
 
   if (!response.ok) {
     throw new Error(
