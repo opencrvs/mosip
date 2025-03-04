@@ -3,13 +3,14 @@ import { z } from "zod";
 import * as mosip from "../mosip-api";
 import {
   EVENT_TYPE,
-  getDeceasedNid,
   getComposition,
   getEventType,
   getTrackingId,
 } from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
+import { env } from "../constants";
 import { generateRegistrationNumber } from "../registration-number";
+import { convertToLegacyBundle } from "@opencrvs/java-mediator-interop";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -29,8 +30,6 @@ export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  // We will receive the full bundle, but we will minimize the amount of data we send to MOSIP
-
   const trackingId = getTrackingId(request.body);
   const { id: eventId } = getComposition(request.body);
 
@@ -48,55 +47,50 @@ export const registrationEventHandler = async (
   // We can trust the token as when `confirmRegistration` or `rejectRegistration` are called, the token is verified by OpenCRVS
   // This server should also only be deployed in the local network so no external calls can be made.
 
-  request.log.info({ trackingId }, "Received record from OpenCRVS");
+  request.log.info({ eventId, trackingId }, "Received record from OpenCRVS");
 
   const eventType = getEventType(request.body);
 
+  const aid = await mosip.generateMosipAid();
+
   if (eventType === EVENT_TYPE.BIRTH) {
-    const { aid } = await mosip.postBirthRecord({
-      event: { id: eventId, trackingId },
+    // NOTE!
+    // Usually the BRN is not created before birth registration happening in `opencrvs.confirmRegistration`. In a Phase 1 implementation it's sent to MOSIP in the FHIR Bundle to allow authenticating with a BRN in addition to a NID.
+    const birthRegistrationNumber = generateRegistrationNumber(trackingId);
+    const record = convertToLegacyBundle(
+      eventId,
+      request.body,
+      birthRegistrationNumber,
+    );
+
+    request.log.info(
+      { eventId, trackingId },
+      "Posting the encrypted birth record to MOSIP",
+    );
+
+    await mosip.postRecord(eventId, record, token, env.MOSIP_BIRTH_WEBHOOK_URL);
+  } else if (eventType === EVENT_TYPE.DEATH) {
+    request.log.info(
+      { eventId, trackingId },
+      "Posting the encrypted death record to MOSIP",
+    );
+
+    await mosip.postRecord(
+      eventId,
+      request.body,
       token,
-    });
-
-    await opencrvs.upsertRegistrationIdentifier(
-      {
-        id: eventId,
-        identifierType: "MOSIP_AID",
-        identifierValue: aid,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
+      env.MOSIP_DEATH_WEBHOOK_URL,
     );
   }
 
-  if (eventType === EVENT_TYPE.DEATH) {
-    const nid = getDeceasedNid(request.body);
-    const response = await mosip.deactivateNid({
-      nid,
-    });
-    const registrationNumber = generateRegistrationNumber(trackingId);
-
-    let comment: string;
-    if (response.status === 404) {
-      comment = `NID "${nid}" not found`;
-    } else if (response.status === 409) {
-      comment = `NID "${nid}" already deactivated`;
-    } else if (response.ok) {
-      comment = `NID "${nid}" deactivated`;
-    } else {
-      throw new Error(
-        `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
-      );
-    }
-
-    await opencrvs.confirmRegistration(
-      {
-        id: eventId,
-        registrationNumber,
-        comment,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
-  }
+  await opencrvs.upsertRegistrationIdentifier(
+    {
+      id: eventId,
+      identifierType: "MOSIP_AID",
+      identifierValue: aid,
+    },
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
 
   return reply.code(202).send();
 };

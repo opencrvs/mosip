@@ -4,7 +4,7 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { mosipHandler, mosipNidSchema } from "./routes/mosip";
+import { mosipNidSchema, receiveNidHandler } from "./routes/receive-nid";
 import {
   registrationEventHandler,
   opencrvsRecordSchema,
@@ -42,6 +42,18 @@ app.setErrorHandler((error, request, reply) => {
 
 app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
+    url: "/esignet/get-oidp-user-info",
+    method: "POST",
+    handler: getOIDPUserInfo,
+    schema: {
+      body: OIDPUserInfoSchema,
+    },
+  });
+
+  /*
+   * OpenCRVS country-config receivers
+   */
+  app.withTypeProvider<ZodTypeProvider>().route({
     url: "/events/registration",
     method: "POST",
     handler: registrationEventHandler,
@@ -57,20 +69,16 @@ app.after(() => {
       body: opencrvsRecordSchema,
     },
   });
+
+  /*
+   * MOSIP Java Mediator receiver
+   */
   app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/webhooks/mosip",
+    url: "/birthReceiveNid",
     method: "POST",
-    handler: mosipHandler,
+    handler: receiveNidHandler,
     schema: {
       body: mosipNidSchema,
-    },
-  });
-  app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/esignet/get-oidp-user-info",
-    method: "POST",
-    handler: getOIDPUserInfo,
-    schema: {
-      body: OIDPUserInfoSchema,
     },
   });
 });

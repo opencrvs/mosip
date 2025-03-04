@@ -6,21 +6,12 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "types": [
-      "fhir",
-      "node"
-    ],
+    "types": ["fhir", "node"],
     "paths": {
-      "@mosip/ida-auth-sdk": [
-        "./src/ida-auth-sdk"
-      ],
-      "@opencrvs/mosip-crypto": [
-        "./src/crypto"
-      ]
+      "@mosip/ida-auth-sdk": ["./src/ida-auth-sdk"],
+      "@opencrvs/mosip-crypto": ["./src/crypto"],
+      "@opencrvs/java-mediator-interop": ["./src/java-mediator-interop"]
     }
   },
-  "include": [
-    "src/**/*.ts",
-    "eslint.config.mjs"
-  ]
+  "include": ["src/**/*.ts", "eslint.config.mjs"]
 }
