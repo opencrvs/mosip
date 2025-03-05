@@ -11,6 +11,7 @@ import * as opencrvs from "../opencrvs-api";
 import { env } from "../constants";
 import { generateRegistrationNumber } from "../registration-number";
 import { convertToLegacyBundle } from "@opencrvs/java-mediator-interop";
+import { storage } from "../__DEMO_STORAGE__";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -62,6 +63,10 @@ export const registrationEventHandler = async (
       request.body,
       birthRegistrationNumber,
     );
+
+    // NOTE!
+    // Only for MOSIP Connect. See rationale in `__DEMO_STORAGE__.ts`
+    storage[birthRegistrationNumber] = eventId;
 
     request.log.info(
       { eventId, trackingId },

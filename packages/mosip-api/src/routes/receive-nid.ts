@@ -4,6 +4,7 @@ import * as opencrvs from "../opencrvs-api";
 import { decryptData } from "@opencrvs/java-mediator-interop";
 import { CREDENTIAL_PARTNER_PRIVATE_KEY } from "../mosip-api";
 import { getRecordId } from "../token";
+import { storage } from "../__DEMO_STORAGE__";
 
 /** Encrypted payload from MOSIP */
 export const mosipNidSchema = z.object({
@@ -31,11 +32,15 @@ export const receiveNidHandler = async (
       .send({ error: "Token is missing in Authorization header" });
   }
 
-  const recordId = getRecordId(token);
+  // const recordId = getRecordId(token);
   const { uinToken, opencrvsBRN } = decryptData(
     request.body.data,
     CREDENTIAL_PARTNER_PRIVATE_KEY,
   );
+
+  // NOTE!
+  // Only for MOSIP Connect. See rationale in `__DEMO_STORAGE__.ts`
+  const recordId = storage[opencrvsBRN];
 
   await opencrvs.confirmRegistration(
     {
