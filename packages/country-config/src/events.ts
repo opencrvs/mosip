@@ -12,6 +12,7 @@ interface VerificationStatus {
  */
 export const mosipRegistrationHandler = ({ url }: { url: string }) =>
   (async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
+    // Corresponds to `packages/mosip-api` /events/registration -route
     const MOSIP_API_REGISTRATION_EVENT_URL = new URL(
       "./events/registration",
       url,
