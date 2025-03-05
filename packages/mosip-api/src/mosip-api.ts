@@ -86,7 +86,7 @@ export const postRecord = async (
 
   logger.info(`ID - ${id}. Received MOSIP Auth token`);
 
-  const request = new Request(url, {
+  const response = await fetch(url, {
     method: "POST",
     body: proxyRequest,
     headers: {
@@ -94,16 +94,6 @@ export const postRecord = async (
       cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`,
     },
   });
-
-  // @NOTE: ONLY FOR DEBUGGING PURPOSES
-  // @WARNING: REMOVE THIS BEFORE DEPLOYING TO AN ACTUAL ENVIRONMENT
-  const clonedRequest = request.clone();
-  console.log("Request URL:", clonedRequest.url);
-  console.log("Request Method:", clonedRequest.method);
-  console.log("Request Headers:", clonedRequest.headers);
-  console.log("Request Body:", await clonedRequest.text());
-
-  const response = await fetch(request);
 
   if (!response.ok) {
     throw new Error(
