@@ -86,7 +86,7 @@ export const postRecord = async (
 
   logger.info(`ID - ${id}. Received MOSIP Auth token`);
 
-  const request = new Request(url, {
+  const response = await fetch(url, {
     method: "POST",
     body: proxyRequest,
     headers: {
@@ -94,8 +94,6 @@ export const postRecord = async (
       cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`,
     },
   });
-
-  const response = await fetch(request);
 
   if (!response.ok) {
     throw new Error(
