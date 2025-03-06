@@ -198,6 +198,7 @@ interface ESignetConfig {
     fieldName: string;
     mosipAPIUserInfoUrl: string;
   };
+  authenticatingLoaderFieldName?: string;
 }
 
 export const verified = (event: string, sectionId: string, mapping: any) => {
@@ -255,6 +256,41 @@ export const idVerificationBanner = (
   };
 };
 
+export function esignetAuthenticatingLoaderField({
+  event,
+  section,
+  fieldName,
+  esignetCallbackFieldName,
+}: {
+  event: "birth" | "death";
+  section: "informant" | "mother" | "father" | "spouse" | "deceased";
+  fieldName: string;
+  esignetCallbackFieldName: string;
+}) {
+  const fieldId = `${event}.${section}.${section}-view-group.${fieldName}`;
+  return {
+    name: fieldName,
+    type: "LOADER",
+    fieldId,
+    hideInPreview: true,
+    custom: true,
+    label: {
+      id: "form.field.label.idReader",
+      defaultMessage: "ID verification",
+    },
+    loadingText: {
+      id: "form.field.label.authenticating.nid",
+      defaultMessage: "Authenticating National ID",
+    },
+    conditionals: [
+      {
+        action: "hide",
+        expression: `!$form?.${esignetCallbackFieldName}?.loading`,
+      },
+    ],
+  };
+}
+
 export const getInitialValueFromIDReader = (fieldNameInReader: string) => ({
   dependsOn: ["idReader", "esignetCallback"],
   expression: `$form?.idReader?.${fieldNameInReader} || $form?.esignetCallback?.data?.${fieldNameInReader} || ""`,
@@ -276,7 +312,7 @@ export const idReaderFields = (
       conditionals.concat({
         action: "hide",
         expression:
-          "$form?.verified === 'verified' || $form?.verified === 'authenticated' || $form?.verified === 'failed'",
+          "$form?.verified === 'verified' || $form?.verified === 'authenticated' || $form?.verified === 'failed' || !!$form?.esignetCallback?.loading",
       }),
       readers,
     ),
@@ -298,6 +334,16 @@ export const idReaderFields = (
         openIdProviderClientId: esignetConfig.openIdProviderClientId,
       }),
     );
+    if (esignetConfig.authenticatingLoaderFieldName) {
+      fields.push(
+        esignetAuthenticatingLoaderField({
+          event,
+          section,
+          fieldName: esignetConfig.authenticatingLoaderFieldName,
+          esignetCallbackFieldName: esignetConfig.callback.fieldName,
+        }),
+      );
+    }
   }
   return [
     ...fields,
