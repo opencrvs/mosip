@@ -61,7 +61,7 @@
         border-radius: 4px;
         padding: 0 12px;
       }
-      button {
+      #authenticate {
         line-height: 40px;
         font-size: 14px;
         background: #004282;
@@ -73,7 +73,7 @@
         cursor: pointer;
       }
 
-      button:hover {
+      #authenticate:hover {
         background: #005bb6;
       }
     </style>
@@ -169,22 +169,35 @@
       </div>
 
       <!-- Login -->
-      <br />
-      <label for="id-input" style="font-size: 12px; color: #111827b3"
-        >UIN/VID</label
-      ><br />
-      <input id="id-input" placeholder="Enter your UIN or VID" />
-      <button onclick="handleClick()">Authenticate</button>
+      <form id="login">
+        <label for="id-input" style="font-size: 12px; color: #111827b3"
+          >UIN/VID</label
+        ><br />
+        <input id="id-input" placeholder="Enter your UIN or VID" required />
+        <input type="submit" id="authenticate" value="Authenticate" />
+      </form>
     </main>
     <footer>Powered by E-Signet</footer>
     <script>
-      function handleClick() {
+      /**
+       * @param {SubmitEvent} event
+       */
+      function handleSubmit(event) {
+        event.preventDefault();
+
         const params = new URLSearchParams(window.location.search);
         const destinationURL = new URL(params.get("redirect_uri"));
-        destinationURL.searchParams.set("code", "esignet-mock-code");
+        // instead of a E-Signet "code" (nonce), for mock, lets directly use the NID as the value
+        // this allows us to mock the correct user data without creating a database for the nonces
+        const personId = document.getElementById("id-input").value;
+        // it's base64'd using `btoa` so that in demo the NID doesn't leak to URL and cause awkward questions
+        destinationURL.searchParams.set("code", btoa(personId));
         destinationURL.searchParams.set("state", params.get("state"));
+        console.log(destinationURL.href);
         window.location.replace(destinationURL.href);
       }
+
+      document.getElementById("login").addEventListener("submit", handleSubmit);
     </script>
   </body>
 </html>

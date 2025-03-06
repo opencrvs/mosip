@@ -44,6 +44,12 @@ jobs:
         env:
           DOCKER_METADATA_SHORT_SHA_LENGTH: 7
 
+      # The package includes symlinks to elsewhere in the monorepo, this resolves the symlinks to actual files
+      - name: Resolve symlinks
+        run: |
+          mkdir -p images/esignet-mock
+          rsync -a --copy-links packages/esignet-mock/ images/esignet-mock/
+
       - name: Copy yarn.lock to docker build context
         run: cp yarn.lock packages/esignet-mock/yarn.lock
 
