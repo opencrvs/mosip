@@ -198,7 +198,7 @@ interface ESignetConfig {
     fieldName: string;
     mosipAPIUserInfoUrl: string;
   };
-  authenticatingLoaderFieldName?: string;
+  loaderFieldName?: string;
 }
 
 export const verified = (
@@ -238,6 +238,7 @@ function capitalize(str: string) {
 }
 
 type VerificationStatus = "verified" | "failed" | "authenticated";
+
 export const idVerificationBanner = (
   event: string,
   sectionId: string,
@@ -267,7 +268,7 @@ export const idVerificationBanner = (
   };
 };
 
-export function esignetAuthenticatingLoaderField({
+export function esignetLoaderField({
   event,
   section,
   fieldName,
@@ -345,12 +346,12 @@ export const idReaderFields = (
         openIdProviderClientId: esignetConfig.openIdProviderClientId,
       }),
     );
-    if (esignetConfig.authenticatingLoaderFieldName) {
+    if (esignetConfig.loaderFieldName) {
       fields.push(
-        esignetAuthenticatingLoaderField({
+        esignetLoaderField({
           event,
           section,
-          fieldName: esignetConfig.authenticatingLoaderFieldName,
+          fieldName: esignetConfig.loaderFieldName,
           esignetCallbackFieldName: esignetConfig.callback.fieldName,
         }),
       );
