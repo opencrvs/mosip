@@ -291,7 +291,7 @@ export function esignetAuthenticatingLoaderField({
     },
     loadingText: {
       id: "form.field.label.authenticating.nid",
-      defaultMessage: "Authenticating National ID",
+      defaultMessage: "Fetching the person's data from E-Signet",
     },
     conditionals: [
       {
