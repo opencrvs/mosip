@@ -116,7 +116,7 @@ app.post("/oidc/userinfo", {
       email: `team+esignet+${identity.firstName}@opencrvs.org`,
       email_verified: true,
       gender: identity.gender as "female" | "male",
-      birthdate: identity.birthDate,
+      birthdate: identity.birthDate.replaceAll("-", "/"), // E-Signet uses yyyy/MM/dd
       zoneinfo: "",
       locale: "en-US",
       phone_number: "0314412652",

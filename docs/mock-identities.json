@@ -2,56 +2,56 @@
   {
     "firstName": "Charles",
     "familyName": "Doe 2nd",
-    "birthDate": "2008/02/29",
+    "birthDate": "2008-02-29",
     "gender": "male",
     "nid": "1234567890"
   },
   {
     "firstName": "Jenny",
     "familyName": "Doe",
-    "birthDate": "2002/02/01",
+    "birthDate": "2002-02-01",
     "gender": "female",
     "nid": "1234567891"
   },
   {
     "firstName": "John",
     "familyName": "Doe",
-    "birthDate": "2001/02/20",
+    "birthDate": "2001-02-20",
     "gender": "male",
     "nid": "1234567892"
   },
   {
     "firstName": "Chandler",
     "familyName": "Bing",
-    "birthDate": "2006/12/02",
+    "birthDate": "2006-12-02",
     "gender": "male",
     "nid": "1234567893"
   },
   {
     "firstName": "Monica",
     "familyName": "Geller",
-    "birthDate": "2005/02/25",
+    "birthDate": "2005-02-25",
     "gender": "female",
     "nid": "1234567894"
   },
   {
     "firstName": "Ross",
     "familyName": "Geller",
-    "birthDate": "2004/02/26",
+    "birthDate": "2004-02-26",
     "gender": "male",
     "nid": "1234567895"
   },
   {
     "firstName": "Phoebe",
     "familyName": "Buffay",
-    "birthDate": "2002/02/24",
+    "birthDate": "2002-02-24",
     "gender": "female",
     "nid": "1234567896"
   },
   {
     "firstName": "Joey",
     "familyName": "Tribbioni",
-    "birthDate": "2004/04/09",
+    "birthDate": "2004-04-09",
     "gender": "male",
     "nid": "1234567897"
   }
