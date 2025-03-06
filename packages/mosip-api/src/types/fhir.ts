@@ -613,7 +613,8 @@ export function getDemographics(patient: fhir3.Patient): {
     ? patient.name.map(transformFhirNameIntoIdentityInfo)
     : undefined;
   const gender = patient.gender
-    ? [{ value: patient.gender, language: "en" }]
+    ? /* @TODO: Depending on the country configuration, the language would need to be changed. Further implementation testing is needed with MOSIP!  */
+      [{ value: patient.gender, language: "eng" }]
     : undefined;
   const dob = patient.birthDate
     ? format(new Date(patient.birthDate), "yyyy/MM/dd")
