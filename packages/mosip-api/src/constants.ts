@@ -5,7 +5,6 @@ export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
   LOCALE: str({ devDefault: "en" }),
-  DOMAIN: str({ devDefault: "*" }),
   CLIENT_APP_URL: url({ devDefault: "http://localhost:3000" }),
   OPENCRVS_GRAPHQL_GATEWAY_URL: str({
     devDefault: "http://localhost:7070/graphql",
