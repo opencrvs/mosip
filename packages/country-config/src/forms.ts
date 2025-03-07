@@ -253,7 +253,7 @@ export const idVerificationBanner = (
     hideInPreview: true,
     custom: true,
     bannerType: status,
-    idFieldName: "idReader",
+    idFieldName: status === "authenticated" ? "esignetCallback" : "idReader",
     label: {
       id: "form.field.label.empty",
       defaultMessage: "",
