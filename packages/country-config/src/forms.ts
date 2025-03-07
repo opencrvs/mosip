@@ -243,6 +243,7 @@ export const idVerificationBanner = (
   event: string,
   sectionId: string,
   status: VerificationStatus,
+  conditionals: any[] = [],
 ) => {
   const fieldName = "verified";
   const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
@@ -259,12 +260,12 @@ export const idVerificationBanner = (
       defaultMessage: "",
     },
     validator: [],
-    conditionals: [
+    conditionals: conditionals.concat([
       {
         action: "hide",
         expression: `$form?.verified !== "${status}"`,
       },
-    ],
+    ]),
   };
 };
 
@@ -362,25 +363,32 @@ export const idReaderFields = (
         event,
         section,
         verifiedCustomFieldMapping,
+        conditionals,
         esignetConfig,
       ),
     ];
   }
   return [
     ...fields,
-    ...idVerificationFields(event, section, verifiedCustomFieldMapping),
+    ...idVerificationFields(
+      event,
+      section,
+      verifiedCustomFieldMapping,
+      conditionals,
+    ),
   ];
 };
 export const idVerificationFields = (
   event: string,
   sectionId: string,
   mapping: any,
+  conditionals: any[] = [],
   esignetConfig?: ESignetConfig,
 ) => {
   return [
     verified(event, sectionId, mapping, esignetConfig),
-    idVerificationBanner(event, sectionId, "verified"),
-    idVerificationBanner(event, sectionId, "failed"),
-    idVerificationBanner(event, sectionId, "authenticated"),
+    idVerificationBanner(event, sectionId, "verified", conditionals),
+    idVerificationBanner(event, sectionId, "failed", conditionals),
+    idVerificationBanner(event, sectionId, "authenticated", conditionals),
   ];
 };
