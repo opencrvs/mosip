@@ -53,11 +53,15 @@ export const deactivateNid = async ({ nid }: { nid: string }) => {
 
 export const verifyNid = async ({
   nid,
+  name,
+  gender,
   dob,
 }: {
   nid: string;
   /** date of birth as YYYY/MM/DD */
-  dob: string;
+  dob: string | undefined;
+  name: { language: string; value: string }[] | undefined;
+  gender: { language: string; value: string }[] | undefined;
 }) => {
   const authenticator = new MOSIPAuthenticator({
     partnerApiKey: env.PARTNER_APIKEY,
@@ -77,6 +81,8 @@ export const verifyNid = async ({
     individualIdType: "UIN",
     demographicData: {
       dob,
+      name,
+      gender,
     },
     consent: true,
   });
