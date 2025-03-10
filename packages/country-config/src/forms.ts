@@ -54,6 +54,11 @@ export const esignet = (
         expression: "!!$form.redirectCallbackFetch",
       },
     ],
+    mapping: {
+      mutation: {
+        operation: "ignoreFieldTransformer",
+      },
+    },
     options: {
       url: url.toString(),
       callback: {
@@ -103,6 +108,11 @@ export const esignetCallback = ({
   },
   validator: [],
   hideInPreview: true,
+  mapping: {
+    mutation: {
+      operation: "ignoreFieldTransformer",
+    },
+  },
   options: {
     url: mosipAPIUserInfoUrl,
     headers: {
