@@ -1,6 +1,6 @@
 # Compatibility
 
-This version supports the yet to be released OpenCRVS v1.7.
+This version supports the yet to be released OpenCRVS v1.8.
 
 ## Features
 

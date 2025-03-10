@@ -29,8 +29,6 @@ export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  // We will receive the full bundle, but we will minimize the amount of data we send to MOSIP
-
   const trackingId = getTrackingId(request.body);
   const { id: eventId } = getComposition(request.body);
 

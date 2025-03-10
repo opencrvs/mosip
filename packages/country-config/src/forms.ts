@@ -134,12 +134,6 @@ export const esignetHidden = () => {
   };
 };
 
-/**
- *
- * @description QR reader type definition (this field may not be supported in the latest release of OpenCRVS yet)
- *
- */
-
 export const idReader = (
   event: string,
   sectionId: string,
