@@ -6,8 +6,7 @@ import fastifyStatic from "@fastify/static";
 import formbody from "@fastify/formbody";
 import * as jose from "jose";
 import { readFileSync } from "node:fs";
-import { join } from "path";
-import casual from "casual";
+import identities from "./mock-identities.json" assert { type: "json" };
 
 const app = Fastify({ logger: true });
 
@@ -88,24 +87,36 @@ type OIDPUserInfo = {
 };
 
 app.post("/oidc/userinfo", {
-  handler: async (request: any, reply) => {
-    const firstName = casual.first_name;
-    const lastName = casual.last_name;
+  handler: async (request, reply) => {
+    // see `index.html` if you're wondering where this comes from
+    const { code } = jwt.decode(
+      request.headers.authorization!.split("Bearer ")[1]!,
+    ) as { code: string };
+    const nid = atob(code);
+
+    const identity = identities.find(
+      (mockIdentity) => mockIdentity.nid === nid,
+    );
+
+    if (!identity) {
+      throw new Error(`Identity "${nid}" not found! Uh oh...`);
+    }
+
     const userInfo: OIDPUserInfo = {
       sub: "405710304278395",
-      name: `${firstName} ${lastName}`,
-      given_name: firstName,
-      family_name: lastName,
+      name: `${identity.firstName} ${identity.familyName}`,
+      given_name: identity.firstName,
+      family_name: identity.familyName,
       middle_name: "",
       nickname: "",
       preferred_username: "",
       profile: "",
       picture: "",
       website: "",
-      email: casual.email,
+      email: `team+esignet+${identity.firstName}@opencrvs.org`,
       email_verified: true,
-      gender: "male",
-      birthdate: "15/05/1990",
+      gender: identity.gender as "female" | "male",
+      birthdate: identity.birthDate.replaceAll("-", "/"), // E-Signet uses yyyy/MM/dd
       zoneinfo: "",
       locale: "en-US",
       phone_number: "0314412652",
@@ -131,7 +142,15 @@ app.post("/oidc/userinfo", {
 const authorizeSchema = {
   querystring: {
     type: "object",
-    required: ["client_id", "response_type", "scope", "acr_values", "claims", "state", "redirect_uri"],
+    required: [
+      "client_id",
+      "response_type",
+      "scope",
+      "acr_values",
+      "claims",
+      "state",
+      "redirect_uri",
+    ],
     properties: {
       client_id: { type: "string" },
       response_type: { type: "string" },

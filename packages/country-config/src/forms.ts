@@ -198,9 +198,15 @@ interface ESignetConfig {
     fieldName: string;
     mosipAPIUserInfoUrl: string;
   };
+  loaderFieldName?: string;
 }
 
-export const verified = (event: string, sectionId: string, mapping: any) => {
+export const verified = (
+  event: string,
+  sectionId: string,
+  mapping: any,
+  esignetConfig?: ESignetConfig,
+) => {
   const fieldName = "verified";
   const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
   return {
@@ -213,10 +219,15 @@ export const verified = (event: string, sectionId: string, mapping: any) => {
       id: "form.field.label.empty",
       defaultMessage: "",
     },
-    initialValue: {
-      dependsOn: ["idReader"],
-      expression: 'Boolean($form?.idReader)? "pending":""',
-    },
+    initialValue: esignetConfig
+      ? {
+          dependsOn: ["idReader", esignetConfig.callback.fieldName],
+          expression: `Boolean($form?.idReader)? "pending": Boolean($form?.${esignetConfig.callback.fieldName}?.data)? "authenticated": ""`,
+        }
+      : {
+          dependsOn: ["idReader"],
+          expression: 'Boolean($form?.idReader)? "pending":""',
+        },
     validator: [],
     mapping,
   };
@@ -226,10 +237,13 @@ function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+type VerificationStatus = "verified" | "failed" | "authenticated";
+
 export const idVerificationBanner = (
   event: string,
   sectionId: string,
-  status: "verified" | "failed" | "authenticated",
+  status: VerificationStatus,
+  conditionals: any[] = [],
 ) => {
   const fieldName = "verified";
   const fieldId = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
@@ -240,20 +254,55 @@ export const idVerificationBanner = (
     hideInPreview: true,
     custom: true,
     bannerType: status,
-    idFieldName: "idReader",
+    idFieldName: status === "authenticated" ? "esignetCallback" : "idReader",
     label: {
       id: "form.field.label.empty",
       defaultMessage: "",
     },
     validator: [],
-    conditionals: [
+    conditionals: conditionals.concat([
       {
         action: "hide",
         expression: `$form?.verified !== "${status}"`,
       },
-    ],
+    ]),
   };
 };
+
+export function esignetLoaderField({
+  event,
+  section,
+  fieldName,
+  esignetCallbackFieldName,
+}: {
+  event: "birth" | "death";
+  section: "informant" | "mother" | "father" | "spouse" | "deceased";
+  fieldName: string;
+  esignetCallbackFieldName: string;
+}) {
+  const fieldId = `${event}.${section}.${section}-view-group.${fieldName}`;
+  return {
+    name: fieldName,
+    type: "LOADER",
+    fieldId,
+    hideInPreview: true,
+    custom: true,
+    label: {
+      id: "form.field.label.idReader",
+      defaultMessage: "ID verification",
+    },
+    loadingText: {
+      id: "form.field.label.authenticating.nid",
+      defaultMessage: "Fetching the person's data from E-Signet",
+    },
+    conditionals: [
+      {
+        action: "hide",
+        expression: `!$form?.${esignetCallbackFieldName}?.loading`,
+      },
+    ],
+  };
+}
 
 export const getInitialValueFromIDReader = (fieldNameInReader: string) => ({
   dependsOn: ["idReader", "esignetCallback"],
@@ -262,7 +311,7 @@ export const getInitialValueFromIDReader = (fieldNameInReader: string) => ({
 
 export const idReaderFields = (
   event: "birth" | "death",
-  section: "informant" | "mother" | "father",
+  section: "informant" | "mother" | "father" | "spouse" | "deceased",
   qrConfig: QRConfig,
   esignetConfig: ESignetConfig | undefined,
   verifiedCustomFieldMapping: any,
@@ -276,7 +325,7 @@ export const idReaderFields = (
       conditionals.concat({
         action: "hide",
         expression:
-          "$form?.verified === 'verified' || $form?.verified === 'authenticated' || $form?.verified === 'failed'",
+          "$form?.verified === 'verified' || $form?.verified === 'authenticated' || $form?.verified === 'failed' || !!$form?.esignetCallback?.loading",
       }),
       readers,
     ),
@@ -298,21 +347,48 @@ export const idReaderFields = (
         openIdProviderClientId: esignetConfig.openIdProviderClientId,
       }),
     );
+    if (esignetConfig.loaderFieldName) {
+      fields.push(
+        esignetLoaderField({
+          event,
+          section,
+          fieldName: esignetConfig.loaderFieldName,
+          esignetCallbackFieldName: esignetConfig.callback.fieldName,
+        }),
+      );
+    }
+    return [
+      ...fields,
+      ...idVerificationFields(
+        event,
+        section,
+        verifiedCustomFieldMapping,
+        conditionals,
+        esignetConfig,
+      ),
+    ];
   }
   return [
     ...fields,
-    ...idVerificationFields(event, section, verifiedCustomFieldMapping),
+    ...idVerificationFields(
+      event,
+      section,
+      verifiedCustomFieldMapping,
+      conditionals,
+    ),
   ];
 };
 export const idVerificationFields = (
   event: string,
   sectionId: string,
   mapping: any,
+  conditionals: any[] = [],
+  esignetConfig?: ESignetConfig,
 ) => {
   return [
-    verified(event, sectionId, mapping),
-    idVerificationBanner(event, sectionId, "verified"),
-    idVerificationBanner(event, sectionId, "failed"),
-    idVerificationBanner(event, sectionId, "authenticated"),
+    verified(event, sectionId, mapping, esignetConfig),
+    idVerificationBanner(event, sectionId, "verified", conditionals),
+    idVerificationBanner(event, sectionId, "failed", conditionals),
+    idVerificationBanner(event, sectionId, "authenticated", conditionals),
   ];
 };
