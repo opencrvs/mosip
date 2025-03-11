@@ -54,6 +54,11 @@ export const esignet = (
         expression: "!!$form.redirectCallbackFetch",
       },
     ],
+    mapping: {
+      mutation: {
+        operation: "ignoreFieldTransformer",
+      },
+    },
     options: {
       url: url.toString(),
       callback: {
@@ -103,6 +108,11 @@ export const esignetCallback = ({
   },
   validator: [],
   hideInPreview: true,
+  mapping: {
+    mutation: {
+      operation: "ignoreFieldTransformer",
+    },
+  },
   options: {
     url: mosipAPIUserInfoUrl,
     headers: {
@@ -123,12 +133,6 @@ export const esignetHidden = () => {
     type: "HIDDEN",
   };
 };
-
-/**
- *
- * @description QR reader type definition (this field may not be supported in the latest release of OpenCRVS yet)
- *
- */
 
 export const idReader = (
   event: string,

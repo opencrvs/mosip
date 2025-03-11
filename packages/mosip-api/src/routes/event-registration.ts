@@ -29,8 +29,6 @@ export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  // We will receive the full bundle, but we will minimize the amount of data we send to MOSIP
-
   const trackingId = getTrackingId(request.body);
   const { id: eventId } = getComposition(request.body);
 
@@ -69,24 +67,37 @@ export const registrationEventHandler = async (
   }
 
   if (eventType === EVENT_TYPE.DEATH) {
-    const nid = getDeceasedNid(request.body);
-    const response = await mosip.deactivateNid({
-      nid,
-    });
-    const registrationNumber = generateRegistrationNumber(trackingId);
+    let nid;
 
-    let comment: string;
-    if (response.status === 404) {
-      comment = `NID "${nid}" not found`;
-    } else if (response.status === 409) {
-      comment = `NID "${nid}" already deactivated`;
-    } else if (response.ok) {
-      comment = `NID "${nid}" deactivated`;
-    } else {
-      throw new Error(
-        `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
+    try {
+      nid = getDeceasedNid(request.body);
+    } catch (e) {
+      request.log.info(
+        `Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted. Bypassing NID deactivation...`,
       );
     }
+
+    let comment = "NID not entered for deactivation";
+
+    if (nid) {
+      const response = await mosip.deactivateNid({
+        nid,
+      });
+
+      if (response.status === 404) {
+        comment = `NID "${nid}" not found for deactivation`;
+      } else if (response.status === 409) {
+        comment = `NID "${nid}" already deactivated`;
+      } else if (response.ok) {
+        comment = `NID "${nid}" deactivated`;
+      } else {
+        throw new Error(
+          `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
+        );
+      }
+    }
+
+    const registrationNumber = generateRegistrationNumber(trackingId);
 
     await opencrvs.confirmRegistration(
       {

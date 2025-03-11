@@ -235,7 +235,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
 };
 
 export const fetchUserInfo = async (accessToken: string) => {
-  const request = await fetch(env.ESIGNET_USERINFO_URL!, {
+  const request = await fetch(env.ESIGNET_USERINFO_URL, {
     method: "POST",
     headers: {
       Authorization: "Bearer " + accessToken,
