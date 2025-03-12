@@ -20,7 +20,7 @@ import formbody from "@fastify/formbody";
 import { reviewEventHandler } from "./routes/event-review";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
-import { getPublicKey } from "./opencrvs-api";
+import { getPublicKey, withAuthentication } from "./jwt-auth";
 
 const envToLogger = {
   development: {
@@ -57,7 +57,7 @@ app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/events/registration",
     method: "POST",
-    handler: registrationEventHandler,
+    handler: withAuthentication(registrationEventHandler),
     schema: {
       body: opencrvsRecordSchema,
     },
@@ -65,7 +65,7 @@ app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/events/review",
     method: "POST",
-    handler: reviewEventHandler,
+    handler: withAuthentication(reviewEventHandler),
     schema: {
       body: opencrvsRecordSchema,
     },
@@ -73,7 +73,7 @@ app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/webhooks/mosip",
     method: "POST",
-    handler: mosipHandler,
+    handler: withAuthentication(mosipHandler),
     schema: {
       body: mosipNidSchema,
     },
@@ -81,6 +81,7 @@ app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/esignet/get-oidp-user-info",
     method: "POST",
+    // @TODO: @Tahmid, @Euan, is JWT authentication needed in E-Signet? Does HTTP button support it?
     handler: getOIDPUserInfo,
     schema: {
       body: OIDPUserInfoSchema,
