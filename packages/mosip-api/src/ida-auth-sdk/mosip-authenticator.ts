@@ -26,9 +26,9 @@ interface AuthParams {
   individualId: string;
   individualIdType: string;
   demographicData: {
-    dob: string | undefined;
-    name: IdentityInfo[] | undefined;
-    gender: IdentityInfo[] | undefined;
+    dob?: string;
+    name?: IdentityInfo[];
+    gender?: IdentityInfo[];
   };
   consent: boolean;
 }
