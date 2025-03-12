@@ -68,6 +68,7 @@ export const OIDPUserInfoSchema = z.object({
 
 export const OIDPQuerySchema = z.object({
   code: z.string(),
+  state: z.string(),
 });
 
 export type OIDPUserInfoRequest = FastifyRequest<{
@@ -200,7 +201,7 @@ const findAdminStructureLocationWithName = async (name: string) => {
 };
 
 function formatDate(dateString: string, formatStr = "PP") {
-  const date = parse(dateString, "dd/MM/yyyy", new Date());
+  const date = parse(dateString, "yyyy/MM/dd", new Date());
   if (!isValid(date)) {
     return "";
   }
@@ -234,7 +235,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
 };
 
 export const fetchUserInfo = async (accessToken: string) => {
-  const request = await fetch(env.ESIGNET_USERINFO_URL!, {
+  const request = await fetch(env.ESIGNET_USERINFO_URL, {
     method: "POST",
     headers: {
       Authorization: "Bearer " + accessToken,
