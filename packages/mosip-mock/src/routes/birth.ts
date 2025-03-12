@@ -19,18 +19,13 @@ const CREDENTIAL_PARTNER_CERTIFICATE = readFileSync(
 
 const sendNid = async ({
   token,
-  bundle,
+  payload,
 }: {
   token: string;
-  bundle: fhir3.Bundle;
+  payload: { event: { context: [fhir3.Bundle] } };
 }) => {
-  const composition = getComposition(bundle);
-  const child = findEntry(
-    "child-details",
-    composition,
-    bundle,
-  ) as fhir3.Patient;
-  const brn = child.identifier?.[0].value;
+  const child = payload.event.context[0].entry![0].resource as fhir3.Patient;
+  const brn = child.identifier![0].value;
 
   console.log(`${JSON.stringify({ brn }, null, 4)}, creating NID...`);
 
@@ -89,9 +84,9 @@ type OpenCRVSBirthEvent = {
 export const birthHandler: RouteHandlerMethod = async (request, reply) => {
   const { token, data } = request.body as OpenCRVSBirthEvent;
 
-  const bundle = decryptData(data, CREDENTIAL_PARTNER_PRIVATE_KEY);
+  const payload = decryptData(data, CREDENTIAL_PARTNER_PRIVATE_KEY);
 
-  sendNid({ token, bundle }).catch((e) => {
+  sendNid({ token, payload }).catch((e) => {
     console.error(e);
   });
 
