@@ -52,15 +52,6 @@ app.setErrorHandler((error, request, reply) => {
 });
 
 app.after(() => {
-  app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/esignet/get-oidp-user-info",
-    method: "POST",
-    handler: getOIDPUserInfo,
-    schema: {
-      body: OIDPUserInfoSchema,
-    },
-  });
-
   /*
    * OpenCRVS country-config receivers
    */
