@@ -26,11 +26,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          # https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#pull_request
-          # > Note that GITHUB_SHA for this event is the last merge commit of the pull request merge branch.
-          # > If you want to get the commit ID for the last commit to the head branch of the pull request, use _github.event.pull_request.head.sha_ instead.
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
