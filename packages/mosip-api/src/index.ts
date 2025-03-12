@@ -19,6 +19,8 @@ import {
 import formbody from "@fastify/formbody";
 import { reviewEventHandler } from "./routes/event-review";
 import cors from "@fastify/cors";
+import jwt from "@fastify/jwt";
+import { getPublicKey } from "./opencrvs-api";
 
 const envToLogger = {
   development: {
@@ -88,6 +90,10 @@ app.after(() => {
 });
 
 async function run() {
+  app.register(jwt, {
+    secret: { public: await getPublicKey() },
+    verify: { algorithms: ["RS256"] },
+  });
   await app.ready();
   await app.listen({
     port: env.PORT,

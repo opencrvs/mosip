@@ -10,6 +10,10 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:7070/graphql",
     desc: "The URL of the OpenCRVS GraphQL Gateway",
   }),
+  OPENCRVS_PUBLIC_KEY_URL: str({
+    devDefault: "http://localhost:4040/.well-known",
+    desc: "OpenCRVS public key URL. Used to verify JWT authenticity",
+  }),
 
   // MOSIP Birth & Death packets
   MOSIP_BIRTH_WEBHOOK_URL: str({
