@@ -105,8 +105,6 @@ export const reviewEventHandler = async (
   };
 
   // @NOTE: Marriage not supported yet
-  // @NOTE: The following code is very verbose, but rather not abstract if not needed. For events v2 we'll have to rework this.
-  // @TODO: Should we batch the requests?
   const event =
     getEventType(request.body) === EVENT_TYPE.BIRTH ? "birth" : "death";
 
@@ -214,6 +212,7 @@ export const reviewEventHandler = async (
   }
 
   let deceasedNid;
+  const deceasedDemographics = getDemographics(father);
 
   const deceased = findEntry(
     "deceased-details",
@@ -236,12 +235,16 @@ export const reviewEventHandler = async (
       event,
       section: "deceased",
       nid: deceasedNid,
+      name: deceasedDemographics.name,
+      dob: deceasedDemographics.dob,
+      gender: deceasedDemographics.gender,
       token,
     });
     verificationStatus.deceased = result;
   }
 
   let spouseNid;
+  const spouseDemographics = getDemographics(father);
 
   const spouse = findEntry(
     "spouse-details",
@@ -264,6 +267,9 @@ export const reviewEventHandler = async (
       event,
       section: "spouse",
       nid: spouseNid,
+      name: spouseDemographics.name,
+      dob: spouseDemographics.dob,
+      gender: spouseDemographics.gender,
       token,
     });
     verificationStatus.spouse = result;
