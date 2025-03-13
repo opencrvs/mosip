@@ -145,7 +145,7 @@ export const reviewEventHandler = async (
   }
 
   /*
-   * Update mother's and fathers details if the NID is available
+   * Update mother's details if the NID is available
    */
   const mother = findEntry(
     "mother-details",
@@ -179,6 +179,9 @@ export const reviewEventHandler = async (
     verificationStatus.mother = result;
   }
 
+  /*
+   * Update father's details if the NID is available
+   */
   const father = findEntry(
     "father-details",
     composition,
@@ -211,6 +214,9 @@ export const reviewEventHandler = async (
     verificationStatus.father = result;
   }
 
+  /*
+   * Update deceased's details if the NID is available
+   */
   let deceasedNid;
   const deceasedDemographics = getDemographics(father);
 
@@ -243,6 +249,9 @@ export const reviewEventHandler = async (
     verificationStatus.deceased = result;
   }
 
+  /*
+   * Update spouses's details if the NID is available
+   */
   let spouseNid;
   const spouseDemographics = getDemographics(father);
 
