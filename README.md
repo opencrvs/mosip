@@ -5,24 +5,25 @@
 
 This package ensures a secure and a robust integration between OpenCRVS and MOSIP. For instructions on how to setup the integration, please refer to the [installation.md](./docs/installation.md). For local development, see instructions below. For features and core versions supported, please refer to the [compatibility.md](./docs/compatibility.md).
 
-## Pre-requisities
-
-- Node.js (see [`.nvmrc`](./.nvmrc) for version)
-
 ## Development
 
 ```sh
 # copy demo certs to gitignored location
 cp docs/example-certs/* certs/
 
-# start the mosip-api and all the mocked servers
+# install dependencies
 yarn install
+
+# start the mosip-api and all the mocked servers
 yarn dev
 
-# optionally run an individual package
-cd packages/*
-yarn install
+# optionally...
+# use a `.env` file at repository root
+touch .env
 yarn dev
+
+# only run the main server without mocks
+yarn dev --filter=@opencrvs/mosip-api
 
 # bump package.json versions
 yarn set-version 1.7.0-alpha.16
