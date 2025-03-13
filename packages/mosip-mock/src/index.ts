@@ -1,8 +1,8 @@
 import Fastify from "fastify";
 import { EMAIL_ENABLED, env } from "./constants";
-import { opencrvsBirthHandler } from "./webhooks/opencrvs-birth";
-import { deactivateNidHandler } from "./webhooks/deactivate-nid";
-import { idAuthenticationHandler } from "./webhooks/id-authentication";
+import { opencrvsBirthHandler } from "./routes/opencrvs-birth";
+import { deactivateNidHandler } from "./routes/deactivate-nid";
+import { idAuthenticationHandler } from "./routes/id-authentication";
 
 const app = Fastify();
 
