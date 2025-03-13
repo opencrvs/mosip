@@ -28,7 +28,7 @@ export const env = cleanEnv(process.env, {
   SMTP_PASSWORD: str({ devDefault: undefined }),
   SMTP_SECURE: bool({ devDefault: false }),
   DECRYPT_IDA_AUTH_PRIVATE_KEY_PATH: str({
-    devDefault: join(__dirname, "./mock-only-ida-partner.pem"),
+    default: join(__dirname, "./mock-only-ida-partner.pem"),
   }),
 });
 
