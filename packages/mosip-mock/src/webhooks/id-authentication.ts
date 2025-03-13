@@ -1,5 +1,6 @@
 import { RouteHandlerMethod } from "fastify";
 import identities from "../mock-identities.json" assert { type: "json" };
+import { validate } from "./validate";
 
 export const idAuthenticationHandler: RouteHandlerMethod = async (
   request,
@@ -10,6 +11,18 @@ export const idAuthenticationHandler: RouteHandlerMethod = async (
     individualId: string;
     individualIdType: "UIN" | "VID";
   };
+
+  const payloadErrors = validate(request.body as any);
+  if (payloadErrors.length > 0) {
+    return reply.status(400).send({
+      transactionID,
+      version: "1.0",
+      id: "mosip.identity.auth",
+      errors: payloadErrors,
+      responseTime: new Date().toISOString(),
+      response: { authStatus: false, authToken: null },
+    });
+  }
 
   if (identities.some(({ nid }) => nid === individualId)) {
     return reply.status(200).send({
