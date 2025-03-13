@@ -6,9 +6,7 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
+  workflow_dispatch:
 
 env:
   REGISTRY: ghcr.io
@@ -26,11 +24,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          # https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#pull_request
-          # > Note that GITHUB_SHA for this event is the last merge commit of the pull request merge branch.
-          # > If you want to get the commit ID for the last commit to the head branch of the pull request, use _github.event.pull_request.head.sha_ instead.
-          ref: ${{ github.event.pull_request.head.sha || github.ref }}
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -39,6 +32,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Extract version from package.json
+        run: echo "VERSION=$(jq -r .version package.json)" >> $GITHUB_ENV
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -46,6 +42,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=sha,prefix=
+            type=raw,value=${{ env.VERSION }}
         env:
           DOCKER_METADATA_SHORT_SHA_LENGTH: 7
 

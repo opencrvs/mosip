@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { FastifyInstance } from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
@@ -19,6 +19,8 @@ import {
 import formbody from "@fastify/formbody";
 import { reviewEventHandler } from "./routes/event-review";
 import cors from "@fastify/cors";
+import jwt from "@fastify/jwt";
+import { getPublicKey } from "./opencrvs-api";
 
 const envToLogger = {
   development: {
@@ -31,27 +33,8 @@ const envToLogger = {
   },
   production: true,
 };
-const app = Fastify({
-  logger: envToLogger[env.isProd ? "production" : "development"],
-});
 
-app.setValidatorCompiler(validatorCompiler);
-app.setSerializerCompiler(serializerCompiler);
-app.register(formbody);
-app.register(cors, {
-  origin: [env.CLIENT_APP_URL],
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-});
-
-openapi.register(app);
-
-app.setErrorHandler((error, request, reply) => {
-  request.log.error(error);
-  reply.status(500).send({ error: "An unexpected error occurred" });
-});
-
-app.after(() => {
+const initRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/events/registration",
     method: "POST",
@@ -79,15 +62,54 @@ app.after(() => {
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/esignet/get-oidp-user-info",
     method: "POST",
+    // @TODO: @Tahmid, @Euan, is JWT authentication needed in E-Signet? Does HTTP button support it?
     handler: getOIDPUserInfo,
     schema: {
       body: OIDPUserInfoSchema,
       querystring: OIDPQuerySchema,
     },
   });
-});
+};
+
+export const buildFastify = async () => {
+  const app = Fastify({
+    logger: envToLogger[env.isProd ? "production" : "development"],
+  });
+
+  app.setValidatorCompiler(validatorCompiler);
+  app.setSerializerCompiler(serializerCompiler);
+  app.register(formbody);
+  app.register(cors, {
+    origin: [env.CLIENT_APP_URL],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  });
+
+  openapi.register(app);
+
+  app.setErrorHandler((error, request, reply) => {
+    request.log.error(error);
+    reply.status(500).send({ error: "An unexpected error occurred" });
+  });
+
+  app.register(jwt, {
+    secret: { public: await getPublicKey() },
+    verify: { algorithms: ["RS256"] },
+  });
+
+  app.after(() => initRoutes(app));
+
+  return app;
+};
 
 async function run() {
+  // Only run the daemon if it's executed directly - as in `tsx index.ts` for example
+  if (require.main !== module) {
+    return;
+  }
+
+  const app = await buildFastify();
+
   await app.ready();
   await app.listen({
     port: env.PORT,
