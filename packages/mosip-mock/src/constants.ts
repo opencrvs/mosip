@@ -1,4 +1,7 @@
 import { bool, cleanEnv, email, port, str } from "envalid";
+import { join } from "node:path";
+import fs from "node:fs";
+import { extractKeysFromPkcs12 } from "./crypto/extract-pkcs12";
 
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 20240 }),
@@ -24,6 +27,13 @@ export const env = cleanEnv(process.env, {
   SMTP_USERNAME: str({ devDefault: undefined }),
   SMTP_PASSWORD: str({ devDefault: undefined }),
   SMTP_SECURE: bool({ devDefault: false }),
+  DECRYPT_IDA_AUTH_PRIVATE_KEY_PATH: str({
+    devDefault: join(__dirname, "./mock-only-ida-partner.pem"),
+  }),
 });
+
+export const DECRYPT_IDA_AUTH_PRIVATE_KEY = fs
+  .readFileSync(env.DECRYPT_IDA_AUTH_PRIVATE_KEY_PATH)
+  .toString();
 
 export const EMAIL_ENABLED = Boolean(env.SMTP_HOST);

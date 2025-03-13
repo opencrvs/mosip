@@ -11,7 +11,6 @@ import {
 import { updateField } from "../opencrvs-api";
 import { verifyNid } from "../mosip-api";
 import { logger } from "../logger";
-import { format } from "date-fns/format";
 
 type OpenCRVSRequest = FastifyRequest<{
   Body: fhir3.Bundle;

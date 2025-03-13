@@ -1,6 +1,6 @@
 type IdentityInfo = { value: string; language: string };
 
-interface AuthParams {
+export interface AuthParams {
   individualId: string;
   individualIdType: string;
   demographicData: {
