@@ -21,7 +21,6 @@ CwIDAQAB
   http.post(env.OPENCRVS_GRAPHQL_GATEWAY_URL, () =>
     HttpResponse.json({}, { status: 200 }),
   ),
-  http.post(env.IDA_AUTH_URL, () => HttpResponse.json({}, { status: 200 })),
 );
 mswServer.listen();
 
@@ -32,7 +31,16 @@ test("verifies different sets of informants properly", async (t) => {
   const fastify = await buildFastify();
   await fastify.ready();
 
-  await t.test("should reject an invalid JWT", async () => {
+  await t.test("verifies mother on authentication success", async () => {
+    mswServer.use(
+      http.post(env.IDA_AUTH_URL + "/*", () =>
+        HttpResponse.json(
+          { response: { authStatus: true, authToken: "xyz" } },
+          { status: 200 },
+        ),
+      ),
+    );
+
     const response = await fastify.inject({
       method: "POST",
       url: "/events/review",
@@ -43,8 +51,42 @@ test("verifies different sets of informants properly", async (t) => {
       body: JSON.stringify(incomingBirthBundleWithOnlyMother),
     });
 
-    console.log(await response.json());
+    const authenticationStatus = await response.json();
 
-    assert.strictEqual(response.statusCode, 401);
+    assert.deepEqual(authenticationStatus, {
+      mother: true,
+      father: false,
+      informant: false,
+      deceased: false,
+      spouse: false,
+    });
+  });
+
+  await t.test("verifies no-one on authentication fail", async () => {
+    mswServer.use(
+      http.post(env.IDA_AUTH_URL + "/*", () =>
+        HttpResponse.json({ response: { authStatus: false } }, { status: 200 }),
+      ),
+    );
+
+    const response = await fastify.inject({
+      method: "POST",
+      url: "/events/review",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${VALID_JWT}`,
+      },
+      body: JSON.stringify(incomingBirthBundleWithOnlyMother),
+    });
+
+    const authenticationStatus = await response.json();
+
+    assert.deepEqual(authenticationStatus, {
+      mother: false,
+      father: false,
+      informant: false,
+      deceased: false,
+      spouse: false,
+    });
   });
 });
