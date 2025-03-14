@@ -3,7 +3,7 @@ import {
   extractKeysFromPkcs12,
   signAuthRequestData,
   urlSafeCertificateThumbprint,
-} from "@opencrvs/mosip-crypto";
+} from "./crypto";
 import fs from "node:fs";
 import crypto from "node:crypto";
 
@@ -20,10 +20,16 @@ interface MOSIPAuthenticatorConfig {
   signP12FilePassword: string;
 }
 
+type IdentityInfo = { value: string; language: string };
+
 interface AuthParams {
   individualId: string;
   individualIdType: string;
-  demographicData: { dob: string };
+  demographicData: {
+    dob?: string;
+    name?: IdentityInfo[];
+    gender?: IdentityInfo[];
+  };
   consent: boolean;
 }
 

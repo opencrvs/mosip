@@ -14,9 +14,6 @@
       "@mosip/ida-auth-sdk": [
         "./src/ida-auth-sdk"
       ],
-      "@opencrvs/mosip-crypto": [
-        "./src/crypto"
-      ]
     }
   },
   "include": [
