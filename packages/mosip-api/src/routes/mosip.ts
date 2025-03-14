@@ -27,12 +27,6 @@ export const mosipHandler = async (
   request: MosipRequest,
   reply: FastifyReply,
 ) => {
-  try {
-    await request.jwtVerify();
-  } catch {
-    return reply.status(401).send({ error: "Unauthorized" });
-  }
-
   const { eventId, trackingId, nid, token } = request.body;
   const registrationNumber = generateRegistrationNumber(trackingId);
 
