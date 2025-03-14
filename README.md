@@ -15,14 +15,19 @@ This package ensures a secure and a robust integration between OpenCRVS and MOSI
 # copy demo certs to gitignored location
 cp docs/example-certs/* certs/
 
-# start the mosip-api and all the mocked servers
+# install dependencies
 yarn install
+
+# start the mosip-api and all the mocked servers
 yarn dev
 
-# optionally run an individual package
-cd packages/*
-yarn install
+# optionally...
+# use a `.env` file at repository root
+touch .env
 yarn dev
+
+# only run the main server without mocks
+yarn dev --filter=@opencrvs/mosip-api
 
 # bump package.json versions
 yarn set-version 1.7.0-alpha.16
