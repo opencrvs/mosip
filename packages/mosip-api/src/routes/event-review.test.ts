@@ -4,7 +4,9 @@ import { buildFastify } from "..";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { env } from "../constants";
-import incomingBirthBundleWithOnlyMother from "../../../../docs/example-events/incoming-birth-bundle.json";
+import incomingBirthBundleMother from "../../../../docs/example-events/incoming-birth-bundle.json";
+import incomingBirthBundleMotherFather from "../../../../docs/example-events/incoming-birth-bundle-mother-father.json";
+import incomingBirthBundleInformantMotherFather from "../../../../docs/example-events/incoming-birth-bundle-informant-mother-father.json";
 
 const mswServer = setupServer(
   http.get(env.OPENCRVS_PUBLIC_KEY_URL, () =>
@@ -31,7 +33,10 @@ test("verifies different sets of informants properly", async (t) => {
   const fastify = await buildFastify();
   await fastify.ready();
 
-  await t.test("verifies mother on authentication success", async () => {
+  /*
+   * [🎂 Birth] payload includes [🤱 Mother]
+   */
+  await t.test("[🎂 Birth] [🤱 Mother] verifies mother", async () => {
     mswServer.use(
       http.post(env.IDA_AUTH_URL + "/*", () =>
         HttpResponse.json(
@@ -48,7 +53,7 @@ test("verifies different sets of informants properly", async (t) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${VALID_JWT}`,
       },
-      body: JSON.stringify(incomingBirthBundleWithOnlyMother),
+      body: JSON.stringify(incomingBirthBundleMother),
     });
 
     const authenticationStatus = await response.json();
@@ -76,7 +81,7 @@ test("verifies different sets of informants properly", async (t) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${VALID_JWT}`,
       },
-      body: JSON.stringify(incomingBirthBundleWithOnlyMother),
+      body: JSON.stringify(incomingBirthBundleMother),
     });
 
     const authenticationStatus = await response.json();
@@ -89,4 +94,124 @@ test("verifies different sets of informants properly", async (t) => {
       spouse: false,
     });
   });
+
+  /*
+   * [🎂 Birth] payload includes [🤱 Mother] [👨‍🍼 Father]
+   */
+  await t.test(
+    "[🎂 Birth] [🤱 Mother] [👨‍🍼 Father] verifies mother & father",
+    async () => {
+      mswServer.use(
+        http.post(env.IDA_AUTH_URL + "/*", () =>
+          HttpResponse.json(
+            { response: { authStatus: true, authToken: "token" } },
+            { status: 200 },
+          ),
+        ),
+      );
+
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/events/review",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${VALID_JWT}`,
+        },
+        body: JSON.stringify(incomingBirthBundleMotherFather),
+      });
+
+      const authenticationStatus = await response.json();
+
+      return assert.deepEqual(authenticationStatus, {
+        mother: true,
+        father: true,
+        informant: false,
+        deceased: false,
+        spouse: false,
+      });
+    },
+  );
+
+  await t.test(
+    "[🎂 Birth] [🤱 Mother] [👨‍🍼 Father] verifies mother & fails father",
+    async () => {
+      mswServer.use(
+        http.post(env.IDA_AUTH_URL + "/*", async ({ request }) => {
+          const { individualId } = (await request.json()) as {
+            individualId: string;
+          };
+
+          // 🤱 Mother
+          if (individualId === "1234567890") {
+            return HttpResponse.json(
+              { response: { authStatus: true, authToken: "token" } },
+              { status: 200 },
+            );
+          } else {
+            return HttpResponse.json(
+              { response: { authStatus: false } },
+              { status: 200 },
+            );
+          }
+        }),
+      );
+
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/events/review",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${VALID_JWT}`,
+        },
+        body: JSON.stringify(incomingBirthBundleMotherFather),
+      });
+
+      const authenticationStatus = await response.json();
+
+      return assert.deepEqual(authenticationStatus, {
+        mother: true,
+        father: false,
+        informant: false,
+        deceased: false,
+        spouse: false,
+      });
+    },
+  );
+
+  /*
+   * [🎂 Birth] payload includes [🛡️ Legal guardian] [🤱 Mother] [👨‍🍼 Father]
+   */
+  await t.test(
+    "[🎂 Birth] [🛡️ Legal guardian] [🤱 Mother] [👨‍🍼 Father] verifies informant & mother & father",
+    async () => {
+      mswServer.use(
+        http.post(env.IDA_AUTH_URL + "/*", () =>
+          HttpResponse.json(
+            { response: { authStatus: true, authToken: "token" } },
+            { status: 200 },
+          ),
+        ),
+      );
+
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/events/review",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${VALID_JWT}`,
+        },
+        body: JSON.stringify(incomingBirthBundleInformantMotherFather),
+      });
+
+      const authenticationStatus = await response.json();
+
+      return assert.deepEqual(authenticationStatus, {
+        mother: true,
+        father: true,
+        informant: true,
+        deceased: false,
+        spouse: false,
+      });
+    },
+  );
 });
