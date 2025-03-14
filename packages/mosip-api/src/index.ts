@@ -59,7 +59,6 @@ const initRoutes = (app: FastifyInstance) => {
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/esignet/get-oidp-user-info",
     method: "POST",
-    // @TODO: @Tahmid, @Euan, is JWT authentication needed in E-Signet? Does HTTP button support it?
     handler: OIDPUserInfoHandler,
     schema: {
       body: OIDPUserInfoSchema,
