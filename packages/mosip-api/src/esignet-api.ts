@@ -13,7 +13,6 @@ import * as jwt from "jsonwebtoken";
 import { env } from "./constants";
 import { logger } from "./logger";
 import z from "zod";
-import { FastifyReply, FastifyRequest } from "fastify";
 import * as jose from "jose";
 import { isValid, format, Locale, parse } from "date-fns";
 import { enGB } from "date-fns/locale/en-GB";
@@ -71,11 +70,6 @@ export const OIDPQuerySchema = z.object({
   state: z.string(),
 });
 
-export type OIDPUserInfoRequest = FastifyRequest<{
-  Body: z.infer<typeof OIDPUserInfoSchema>;
-  Querystring: z.infer<typeof OIDPQuerySchema>;
-}>;
-
 type FetchTokenProps = {
   code: string;
   clientId: string;
@@ -106,7 +100,11 @@ const generateSignedJwt = async (clientId: string) => {
     .sign(privateKey);
 };
 
-const fetchToken = async ({ code, clientId, redirectUri }: FetchTokenProps) => {
+export const fetchToken = async ({
+  code,
+  clientId,
+  redirectUri,
+}: FetchTokenProps) => {
   const body = new URLSearchParams({
     code: code,
     client_id: clientId,
@@ -127,33 +125,6 @@ const fetchToken = async ({ code, clientId, redirectUri }: FetchTokenProps) => {
 
   const response = await request.json();
   return response as { access_token?: string };
-};
-
-export const getOIDPUserInfo = async (
-  request: OIDPUserInfoRequest,
-  reply: FastifyReply,
-) => {
-  const { clientId, redirectUri } = request.body;
-  const code = request.query.code;
-
-  const tokenResponse = await fetchToken({
-    code,
-    clientId,
-    redirectUri,
-  });
-
-  if (!tokenResponse.access_token) {
-    throw new Error(
-      "Something went wrong with the OIDP token request. No access token was returned. Response from OIDP: " +
-        JSON.stringify(tokenResponse),
-    );
-  }
-
-  return fetchUserInfo(tokenResponse.access_token);
-};
-
-const decodeUserInfoResponse = (response: string) => {
-  return jwt.decode(response) as OIDPUserInfo;
 };
 
 export const fetchLocationFromFHIR = <T = any>(
@@ -232,6 +203,10 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
       userInfo.address?.locality &&
       (await findAdminStructureLocationWithName(userInfo.address.locality)),*/
   };
+};
+
+const decodeUserInfoResponse = (response: string) => {
+  return jwt.decode(response) as OIDPUserInfo;
 };
 
 export const fetchUserInfo = async (accessToken: string) => {
