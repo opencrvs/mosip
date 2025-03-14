@@ -1,7 +1,7 @@
 import { RouteHandlerMethod } from "fastify";
 import identities from "../mock-identities.json" assert { type: "json" };
 import { validate } from "./validate";
-import { decryptAuthData } from "../crypto/decrypt";
+import { decryptAuthData } from "./crypto";
 import { DECRYPT_IDA_AUTH_PRIVATE_KEY } from "../constants";
 
 export const idAuthenticationHandler: RouteHandlerMethod = async (

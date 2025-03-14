@@ -3,7 +3,7 @@ import {
   extractKeysFromPkcs12,
   signAuthRequestData,
   urlSafeCertificateThumbprint,
-} from "@opencrvs/mosip-crypto";
+} from "./crypto";
 import fs from "node:fs";
 import crypto from "node:crypto";
 

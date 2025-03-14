@@ -1,12 +1,12 @@
 import crypto from "node:crypto";
-import { AuthParams } from "../webhooks/validate";
+import { AuthParams } from "./validate";
 
 const SYMMETRIC_NONCE_SIZE = 128 / 8;
 
 const asymmetricDecrypt = (
   encryptedAesKeyB64: string,
   privateKeyPkcs8: string,
-): Buffer => {
+) => {
   const privateKey = crypto.createPrivateKey(privateKeyPkcs8);
   const encryptedBuffer = Buffer.from(encryptedAesKeyB64, "base64url");
 
@@ -20,7 +20,7 @@ const asymmetricDecrypt = (
   );
 };
 
-const symmetricDecrypt = (encryptedB64Data: string, key: Buffer): string => {
+const symmetricDecrypt = (encryptedB64Data: string, key: Buffer) => {
   const encryptedData = Buffer.from(encryptedB64Data, "base64url");
   const nonce = encryptedData.slice(-SYMMETRIC_NONCE_SIZE);
   const tag = encryptedData.slice(

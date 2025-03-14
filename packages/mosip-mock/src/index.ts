@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import { EMAIL_ENABLED, env } from "./constants";
 import { opencrvsBirthHandler } from "./webhooks/opencrvs-birth";
 import { deactivateNidHandler } from "./webhooks/deactivate-nid";
-import { idAuthenticationHandler } from "./webhooks/id-authentication";
+import { idAuthenticationHandler } from "./ida-auth-sdk/id-authentication";
 
 const app = Fastify();
 

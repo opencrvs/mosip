@@ -1,7 +1,6 @@
 import { bool, cleanEnv, email, port, str } from "envalid";
 import { join } from "node:path";
 import fs from "node:fs";
-import { extractKeysFromPkcs12 } from "./crypto/extract-pkcs12";
 
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 20240 }),
