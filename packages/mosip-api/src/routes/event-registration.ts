@@ -29,12 +29,6 @@ export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  try {
-    await request.jwtVerify();
-  } catch {
-    return reply.status(401).send({ error: "Unauthorized" });
-  }
-
   const trackingId = getTrackingId(request.body);
   const { id: eventId } = getComposition(request.body);
 

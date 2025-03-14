@@ -69,12 +69,6 @@ export const reviewEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  try {
-    await request.jwtVerify();
-  } catch {
-    return reply.status(401).send({ error: "Unauthorized" });
-  }
-
   const token = request.headers.authorization!.split(" ")[1];
 
   const informantType = getInformantType(request.body);

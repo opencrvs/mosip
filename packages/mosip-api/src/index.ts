@@ -11,16 +11,13 @@ import {
 } from "./routes/event-registration";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
-import {
-  getOIDPUserInfo,
-  OIDPUserInfoSchema,
-  OIDPQuerySchema,
-} from "./esignet-api";
+import { OIDPUserInfoSchema, OIDPQuerySchema } from "./esignet-api";
 import formbody from "@fastify/formbody";
 import { reviewEventHandler } from "./routes/event-review";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
+import { OIDPUserInfoHandler } from "./routes/oidp-user-info";
 
 const envToLogger = {
   development: {
@@ -63,7 +60,7 @@ const initRoutes = (app: FastifyInstance) => {
     url: "/esignet/get-oidp-user-info",
     method: "POST",
     // @TODO: @Tahmid, @Euan, is JWT authentication needed in E-Signet? Does HTTP button support it?
-    handler: getOIDPUserInfo,
+    handler: OIDPUserInfoHandler,
     schema: {
       body: OIDPUserInfoSchema,
       querystring: OIDPQuerySchema,
@@ -95,6 +92,14 @@ export const buildFastify = async () => {
   app.register(jwt, {
     secret: { public: await getPublicKey() },
     verify: { algorithms: ["RS256"] },
+  });
+
+  app.addHook("onRequest", async (request, reply) => {
+    try {
+      await request.jwtVerify();
+    } catch (err) {
+      reply.code(401).send({ error: "Unauthorized" });
+    }
   });
 
   app.after(() => initRoutes(app));
