@@ -69,16 +69,7 @@ export const reviewEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  if (!request.headers.authorization) {
-    return reply.code(401).send({ error: "Authorization header is missing" });
-  }
-
-  const token = request.headers.authorization.split(" ")[1];
-  if (!token) {
-    return reply
-      .code(401)
-      .send({ error: "Token is missing in Authorization header" });
-  }
+  const token = request.headers.authorization!.split(" ")[1];
 
   const informantType = getInformantType(request.body);
   const composition = getComposition(request.body);

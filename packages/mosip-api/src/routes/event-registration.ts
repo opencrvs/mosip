@@ -32,16 +32,7 @@ export const registrationEventHandler = async (
   const trackingId = getTrackingId(request.body);
   const { id: eventId } = getComposition(request.body);
 
-  if (!request.headers.authorization) {
-    return reply.code(401).send({ error: "Authorization header is missing" });
-  }
-
-  const token = request.headers.authorization.split(" ")[1];
-  if (!token) {
-    return reply
-      .code(401)
-      .send({ error: "Token is missing in Authorization header" });
-  }
+  const token = request.headers.authorization!.split(" ")[1];
 
   // We can trust the token as when `confirmRegistration` or `rejectRegistration` are called, the token is verified by OpenCRVS
   // This server should also only be deployed in the local network so no external calls can be made.

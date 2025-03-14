@@ -28,6 +28,7 @@ const sendNid = async ({
     body: JSON.stringify({ nid, token, eventId, trackingId }),
     headers: {
       "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
   });
 
