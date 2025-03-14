@@ -103,11 +103,6 @@ export const buildFastify = async () => {
 };
 
 async function run() {
-  // Only run the daemon if it's executed directly - as in `tsx index.ts` for example
-  if (require.main !== module) {
-    return;
-  }
-
   const app = await buildFastify();
 
   await app.ready();
@@ -122,4 +117,7 @@ async function run() {
   );
 }
 
-void run();
+// Only run daemon if it's executed directly - as in `tsx index.ts` for example
+if (require.main === module) {
+  void run();
+}
