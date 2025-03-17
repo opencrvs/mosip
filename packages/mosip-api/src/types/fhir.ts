@@ -474,7 +474,7 @@ export function getPatientNationalId(patient: fhir3.Patient) {
   return identifier.value;
 }
 
-function getFromBundleById(bundle: fhir3.Bundle, id: string) {
+export function getFromBundleById(bundle: fhir3.Bundle, id: string) {
   const resource = bundle.entry?.find((item) => item.resource?.id === id);
 
   if (!resource) {
