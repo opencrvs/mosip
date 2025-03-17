@@ -561,7 +561,7 @@ export function getInformantType(record: fhir3.Bundle) {
     ?.coding?.[0].code;
 }
 
-function getInformantPatient(record: fhir3.Bundle) {
+export function getInformantPatient(record: fhir3.Bundle) {
   const compositionSection = findCompositionSection(
     "informant-details",
     getComposition(record),

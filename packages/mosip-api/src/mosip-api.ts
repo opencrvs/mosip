@@ -1,5 +1,7 @@
 import { env } from "./constants";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
+import { OpenCRVSRequest } from "./routes/event-registration";
+import { EVENT_TYPE, findEntry, getComposition, getEventType, getInformantPatient } from "./types/fhir";
 
 export class MOSIPError extends Error {
   constructor(message: string) {
@@ -64,13 +66,136 @@ export async function getMosipAuthToken() {
 export const postBirthRecord = async ({
   event,
   token,
+  request
 }: {
   event: {
     id: string;
     trackingId: string;
   };
   token: string;
+  request: OpenCRVSRequest;
 }) => {
+
+  const composition = getComposition(request.body);
+  
+    const child = findEntry(
+      "child-details",
+      composition,
+      request.body,
+    ) as fhir3.Patient;
+  
+    const childName:
+      | {
+          use?: string | undefined;
+          given?: string[] | undefined;
+          family?: string | undefined;
+        }
+      | undefined = child.name?.[0];
+  
+    const mother = findEntry(
+      "mother-details",
+      composition,
+      request.body,
+    ) as fhir3.Patient;
+  
+    const father = findEntry(
+      "father-details",
+      composition,
+      request.body,
+    ) as fhir3.Patient;
+  
+    const guardianDetails = () => {
+      if (mother) {
+        return mother;
+      } else {
+        return father;
+      }
+    };
+  
+    const guardianName:
+      | {
+          use?: string | undefined;
+          given?: string[] | undefined;
+          family?: string | undefined;
+        }
+      | undefined = guardianDetails().name?.[0];
+  
+    const informant = getInformantPatient(request.body) as fhir3.Patient;
+  
+    const returnParentID = () => {
+      const motherID = mother.identifier?.[0].value;
+      const fatherID = father.identifier?.[0].value;
+  
+      if (motherID) {
+        return {
+          identifier: motherID,
+          type: mother.identifier?.[0].type?.coding?.[0].code,
+        };
+      } else if (fatherID) {
+        return {
+          identifier: fatherID,
+          type: father.identifier?.[0].type?.coding?.[0].code,
+        };
+      } else {
+        return {
+          identifier: "",
+          type: "NOT_FOUND",
+        };
+      }
+    };
+  
+    const getQuestionnaireResponseAnswer = (question: string) => {
+      const resourceType = request.body.entry?.find(
+        (entry) => entry.resource?.resourceType === "QuestionnaireResponse",
+      );
+      const questionnaireResponse: any = resourceType?.resource;
+  
+      const answer = questionnaireResponse?.item?.find(
+        (item: any) => item.text === question,
+      );
+  
+      if (answer) {
+        return answer.answer[0].valueString;
+      } else {
+        return "";
+      }
+    };
+  
+    const requestFields = {
+      fullName: `${childName?.given?.join(" ")} ${childName?.family}`,
+      dateOfBirth: child.birthDate,
+      sex: child.gender,
+      guardianOrParentName: `${guardianName?.given?.join(" ")} ${guardianName?.family}`,
+      nationalIdNumber:
+        returnParentID().type === "NATIONAL_ID"
+          ? returnParentID().identifier
+          : "",
+      passportNumber:
+        returnParentID().type === "PASSPORT" ? returnParentID().identifier : "",
+      drivingLicenseNumber:
+        returnParentID().type === "DRIVING_LICENSE"
+          ? returnParentID().identifier
+          : "",
+      deceasedStatus:
+        getEventType(request.body) === EVENT_TYPE.DEATH ? true : false,
+      residentStatus:
+        getQuestionnaireResponseAnswer(
+          "birth.child.child-view-group.nonTongan",
+        ) === true
+          ? "NON-TONGAN"
+          : "TONGAN", // from QuestionnaireResponse
+  
+      vid: "JA8023B498309V", // cannot pass from our side (UID & VID created at the same time)
+      phone: "", // informant.telecom?.[0].value
+      email: "", // Task --> contact-person-phone-number
+      guardianOrParentBirthCertificateNumber: "M89234BYAS0238", // from QuestionnaireResponse
+      birthCertificateNumber: "C83B023548BST", // BRN --> from QuestionnaireResponse (child's)
+      addressLine1: "",
+      addressLine2: "",
+      addressLine3: "",
+      district: "",
+      village: "",
+    };
 
   const requestBody = `
   {
@@ -84,23 +209,7 @@ export const postBirthRecord = async ({
         "process": "CRVS_NEW",
         "source": "OPENCRVS",
         "schemaVersion": "0.100",
-        "fields": {
-            "fullName": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Piyumali\"\n} ]",
-            "dateOfBirth": "1998/01/12",
-            "gender": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Female\"\n} ]",
-            "residenceStatus": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Tongan\"\n} ]",
-            "guardianOrParentName": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Heshani\"\n} ]",
-            "guardianOrParentBirthCertificateNumber": "6789098765",
-            "birthCertificateNumber": "0987656789",
-            "passportNumber": "123234545650",
-            "addressLine1": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Kandy\"\n}]",
-            "addressLine2": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Badulla\"\n}]",
-            "district": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Vava’u\"\n} ]",
-            "village": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Talihau \"\n} ]",
-            "email": "sithara@bevolv.co",
-            "phone": "6573856789",
-            "selectedHandles": "[ \"birthCertificateNumber\", \"passportNumber\" ]"
-        },
+        "fields": ${requestFields},
         "metaInfo": {
             "metaData": "[{\n  \"label\" : \"registrationType\",\n  \"value\" : \"CRVS_NEW\"\n}, {\n  \"label\" : \"machineId\",\n  \"value\" : \"10003\"\n}, {\n  \"label\" : \"centerId\",\n  \"value\" : \"10002\"\n}]",
             "registrationId": "789456123",

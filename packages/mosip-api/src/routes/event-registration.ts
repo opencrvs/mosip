@@ -20,7 +20,7 @@ export const opencrvsRecordSchema = z
   .catchall(z.unknown())
   .describe("Record as FHIR Bundle");
 
-type OpenCRVSRequest = FastifyRequest<{
+export type OpenCRVSRequest = FastifyRequest<{
   Body: fhir3.Bundle;
 }>;
 
@@ -45,6 +45,7 @@ export const registrationEventHandler = async (
     const { aid } = await mosip.postBirthRecord({
       event: { id: eventId, trackingId },
       token,
+      request
     });
 
     await opencrvs.upsertRegistrationIdentifier(

@@ -48,6 +48,10 @@ const initRoutes = (app: FastifyInstance) => {
       body: opencrvsRecordSchema,
     },
   });
+
+  /*
+   * MOSIP Java Mediator receiver
+   */
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/webhooks/mosip",
     method: "POST",
