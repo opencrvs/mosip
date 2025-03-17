@@ -64,7 +64,7 @@ export const env = cleanEnv(process.env, {
   }),
   SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
 
-  // MOSIP Java mediator details
+  // MOSIP packet manager details
   MOSIP_AUTH_URL: str({
     devDefault:
       "https://dev-api-internal.identity.gov.to/v1/authmanager/authenticate/clientidsecretkey",

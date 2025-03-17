@@ -49,9 +49,6 @@ const initRoutes = (app: FastifyInstance) => {
     },
   });
 
-  /*
-   * MOSIP Java Mediator receiver
-   */
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/webhooks/mosip",
     method: "POST",
