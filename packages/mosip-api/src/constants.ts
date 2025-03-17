@@ -63,4 +63,16 @@ export const env = cleanEnv(process.env, {
     devDefault: join(__dirname, "../../../certs/keystore.p12"),
   }),
   SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
+
+  // MOSIP Java mediator details
+  MOSIP_AUTH_URL: str({
+    devDefault:
+      "https://dev-api-internal.identity.gov.to/v1/authmanager/authenticate/clientidsecretkey",
+  }),
+  MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
+  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "IRnzMaApEpe0S3dX" }),
+  MOSIP_PACKET_MANAGER_URL: str({
+    devDefault:
+      "https://dev-api-internal.identity.gov.to/commons/v1/packetmanager/createPacket",
+  }),
 });

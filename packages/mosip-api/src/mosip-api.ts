@@ -8,6 +8,59 @@ export class MOSIPError extends Error {
   }
 }
 
+export async function getMosipAuthToken() {
+  console.log('env.MOSIP_AUTH_URL: ', env.MOSIP_AUTH_URL, env.MOSIP_AUTH_CLIENT_ID, env.MOSIP_AUTH_CLIENT_SECRET)
+  const response = await fetch(env.MOSIP_AUTH_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+      // cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`,
+    },
+    body: `
+    {
+      "id": "string",
+      "version": "string",
+      "requesttime": "2025-03-11T02:53:07.206Z",
+      "metadata": {},
+        "request": {
+            "clientId": "${env.MOSIP_AUTH_CLIENT_ID}",
+            "secretKey": "${env.MOSIP_AUTH_CLIENT_SECRET}",
+            "appId": "admin"
+        }
+    }
+    `
+  });
+
+  if (!response.ok) {
+    throw new MOSIPError(
+      `Failed getting MOSIP auth token. Response: ${response.status
+      }, response: ${await response.text()}`,
+    );
+  }
+  const responseJson = await response.json();
+  // Get the 'Set-Cookie' header from the response
+  const cookie: string | null = response.headers.get('Set-Cookie');
+
+  if (!cookie || cookie === null) {
+    throw new MOSIPError(
+      `Failed getting MOSIP auth token. Response: ${response.status
+      }, response: ${await response.text()}`,
+    );
+  }
+  console.log('responseJson', responseJson);
+  // const token = (await response.json()) as { access_token: string };
+  // Split the string by ';' to separate the cookie parts
+  const cookieParts = cookie.split(';');
+
+  // The first part will be the Authorization token
+  const authorizationPart = cookieParts[0];
+
+  // Extract the token by splitting on '='
+  const token = authorizationPart.split('=')[1];
+  console.log('token: ', token)
+  return token;
+}
+
 export const postBirthRecord = async ({
   event,
   token,
@@ -18,21 +71,94 @@ export const postBirthRecord = async ({
   };
   token: string;
 }) => {
-  const response = await fetch(env.MOSIP_BIRTH_WEBHOOK_URL, {
-    method: "POST",
-    body: JSON.stringify({ event, token }),
+
+  const requestBody = `
+  {
+    "id": "string",
+    "version": "string",
+    "requesttime": "2025-03-12T13:45:17.667Z",
+    "request": {
+        "id": "789456123",
+        "refId": "10002_10003",
+        "offlineMode": false,
+        "process": "CRVS_NEW",
+        "source": "OPENCRVS",
+        "schemaVersion": "0.100",
+        "fields": {
+            "fullName": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Piyumali\"\n} ]",
+            "dateOfBirth": "1998/01/12",
+            "gender": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Female\"\n} ]",
+            "residenceStatus": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Tongan\"\n} ]",
+            "guardianOrParentName": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Heshani\"\n} ]",
+            "guardianOrParentBirthCertificateNumber": "6789098765",
+            "birthCertificateNumber": "0987656789",
+            "passportNumber": "123234545650",
+            "addressLine1": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Kandy\"\n}]",
+            "addressLine2": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Badulla\"\n}]",
+            "district": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Vava’u\"\n} ]",
+            "village": "[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Talihau \"\n} ]",
+            "email": "sithara@bevolv.co",
+            "phone": "6573856789",
+            "selectedHandles": "[ \"birthCertificateNumber\", \"passportNumber\" ]"
+        },
+        "metaInfo": {
+            "metaData": "[{\n  \"label\" : \"registrationType\",\n  \"value\" : \"CRVS_NEW\"\n}, {\n  \"label\" : \"machineId\",\n  \"value\" : \"10003\"\n}, {\n  \"label\" : \"centerId\",\n  \"value\" : \"10002\"\n}]",
+            "registrationId": "789456123",
+            "operationsData": "[{\n  \"label\" : \"officerId\",\n  \"value\" : \"sithara.bevolv\"\n}, {\n  \"label\" : \"officerPIN\",\n  \"value\" : null\n}, {\n  \"label\" : \"officerPassword\",\n  \"value\" : \"true\"\n}, {\n  \"label\" : \"officerBiometricFileName\",\n  \"value\" : null\n}, {\n  \"label\" : \"supervisorId\",\n  \"value\" : null\n}, {\n  \"label\" : \"supervisorPIN\",\n  \"value\" : null\n}, {\n  \"label\" : \"supervisorBiometricFileName\",\n  \"value\" : null\n}, {\n  \"label\" : \"supervisorPassword\",\n  \"value\" : null\n}, {\n  \"label\" : \"supervisorOTPAuthentication\",\n  \"value\" : null\n}, {\n  \"label\" : \"officerOTPAuthentication\",\n  \"value\" : null\n}]",
+            "capturedRegisteredDevices": "[]",
+            "creationDate": "202503121345"
+        },
+        "audits": [
+            {
+                "uuid": "c75a6315-96e9-4a3f-bcda-2432ec354336",
+                "createdAt": "2025-02-25T13:22:49.214Z",
+                "eventId": "REG-EVT-066",
+                "eventName": "PACKET_CREATION_SUCCESS",
+                "eventType": "USER",
+                "hostName": "desktop-q8u8jfo",
+                "hostIp": "localhost",
+                "applicationId": "REG",
+                "applicationName": "REGISTRATION",
+                "sessionUserId": "suraj",
+                "sessionUserName": "suraj m",
+                "id": "789456123",
+                "idType": "REGISTRATION_ID",
+                "createdBy": "suraj m",
+                "moduleName": "Packet Handler",
+                "moduleId": "REG-MOD-117",
+                "description": "Packet Succesfully Created",
+                "actionTimeStamp": "2025-02-25T07:52:49.214Z"
+            }
+        ],
+        "schemaJson": "{\n\t\"$schema\": \"http://json-schema.org/draft-07/schema#\",\n\t\"description\": \"Tonga digital identity for ID Hub\",\n\t\"additionalProperties\": false,\n\t\"title\": \"Tonga identity\",\n\t\"type\": \"object\",\n\t\"definitions\": {\n\t\t\"simpleType\": {\n\t\t\t\"uniqueItems\": true,\n\t\t\t\"additionalItems\": false,\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"additionalProperties\": false,\n\t\t\t\t\"type\": \"object\",\n\t\t\t\t\"required\": [\n\t\t\t\t\t\"language\",\n\t\t\t\t\t\"value\"\n\t\t\t\t],\n\t\t\t\t\"properties\": {\n\t\t\t\t\t\"language\": {\n\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t},\n\t\t\t\t\t\"value\": {\n\t\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"documentType\": {\n\t\t\t\"additionalProperties\": false,\n\t\t\t\"type\": \"object\",\n\t\t\t\"properties\": {\n\t\t\t\t\"format\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"type\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"value\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"refNumber\": {\n\t\t\t\t\t\"type\": [\n\t\t\t\t\t\t\"string\",\n\t\t\t\t\t\t\"null\"\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t\"biometricsType\": {\n\t\t\t\"additionalProperties\": false,\n\t\t\t\"type\": \"object\",\n\t\t\t\"properties\": {\n\t\t\t\t\"format\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t},\n\t\t\t\t\"version\": {\n\t\t\t\t\t\"type\": \"number\",\n\t\t\t\t\t\"minimum\": 0\n\t\t\t\t},\n\t\t\t\t\"value\": {\n\t\t\t\t\t\"type\": \"string\"\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t},\n\t\"properties\": {\n\t\t\"identity\": {\n\t\t\t\"additionalProperties\": false,\n\t\t\t\"type\": \"object\",\n\t\t\t\"required\": [\n\t\t\t\t\"IDSchemaVersion\",\n\t\t\t\t\"fullName\",\n\t\t\t\t\"dateOfBirth\",\n\t\t\t\t\"gender\",\n\t\t\t\t\"addressLine1\"\n\t\t\t],\n\t\t\t\"properties\": {\n\t\t\t\t\"proofOfAddress\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"gender\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"sex\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"city\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{0,50}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"postalCode\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^[(?i)A-Z0-9]{5}$|^NA$\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"proofOfException-1\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"evidence\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"referenceIdentityNumber\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^([0-9]{10,30})$\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"kyc\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"individualBiometrics\": {\n\t\t\t\t\t\"bioAttributes\": [\n\t\t\t\t\t\t\"leftEye\",\n\t\t\t\t\t\t\"rightEye\",\n\t\t\t\t\t\t\"rightIndex\",\n\t\t\t\t\t\t\"rightLittle\",\n\t\t\t\t\t\t\"rightRing\",\n\t\t\t\t\t\t\"rightMiddle\",\n\t\t\t\t\t\t\"leftIndex\",\n\t\t\t\t\t\t\"leftLittle\",\n\t\t\t\t\t\t\"leftRing\",\n\t\t\t\t\t\t\"leftMiddle\",\n\t\t\t\t\t\t\"leftThumb\",\n\t\t\t\t\t\t\"rightThumb\",\n\t\t\t\t\t\t\"face\"\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/biometricsType\"\n\t\t\t\t},\n\t\t\t\t\"province\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{0,50}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"zone\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"proofOfDateOfBirth\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"addressLine1\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{0,50}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"addressLine2\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{3,50}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"residenceStatus\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"kyc\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"addressLine3\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{3,50}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"district\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{1,100}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"village\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{1,100}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"email\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^[A-Za-z0-9_\\\\-]+(\\\\.[A-Za-z0-9_]+)*@[A-Za-z0-9_-]+(\\\\.[A-Za-z0-9_]+)*(\\\\.[a-zA-Z]{2,})$\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"introducerRID\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"evidence\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"introducerBiometrics\": {\n\t\t\t\t\t\"bioAttributes\": [\n\t\t\t\t\t\t\"leftEye\",\n\t\t\t\t\t\t\"rightEye\",\n\t\t\t\t\t\t\"rightIndex\",\n\t\t\t\t\t\t\"rightLittle\",\n\t\t\t\t\t\t\"rightRing\",\n\t\t\t\t\t\t\"rightMiddle\",\n\t\t\t\t\t\t\"leftIndex\",\n\t\t\t\t\t\t\"leftLittle\",\n\t\t\t\t\t\t\"leftRing\",\n\t\t\t\t\t\t\"leftMiddle\",\n\t\t\t\t\t\t\"leftThumb\",\n\t\t\t\t\t\t\"rightThumb\",\n\t\t\t\t\t\t\"face\"\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/biometricsType\"\n\t\t\t\t},\n\t\t\t\t\"fullName\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{3,50}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"dateOfBirth\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(1869|18[7-9][0-9]|19[0-9][0-9]|20[0-9][0-9])/([0][1-9]|1[0-2])/([0][1-9]|[1-2][0-9]|3[01])$\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"individualAuthBiometrics\": {\n\t\t\t\t\t\"bioAttributes\": [\n\t\t\t\t\t\t\"leftEye\",\n\t\t\t\t\t\t\"rightEye\",\n\t\t\t\t\t\t\"rightIndex\",\n\t\t\t\t\t\t\"rightLittle\",\n\t\t\t\t\t\t\"rightRing\",\n\t\t\t\t\t\t\"rightMiddle\",\n\t\t\t\t\t\t\"leftIndex\",\n\t\t\t\t\t\t\"leftLittle\",\n\t\t\t\t\t\t\"leftRing\",\n\t\t\t\t\t\t\"leftMiddle\",\n\t\t\t\t\t\t\"leftThumb\",\n\t\t\t\t\t\t\"rightThumb\",\n\t\t\t\t\t\t\"face\"\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/biometricsType\"\n\t\t\t\t},\n\t\t\t\t\"introducerUIN\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"evidence\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"proofOfIdentity\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"IDSchemaVersion\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"none\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"number\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"minimum\": 0\n\t\t\t\t},\n\t\t\t\t\"proofOfException\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"evidence\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"phone\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^[+]*([0-9]{1})([0-9]{9})$\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"guardianOrParentName\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{1,100}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"guardianOrParentBirthCertificateNumber\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"handle\": true\n\t\t\t\t},\n\t\t\t\t\"residentStatus\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"introducerName\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"evidence\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"proofOfRelationship\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"UIN\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"none\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"vid\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"none\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"default\"\n\t\t\t\t},\n\t\t\t\t\"birthCertificateNumber\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"handle\": true\n\t\t\t\t},\n\t\t\t\t\"passportNumber\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"handle\": true\n\t\t\t\t},\n\t\t\t\t\"nationalIdNumber\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"handle\": true\n\t\t\t\t},\n\t\t\t\t\"drivingLicenseNumber\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"handle\": true\n\t\t\t\t},\n\t\t\t\t\"birthRegistrationCertificate\": {\n\t\t\t\t  \"bioAttributes\": [],\n\t\t\t\t  \"fieldCategory\": \"evidence\",\n\t\t\t\t  \"format\": \"none\",\n\t\t\t\t  \"fieldType\": \"default\",\n\t\t\t\t  \"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"passportId\": {\n\t\t\t\t  \"bioAttributes\": [],\n\t\t\t\t  \"fieldCategory\": \"evidence\",\n\t\t\t\t  \"format\": \"none\",\n\t\t\t\t  \"fieldType\": \"default\",\n\t\t\t\t  \"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"nationalId\": {\n\t\t\t\t  \"bioAttributes\": [],\n\t\t\t\t  \"fieldCategory\": \"evidence\",\n\t\t\t\t  \"format\": \"none\",\n\t\t\t\t  \"fieldType\": \"default\",\n\t\t\t\t  \"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"drivingLicenseId\": {\n\t\t\t\t  \"bioAttributes\": [],\n\t\t\t\t  \"fieldCategory\": \"evidence\",\n\t\t\t\t  \"format\": \"none\",\n\t\t\t\t  \"fieldType\": \"default\",\n\t\t\t\t  \"$ref\": \"#/definitions/documentType\"\n\t\t\t\t},\n\t\t\t\t\"deceasedStatus\": {\n\t\t\t\t  \"bioAttributes\": [],\n\t\t\t\t  \"fieldCategory\": \"kyc\",\n\t\t\t\t  \"format\": \"none\",\n\t\t\t\t  \"fieldType\": \"default\",\n\t\t\t\t  \"type\": \"boolean\"\n\t\t\t\t},\n\t\t\t\t\"preferredLang\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\"fieldType\": \"dynamic\"\n\t\t\t\t},\n\t\t\t\t\"region\": {\n\t\t\t\t\t\"bioAttributes\": [],\n\t\t\t\t\t\"validators\": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"validator\": \"^(?=.{0,50}$).*\",\n\t\t\t\t\t\t\t\"arguments\": [],\n\t\t\t\t\t\t\t\"type\": \"regex\"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t\"fieldCategory\": \"pvt\",\n\t\t\t\t\t\"format\": \"none\",\n\t\t\t\t\t\"fieldType\": \"default\",\n\t\t\t\t\t\"$ref\": \"#/definitions/simpleType\"\n\t\t\t\t},\n\t\t\t\t\"selectedHandles\": {\n\t\t\t\t  \"fieldCategory\": \"none\",\n\t\t\t\t  \"format\": \"none\",\n\t\t\t\t  \"type\": \"array\",\n\t\t\t\t  \"items\": { \"type\": \"string\" },\n\t\t\t\t  \"fieldType\": \"default\"\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n}"
+    }
+  }
+  `
+
+  const authToken = await getMosipAuthToken();
+
+
+  // packet manager: create packet
+  const response = await fetch(env.MOSIP_PACKET_MANAGER_URL, {
+    method: "PUT",
+    body: JSON.stringify(requestBody),
     headers: {
       "Content-Type": "application/json",
+      cookie: `Authorization=${authToken};`,
     },
   });
 
   if (!response.ok) {
-    throw new MOSIPError(
-      `Failed to post record to MOSIP. Status: ${
-        response.status
-      }, response: ${await response.text()}`,
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await response.text()}`,
     );
   }
+
+  const responseJson = await response.json();
+  console.log("responseJson: ", responseJson)
+
+  // packet manager: process packet API.
+
 
   return response.json() as Promise<{
     aid: string;
