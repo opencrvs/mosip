@@ -7,6 +7,7 @@ import { env } from "../constants";
 import incomingBirthBundleMother from "../../../../docs/example-events/incoming-birth-bundle.json";
 import incomingBirthBundleMotherFather from "../../../../docs/example-events/incoming-birth-bundle-mother-father.json";
 import incomingBirthBundleInformantMotherFather from "../../../../docs/example-events/incoming-birth-bundle-informant-mother-father.json";
+import incomingBirthBundleDeceasedSpouse from "../../../../docs/example-events/incoming-death-bundle-deceased-spouse.json";
 
 const mswServer = setupServer(
   http.get(env.OPENCRVS_PUBLIC_KEY_URL, () =>
@@ -211,6 +212,43 @@ test("verifies different sets of informants properly", async (t) => {
         informant: true,
         deceased: false,
         spouse: false,
+      });
+    },
+  );
+
+  /*
+   * [☠️ Death] payload includes  [⚰️ Deceased] [💍 Spouse]
+   */
+  await t.test(
+    "[☠️ Death] payload includes  [⚰️ Deceased] [💍 Spouse] verifies deceased & spouse",
+    async () => {
+      mswServer.use(
+        http.post(env.IDA_AUTH_URL + "/*", () =>
+          HttpResponse.json(
+            { response: { authStatus: true, authToken: "token" } },
+            { status: 200 },
+          ),
+        ),
+      );
+
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/events/review",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${VALID_JWT}`,
+        },
+        body: JSON.stringify(incomingBirthBundleDeceasedSpouse),
+      });
+
+      const authenticationStatus = await response.json();
+
+      return assert.deepEqual(authenticationStatus, {
+        mother: false,
+        father: false,
+        informant: false,
+        deceased: true,
+        spouse: true,
       });
     },
   );

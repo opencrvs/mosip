@@ -83,6 +83,8 @@ export const reviewEventHandler = async (
   const composition = getComposition(request.body);
   const { id: eventId } = composition;
 
+  console.log(JSON.stringify(request.body));
+
   logger.info(
     { eventId },
     "Received a review event, calling IDA Auth SDK for the persons in record...",
@@ -102,10 +104,13 @@ export const reviewEventHandler = async (
 
   /*
    * Update informants's details if the NID is available
-   *
-   * If the informant is mother or father, skip as they will get verified on later steps.
    */
-  if (informantType !== "MOTHER" && informantType !== "FATHER") {
+  if (
+    // As the following informant have their own separate sections, skip the verification
+    informantType !== "MOTHER" &&
+    informantType !== "FATHER" &&
+    informantType !== "SPOUSE"
+  ) {
     let relatedPerson = findEntry(
       "informant-details",
       composition,
@@ -232,7 +237,7 @@ export const reviewEventHandler = async (
   }
 
   if (deceasedNid) {
-    const deceasedDemographics = getDemographics(father);
+    const deceasedDemographics = getDemographics(deceased);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
@@ -266,7 +271,7 @@ export const reviewEventHandler = async (
   }
 
   if (spouseNid) {
-    const spouseDemographics = getDemographics(father);
+    const spouseDemographics = getDemographics(spouse);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
