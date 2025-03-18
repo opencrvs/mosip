@@ -49,7 +49,7 @@ type OpenCRVSBirthEvent = {
 };
 
 /** Handles the births coming from OpenCRVS */
-export const opencrvsBirthHandler: RouteHandlerMethod = async (
+export const packetManagerCreateHandler: RouteHandlerMethod = async (
   request,
   reply,
 ) => {

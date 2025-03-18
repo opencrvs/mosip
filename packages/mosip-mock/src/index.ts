@@ -1,15 +1,25 @@
 import Fastify from "fastify";
 import { EMAIL_ENABLED, env } from "./constants";
-import { opencrvsBirthHandler } from "./routes/opencrvs-birth";
+import { packetManagerCreateHandler } from "./routes/packet-manager-create";
 import { deactivateNidHandler } from "./routes/deactivate-nid";
 import { idAuthenticationHandler } from "./routes/id-authentication";
+import { packetManagerAuthHandler } from "./routes/packet-manager-auth";
 
 const app = Fastify();
 
-app.post("/webhooks/opencrvs/birth", { handler: opencrvsBirthHandler });
 app.post("/webhooks/opencrvs/death", { handler: deactivateNidHandler });
 app.post("/idauthentication/v1/auth/:mispLk/:partnerId/:apiKey", {
   handler: idAuthenticationHandler,
+});
+
+/*
+ * MOSIP packet manager
+ */
+app.post("/v1/authmanager/authenticate/clientidsecretkey", {
+  handler: packetManagerAuthHandler,
+});
+app.post("/commons/v1/packetmanager/createPacket", {
+  handler: packetManagerCreateHandler,
 });
 
 async function run() {
