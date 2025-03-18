@@ -1,5 +1,4 @@
 import crypto from "node:crypto";
-import { AuthParams } from "./validate";
 
 const SYMMETRIC_NONCE_SIZE = 128 / 8;
 
@@ -47,5 +46,5 @@ export const decryptAuthData = (
   const aesKey = asymmetricDecrypt(encryptedAesKeyB64, privateKeyPem);
   const authData = symmetricDecrypt(encryptedAuthB64Data, aesKey);
 
-  return JSON.parse(authData) as AuthParams;
+  return JSON.parse(authData);
 };

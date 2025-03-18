@@ -27,6 +27,8 @@ const main = async () => {
     individualIdType: "UIN",
     demographicData: {
       dob: "1992/04/29",
+      name: [{ value: "Maria Powell", language: "eng" }],
+      gender: [{ value: "male", language: "eng" }],
     },
     consent: true,
   });
