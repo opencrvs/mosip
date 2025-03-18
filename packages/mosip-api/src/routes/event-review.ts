@@ -83,8 +83,6 @@ export const reviewEventHandler = async (
   const composition = getComposition(request.body);
   const { id: eventId } = composition;
 
-  console.log(JSON.stringify(request.body));
-
   logger.info(
     { eventId },
     "Received a review event, calling IDA Auth SDK for the persons in record...",
