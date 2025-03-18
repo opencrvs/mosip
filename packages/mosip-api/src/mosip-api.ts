@@ -166,11 +166,17 @@ export const postBirthRecord = async ({
     }
   };
 
+  const residentStatus =
+    getQuestionnaireResponseAnswer("birth.child.child-view-group.nonTongan") ===
+    true
+      ? "NON-TONGAN"
+      : "TONGAN";
+
   const requestFields = {
-    fullName: `${childName?.given?.join(" ")} ${childName?.family}`,
+    fullName: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${childName?.given?.join(" ")} ${childName?.family}\"\n} ]`,
     dateOfBirth: child.birthDate,
-    sex: child.gender,
-    guardianOrParentName: `${guardianName?.given?.join(" ")} ${guardianName?.family}`,
+    gender: `[ {\n  "language" : "eng",\n  "value" :       "${child.gender}"\n}]`,
+    guardianOrParentName: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${guardianName?.given?.join(" ")} ${guardianName?.family}\"\n} ]`,
     nationalIdNumber:
       returnParentID().type === "NATIONAL_ID"
         ? returnParentID().identifier
@@ -183,32 +189,32 @@ export const postBirthRecord = async ({
         : "",
     deceasedStatus:
       getEventType(request.body) === EVENT_TYPE.DEATH ? true : false,
-    residentStatus:
-      getQuestionnaireResponseAnswer(
-        "birth.child.child-view-group.nonTongan",
-      ) === true
-        ? "NON-TONGAN"
-        : "TONGAN", // from QuestionnaireResponse
+    residentStatus: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${residentStatus}\"\n} ]`,
 
-    vid: "JA8023B498309V", // cannot pass from our side (UID & VID created at the same time)
-    phone: "", // informant.telecom?.[0].value
-    email: "", // Task --> contact-person-phone-number
+    vid: "JA8023B498309V", // cannot pass from crvs mdediator side (UID & VID created at the same time)
+    email: "", // Task --> contact-person-email
+    phone: "", // Task --> contact-person-phone-number
     guardianOrParentBirthCertificateNumber: "M89234BYAS0238", // from QuestionnaireResponse
-    birthCertificateNumber: "C83B023548BST", // BRN --> from QuestionnaireResponse (child's)
-    addressLine1: "",
-    addressLine2: "",
-    addressLine3: "",
-    district: "",
-    village: "",
+    birthCertificateNumber: "C83B023548BST", // BRN
+    addressLine1: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Kandy\"\n}]`,
+    addressLine2: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Badulla\"\n}]`,
+    addressLine3: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Badulla\"\n}]`,
+    district: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Vava’u\"\n} ]`,
+    village: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Talihau \"\n} ]`,
+    birthRegistrationCertificate: "base-64 document string",
+    passportId: "base-64 document string",
+    nationalId: "base-64 document string",
+    drivingLicenseId: "base-64 document string",
+    addressProof: "base-64 document string",
   };
 
   const requestBody = JSON.stringify(
     {
-      id: "string",
+      id: composition.id,
       version: "string",
       requesttime: new Date().toISOString(),
       request: {
-        id: "789456125",
+        id: composition.id,
         refId: "10002_10003",
         offlineMode: false,
         process: "CRVS_NEW",
@@ -237,7 +243,7 @@ export const postBirthRecord = async ({
             applicationName: "REGISTRATION",
             sessionUserId: "suraj",
             sessionUserName: "suraj m",
-            id: "789456125",
+            id: composition.id,
             idType: "REGISTRATION_ID",
             createdBy: "suraj m",
             moduleName: "Packet Handler",
