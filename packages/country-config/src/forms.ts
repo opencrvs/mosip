@@ -226,7 +226,10 @@ export const verified = (
     initialValue: esignetConfig
       ? {
           dependsOn: ["idReader", esignetConfig.callback.fieldName],
-          expression: `Boolean($form?.idReader)? "pending": Boolean($form?.${esignetConfig.callback.fieldName}?.data)? "authenticated": ""`,
+          expression: `Boolean($form?.idReader)? "pending"
+          : Boolean($form?.${esignetConfig.callback.fieldName}?.data)? "authenticated"
+          : Boolean($form?.${esignetConfig.callback.fieldName}?.error)? "failedFetchIdDetails"
+          : ""`,
         }
       : {
           dependsOn: ["idReader"],
@@ -241,7 +244,11 @@ function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-type VerificationStatus = "verified" | "failed" | "authenticated";
+type VerificationStatus =
+  | "verified"
+  | "failed"
+  | "authenticated"
+  | "failedFetchIdDetails";
 
 export const idVerificationBanner = (
   event: string,
@@ -258,7 +265,10 @@ export const idVerificationBanner = (
     hideInPreview: true,
     custom: true,
     bannerType: status,
-    idFieldName: status === "authenticated" ? "esignetCallback" : "idReader",
+    idFieldName:
+      status === "authenticated" || "failedFetchIdDetails"
+        ? "esignetCallback"
+        : "idReader",
     label: {
       id: "form.field.label.empty",
       defaultMessage: "",
@@ -329,7 +339,7 @@ export const idReaderFields = (
       conditionals.concat({
         action: "hide",
         expression:
-          "$form?.verified === 'verified' || $form?.verified === 'authenticated' || $form?.verified === 'failed' || !!$form?.esignetCallback?.loading",
+          "$form?.verified === 'verified' || $form?.verified === 'authenticated' || $form?.verified === 'failed' || $form?.verified === 'failedFetchIdDetails' || !!$form?.esignetCallback?.loading",
       }),
       readers,
     ),
@@ -394,5 +404,11 @@ export const idVerificationFields = (
     idVerificationBanner(event, sectionId, "verified", conditionals),
     idVerificationBanner(event, sectionId, "failed", conditionals),
     idVerificationBanner(event, sectionId, "authenticated", conditionals),
+    idVerificationBanner(
+      event,
+      sectionId,
+      "failedFetchIdDetails",
+      conditionals,
+    ),
   ];
 };
