@@ -62,8 +62,7 @@ export async function getMosipAuthToken() {
       }, response: ${await response.text()}`,
     );
   }
-  console.log("responseJson", responseJson);
-  // const token = (await response.json()) as { access_token: string };
+
   // Split the string by ';' to separate the cookie parts
   const cookieParts = cookie.split(";");
 
@@ -72,7 +71,6 @@ export async function getMosipAuthToken() {
 
   // Extract the token by splitting on '='
   const token = authorizationPart.split("=")[1];
-  console.log("token: ", token);
   return token;
 }
 
