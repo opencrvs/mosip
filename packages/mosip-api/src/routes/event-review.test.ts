@@ -252,4 +252,50 @@ test("verifies different sets of informants properly", async (t) => {
       });
     },
   );
+
+  await t.test(
+    "[☠️ Death] payload includes  [⚰️ Deceased] [💍 Spouse] fails deceased & verifies spouse",
+    async () => {
+      mswServer.use(
+        http.post(env.IDA_AUTH_URL + "/*", async ({ request }) => {
+          const { individualId } = (await request.json()) as {
+            individualId: string;
+          };
+
+          // 🤱 Deceased
+          if (individualId === "1234512345") {
+            return HttpResponse.json(
+              { response: { authStatus: false } },
+              { status: 200 },
+            );
+          } else {
+            return HttpResponse.json(
+              { response: { authStatus: true, authToken: "token" } },
+              { status: 200 },
+            );
+          }
+        }),
+      );
+
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/events/review",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${VALID_JWT}`,
+        },
+        body: JSON.stringify(incomingBirthBundleDeceasedSpouse),
+      });
+
+      const authenticationStatus = await response.json();
+
+      return assert.deepEqual(authenticationStatus, {
+        mother: false,
+        father: false,
+        informant: false,
+        deceased: false,
+        spouse: true,
+      });
+    },
+  );
 });
