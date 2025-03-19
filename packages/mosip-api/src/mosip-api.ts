@@ -7,6 +7,7 @@ import {
   getComposition,
   getEventType,
   getInformantPatient,
+  getQuestionnaireResponseAnswer,
 } from "./types/fhir";
 
 export class MOSIPError extends Error {
@@ -147,26 +148,11 @@ export const postBirthRecord = async ({
     }
   };
 
-  const getQuestionnaireResponseAnswer = (question: string) => {
-    const resourceType = request.body.entry?.find(
-      (entry) => entry.resource?.resourceType === "QuestionnaireResponse",
-    );
-    const questionnaireResponse: any = resourceType?.resource;
-
-    const answer = questionnaireResponse?.item?.find(
-      (item: any) => item.text === question,
-    );
-
-    if (answer) {
-      return answer.answer[0].valueString;
-    } else {
-      return "";
-    }
-  };
-
   const residentStatus =
-    getQuestionnaireResponseAnswer("birth.child.child-view-group.nonTongan") ===
-    true
+    getQuestionnaireResponseAnswer(
+      request,
+      "birth.child.child-view-group.nonTongan",
+    ) === true
       ? "NON-TONGAN"
       : "TONGAN";
 
@@ -300,11 +286,15 @@ export const deactivateNid = async ({ nid }: { nid: string }) => {
 
 export const verifyNid = async ({
   nid,
+  name,
+  gender,
   dob,
 }: {
   nid: string;
   /** date of birth as YYYY/MM/DD */
-  dob: string;
+  dob: string | undefined;
+  name: { language: string; value: string }[] | undefined;
+  gender: { language: string; value: string }[] | undefined;
 }) => {
   const authenticator = new MOSIPAuthenticator({
     partnerApiKey: env.PARTNER_APIKEY,
@@ -324,6 +314,8 @@ export const verifyNid = async ({
     individualIdType: "UIN",
     demographicData: {
       dob,
+      name,
+      gender,
     },
     consent: true,
   });

@@ -1,6 +1,6 @@
 {
   "name": "@opencrvs/mosip",
-  "version": "1.7.0-alpha.26",
+  "version": "1.7.0-alpha.27",
   "license": "MPL-2.0",
   "private": true,
   "packageManager": "yarn@1.22.13",
@@ -8,6 +8,9 @@
     "packages/*"
   ],
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.60.1",
+    "@typescript-eslint/parser": "^5.60.1",
+    "eslint": "^8.43.0",
     "prettier": "^3.4.2",
     "turbo": "^2.3.3",
     "typescript": "^5.6.3"
@@ -16,6 +19,7 @@
     "dev": "turbo run dev",
     "test": "yarn workspace @opencrvs/mosip-api run test",
     "format": "prettier --write .",
+    "lint": "eslint . --ext .js,.ts",
     "set-version": "node -e \"const fs=require('fs'),v=process.argv[1];['package.json',...fs.readdirSync('packages').map(d=>'packages/'+d+'/package.json')].forEach(f=>fs.writeFileSync(f,JSON.stringify({...require('./'+f),version:v},null,2)+'\\n'))\""
   }
 }

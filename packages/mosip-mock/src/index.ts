@@ -2,8 +2,8 @@ import Fastify from "fastify";
 import { EMAIL_ENABLED, env } from "./constants";
 import { packetManagerCreateHandler } from "./routes/packet-manager-create";
 import { deactivateNidHandler } from "./routes/deactivate-nid";
-import { idAuthenticationHandler } from "./routes/id-authentication";
 import { packetManagerAuthHandler } from "./routes/packet-manager-auth";
+import { idAuthenticationHandler } from "./ida-auth-sdk/id-authentication";
 
 const app = Fastify();
 
