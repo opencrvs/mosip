@@ -7,6 +7,7 @@ import {
   getComposition,
   getEventType,
   getInformantPatient,
+  getQuestionnaireResponseAnswer,
 } from "./types/fhir";
 
 export class MOSIPError extends Error {
@@ -126,18 +127,10 @@ export const postBirthRecord = async ({
   const informant = getInformantPatient(request.body) as fhir3.Patient;
 
   const returnParentID = () => {
-    const motherID = mother.identifier?.[0].value;
-    const fatherID = father.identifier?.[0].value;
-
-    if (motherID) {
+    if (guardianDetails.identifier?.[0].value) {
       return {
-        identifier: motherID,
-        type: mother.identifier?.[0].type?.coding?.[0].code,
-      };
-    } else if (fatherID) {
-      return {
-        identifier: fatherID,
-        type: father.identifier?.[0].type?.coding?.[0].code,
+        identifier: guardianDetails.identifier?.[0].value,
+        type: guardianDetails.identifier?.[0].type?.coding?.[0].code,
       };
     } else {
       return {
@@ -147,26 +140,11 @@ export const postBirthRecord = async ({
     }
   };
 
-  const getQuestionnaireResponseAnswer = (question: string) => {
-    const resourceType = request.body.entry?.find(
-      (entry) => entry.resource?.resourceType === "QuestionnaireResponse",
-    );
-    const questionnaireResponse: any = resourceType?.resource;
-
-    const answer = questionnaireResponse?.item?.find(
-      (item: any) => item.text === question,
-    );
-
-    if (answer) {
-      return answer.answer[0].valueString;
-    } else {
-      return "";
-    }
-  };
-
   const residentStatus =
-    getQuestionnaireResponseAnswer("birth.child.child-view-group.nonTongan") ===
-    true
+    getQuestionnaireResponseAnswer(
+      request,
+      "birth.child.child-view-group.nonTongan",
+    ) === true
       ? "NON-TONGAN"
       : "TONGAN";
 

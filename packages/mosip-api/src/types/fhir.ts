@@ -1,6 +1,8 @@
 // Copypasted types from @opencrvs/commons
 // For this reason, here are shortcuts and `!` assertions, as we haven't copypasted ALL types from @opencrvs/commons
 
+import { OpenCRVSRequest } from "../routes/event-registration";
+
 declare const __nominal__type: unique symbol;
 export type Nominal<Type, Identifier extends string> = Type & {
   readonly [__nominal__type]: Identifier;
@@ -594,3 +596,25 @@ export function findEntry(
   const reference = patientSection.entry[0].reference;
   return getFromBundleById(bundle, reference!.split("/")[1]).resource;
 }
+
+export const getQuestionnaireResponseAnswer = (
+  request: OpenCRVSRequest,
+  question: string,
+) => {
+  const resourceType = request.body.entry?.find(
+    (entry) => entry.resource?.resourceType === "QuestionnaireResponse",
+  );
+  const questionnaireResponse: any = resourceType?.resource;
+
+  const answer = questionnaireResponse?.item?.find(
+    (item: any) => item.text === question,
+  );
+
+  if (answer) {
+    // for the current answer fields, type --> valueString
+    // for number fields type can be different
+    return answer.answer[0].valueString;
+  } else {
+    return "";
+  }
+};
