@@ -2,6 +2,7 @@
 // For this reason, here are shortcuts and `!` assertions, as we haven't copypasted ALL types from @opencrvs/commons
 
 import { OpenCRVSRequest } from "../routes/event-registration";
+import { format } from "date-fns/format";
 
 declare const __nominal__type: unique symbol;
 export type Nominal<Type, Identifier extends string> = Type & {
@@ -474,7 +475,7 @@ export function getPatientNationalId(patient: fhir3.Patient) {
   return identifier.value;
 }
 
-function getFromBundleById(bundle: fhir3.Bundle, id: string) {
+export function getFromBundleById(bundle: fhir3.Bundle, id: string) {
   const resource = bundle.entry?.find((item) => item.resource?.id === id);
 
   if (!resource) {
@@ -618,3 +619,31 @@ export const getQuestionnaireResponseAnswer = (
     return "";
   }
 };
+function transformFhirNameIntoIdentityInfo(name: fhir3.HumanName) {
+  return {
+    value: [name.given?.join(" ").trim(), name.family].join(" ").trim(),
+    language: name.use!,
+  };
+}
+
+export function getDemographics(patient: fhir3.Patient): {
+  name: { language: string; value: string }[] | undefined;
+  gender: { language: string; value: string }[] | undefined;
+  dob: string | undefined;
+} {
+  const name = patient.name
+    ? patient.name.map(transformFhirNameIntoIdentityInfo)
+    : undefined;
+  const gender = patient.gender
+    ? /* @TODO: Depending on the country configuration, the language would need to be changed. Further implementation testing is needed with MOSIP!  */
+      [{ value: patient.gender, language: "eng" }]
+    : undefined;
+  const dob = patient.birthDate
+    ? format(new Date(patient.birthDate), "yyyy/MM/dd")
+    : undefined;
+  return {
+    name,
+    gender,
+    dob,
+  };
+}

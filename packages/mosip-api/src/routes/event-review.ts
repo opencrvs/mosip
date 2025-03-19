@@ -4,9 +4,10 @@ import {
   findEntry,
   getComposition,
   getEventType,
-  getInformantNationalId,
   getInformantType,
+  getDemographics,
   getPatientNationalId,
+  getFromBundleById,
 } from "../types/fhir";
 import { updateField } from "../opencrvs-api";
 import { verifyNid } from "../mosip-api";
@@ -20,12 +21,18 @@ const verifyAndUpdateRecord = async ({
   event,
   eventId,
   nid,
+  name,
+  dob,
+  gender,
   section,
   token,
 }: {
   event: "birth" | "death";
   eventId: string;
   nid: string;
+  dob: string | undefined;
+  name: { value: string; language: string }[] | undefined;
+  gender: { value: string; language: string }[] | undefined;
   section: string;
   token: string;
 }) => {
@@ -33,8 +40,9 @@ const verifyAndUpdateRecord = async ({
     response: { authStatus },
   } = await verifyNid({
     nid,
-    // @TODO: Figure out the actual DOB
-    dob: "1992/04/29",
+    dob,
+    name,
+    gender,
   });
 
   if (authStatus) {
@@ -89,19 +97,33 @@ export const reviewEventHandler = async (
   };
 
   // @NOTE: Marriage not supported yet
-  // @NOTE: The following code is very verbose, but rather not abstract if not needed. For events v2 we'll have to rework this.
-  // @TODO: Should we batch the requests?
   const event =
     getEventType(request.body) === EVENT_TYPE.BIRTH ? "birth" : "death";
 
   /*
-   * Update informant's details if it's not MOTHER or FATHER
+   * Update informants's details if the NID is available
    */
-  if (informantType !== "MOTHER" && informantType !== "FATHER") {
-    let informantNationalID;
+  if (
+    // As the following informant have their own separate sections, skip the verification
+    informantType !== "MOTHER" &&
+    informantType !== "FATHER" &&
+    informantType !== "SPOUSE"
+  ) {
+    let relatedPerson = findEntry(
+      "informant-details",
+      composition,
+      request.body,
+    ) as fhir3.RelatedPerson;
+    const informant = getFromBundleById(
+      request.body,
+      relatedPerson.patient.reference!.split("/")[1],
+    ).resource as fhir3.Patient;
 
+    const informantDemographics = getDemographics(informant);
+
+    let informantNID;
     try {
-      informantNationalID = getInformantNationalId(request.body);
+      informantNID = getPatientNationalId(informant);
     } catch (e) {
       logger.info(
         { eventId },
@@ -109,12 +131,15 @@ export const reviewEventHandler = async (
       );
     }
 
-    if (informantNationalID) {
+    if (informantNID) {
       const result = await verifyAndUpdateRecord({
         eventId,
         event,
         section: "informant",
-        nid: informantNationalID,
+        nid: informantNID,
+        name: informantDemographics.name,
+        dob: informantDemographics.dob,
+        gender: informantDemographics.gender,
         token,
       });
       verificationStatus.informant = result;
@@ -122,7 +147,7 @@ export const reviewEventHandler = async (
   }
 
   /*
-   * Update mother's and fathers details if the NID is available
+   * Update mother's details if the NID is available
    */
   const mother = findEntry(
     "mother-details",
@@ -131,7 +156,6 @@ export const reviewEventHandler = async (
   ) as fhir3.Patient;
 
   let motherNid;
-
   try {
     motherNid = getPatientNationalId(mother);
   } catch (e) {
@@ -142,16 +166,23 @@ export const reviewEventHandler = async (
   }
 
   if (motherNid) {
+    const motherDemographics = getDemographics(mother);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
       section: "mother",
       nid: motherNid,
+      name: motherDemographics.name,
+      dob: motherDemographics.dob,
+      gender: motherDemographics.gender,
       token,
     });
     verificationStatus.mother = result;
   }
 
+  /*
+   * Update father's details if the NID is available
+   */
   const father = findEntry(
     "father-details",
     composition,
@@ -170,24 +201,30 @@ export const reviewEventHandler = async (
   }
 
   if (fatherNid) {
+    const fatherDemographics = getDemographics(father);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
       section: "father",
       nid: fatherNid,
+      name: fatherDemographics.name,
+      dob: fatherDemographics.dob,
+      gender: fatherDemographics.gender,
       token,
     });
     verificationStatus.father = result;
   }
 
-  let deceasedNid;
-
+  /*
+   * Update deceased's details if the NID is available
+   */
   const deceased = findEntry(
     "deceased-details",
     composition,
     request.body,
   ) as fhir3.Patient;
 
+  let deceasedNid;
   try {
     deceasedNid = getPatientNationalId(deceased);
   } catch (e) {
@@ -198,24 +235,30 @@ export const reviewEventHandler = async (
   }
 
   if (deceasedNid) {
+    const deceasedDemographics = getDemographics(deceased);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
       section: "deceased",
       nid: deceasedNid,
+      name: deceasedDemographics.name,
+      dob: deceasedDemographics.dob,
+      gender: deceasedDemographics.gender,
       token,
     });
     verificationStatus.deceased = result;
   }
 
-  let spouseNid;
-
+  /*
+   * Update spouses's details if the NID is available
+   */
   const spouse = findEntry(
     "spouse-details",
     composition,
     request.body,
   ) as fhir3.Patient;
 
+  let spouseNid;
   try {
     spouseNid = getPatientNationalId(spouse);
   } catch (e) {
@@ -226,11 +269,15 @@ export const reviewEventHandler = async (
   }
 
   if (spouseNid) {
+    const spouseDemographics = getDemographics(spouse);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
       section: "spouse",
       nid: spouseNid,
+      name: spouseDemographics.name,
+      dob: spouseDemographics.dob,
+      gender: spouseDemographics.gender,
       token,
     });
     verificationStatus.spouse = result;
