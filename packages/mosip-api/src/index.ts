@@ -1,4 +1,3 @@
-import path from "path";
 import Fastify, { FastifyInstance } from "fastify";
 import {
   serializerCompiler,
@@ -19,8 +18,6 @@ import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
 import { OIDPUserInfoHandler } from "./routes/oidp-user-info";
-
-require("dotenv").config({ path: path.resolve(__dirname, "../../../.env") });
 
 const envToLogger = {
   development: {
