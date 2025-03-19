@@ -127,10 +127,18 @@ export const postBirthRecord = async ({
   const informant = getInformantPatient(request.body) as fhir3.Patient;
 
   const returnParentID = () => {
-    if (guardianDetails.identifier?.[0].value) {
+    const motherID = mother.identifier?.[0].value;
+    const fatherID = father.identifier?.[0].value;
+
+    if (motherID) {
       return {
-        identifier: guardianDetails.identifier?.[0].value,
-        type: guardianDetails.identifier?.[0].type?.coding?.[0].code,
+        identifier: motherID,
+        type: mother.identifier?.[0].type?.coding?.[0].code,
+      };
+    } else if (fatherID) {
+      return {
+        identifier: fatherID,
+        type: father.identifier?.[0].type?.coding?.[0].code,
       };
     } else {
       return {
