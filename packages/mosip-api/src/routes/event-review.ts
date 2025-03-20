@@ -1,4 +1,4 @@
-import { FastifyRequest, FastifyReply } from "fastify";
+import { FastifyRequest, FastifyReply, FastifyBaseLogger } from "fastify";
 import {
   EVENT_TYPE,
   findEntry,
@@ -11,7 +11,6 @@ import {
 } from "../types/fhir";
 import { updateField } from "../opencrvs-api";
 import { verifyNid } from "../mosip-api";
-import { logger } from "../logger";
 
 type OpenCRVSRequest = FastifyRequest<{
   Body: fhir3.Bundle;
@@ -26,6 +25,7 @@ const verifyAndUpdateRecord = async ({
   gender,
   section,
   token,
+  logger,
 }: {
   event: "birth" | "death";
   eventId: string;
@@ -35,6 +35,7 @@ const verifyAndUpdateRecord = async ({
   gender: { value: string; language: string }[] | undefined;
   section: string;
   token: string;
+  logger: FastifyBaseLogger;
 }) => {
   const {
     response: { authStatus },
@@ -83,7 +84,7 @@ export const reviewEventHandler = async (
   const composition = getComposition(request.body);
   const { id: eventId } = composition;
 
-  logger.info(
+  request.log.info(
     { eventId },
     "Received a review event, calling IDA Auth SDK for the persons in record...",
   );
@@ -125,14 +126,14 @@ export const reviewEventHandler = async (
     try {
       informantNID = getPatientNationalId(informant);
     } catch (e) {
-      logger.info(
+      request.log.info(
         { eventId },
         "Couldn't find the informant's NID. This is non-fatal - it likely wasn't submitted.",
       );
     }
 
     if (informantNID) {
-      const result = await verifyAndUpdateRecord({
+      const status = await verifyAndUpdateRecord({
         eventId,
         event,
         section: "informant",
@@ -141,8 +142,10 @@ export const reviewEventHandler = async (
         dob: informantDemographics.dob,
         gender: informantDemographics.gender,
         token,
+        logger: request.log,
       });
-      verificationStatus.informant = result;
+
+      verificationStatus.informant = status;
     }
   }
 
@@ -159,7 +162,7 @@ export const reviewEventHandler = async (
   try {
     motherNid = getPatientNationalId(mother);
   } catch (e) {
-    logger.info(
+    request.log.info(
       { eventId },
       "Couldn't find the mother's NID. This is non-fatal - it likely wasn't submitted.",
     );
@@ -176,6 +179,7 @@ export const reviewEventHandler = async (
       dob: motherDemographics.dob,
       gender: motherDemographics.gender,
       token,
+      logger: request.log,
     });
     verificationStatus.mother = result;
   }
@@ -194,7 +198,7 @@ export const reviewEventHandler = async (
   try {
     fatherNid = getPatientNationalId(father);
   } catch (e) {
-    logger.info(
+    request.log.info(
       { eventId },
       "Couldn't find the fathers NID. This is non-fatal - it likely wasn't submitted.",
     );
@@ -211,6 +215,7 @@ export const reviewEventHandler = async (
       dob: fatherDemographics.dob,
       gender: fatherDemographics.gender,
       token,
+      logger: request.log,
     });
     verificationStatus.father = result;
   }
@@ -228,7 +233,7 @@ export const reviewEventHandler = async (
   try {
     deceasedNid = getPatientNationalId(deceased);
   } catch (e) {
-    logger.info(
+    request.log.info(
       { eventId },
       "Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted.",
     );
@@ -245,6 +250,7 @@ export const reviewEventHandler = async (
       dob: deceasedDemographics.dob,
       gender: deceasedDemographics.gender,
       token,
+      logger: request.log,
     });
     verificationStatus.deceased = result;
   }
@@ -262,7 +268,7 @@ export const reviewEventHandler = async (
   try {
     spouseNid = getPatientNationalId(spouse);
   } catch (e) {
-    logger.info(
+    request.log.info(
       { eventId },
       "Couldn't find the spouse's NID. This is non-fatal - it likely wasn't submitted.",
     );
@@ -279,6 +285,7 @@ export const reviewEventHandler = async (
       dob: spouseDemographics.dob,
       gender: spouseDemographics.gender,
       token,
+      logger: request.log,
     });
     verificationStatus.spouse = result;
   }

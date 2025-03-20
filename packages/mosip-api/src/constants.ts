@@ -5,6 +5,15 @@ export const env = cleanEnv(process.env, {
   PORT: port({ default: 2024 }),
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
   LOCALE: str({ devDefault: "en" }),
+  SQLITE_DATABASE_PATH: str({
+    devDefault: join(__dirname, "../../../data/sqlite/mosip-api.db"),
+    default: "/data/sqlite/mosip-api.db",
+    desc: "Path to the SQLite database used to store a OpenCRVS record-only token with the MOSIP transaction ID",
+  }),
+  TRANSACTION_ID_PREFIX: str({
+    default: "10001",
+    desc: "Used to prefix the numeric transaction ID (1000101234567890) that is sent to MOSIP and received back",
+  }),
   CLIENT_APP_URL: url({ devDefault: "http://localhost:3000" }),
   OPENCRVS_GRAPHQL_GATEWAY_URL: str({
     devDefault: "http://localhost:7070/graphql",

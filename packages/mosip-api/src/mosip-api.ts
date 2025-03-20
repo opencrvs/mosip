@@ -9,18 +9,15 @@ export class MOSIPError extends Error {
 }
 
 export const postBirthRecord = async ({
-  event,
-  token,
+  id,
+  trackingId,
 }: {
-  event: {
-    id: string;
-    trackingId: string;
-  };
-  token: string;
+  id: string;
+  trackingId: string;
 }) => {
   const response = await fetch(env.MOSIP_BIRTH_WEBHOOK_URL, {
     method: "POST",
-    body: JSON.stringify({ event, token }),
+    body: JSON.stringify({ request: { id }, trackingId }),
     headers: {
       "Content-Type": "application/json",
     },
