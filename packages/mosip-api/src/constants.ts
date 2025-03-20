@@ -16,10 +16,6 @@ export const env = cleanEnv(process.env, {
   }),
 
   // MOSIP Birth & Death packets
-  MOSIP_BIRTH_WEBHOOK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/birth",
-    desc: "The URL where MOSIP receives birth webhooks from OpenCRVS",
-  }),
   MOSIP_DEATH_WEBHOOK_URL: str({
     devDefault: "http://localhost:20240/webhooks/opencrvs/death",
     desc: "The URL where MOSIP receives death webhooks from OpenCRVS",
@@ -67,12 +63,11 @@ export const env = cleanEnv(process.env, {
   // MOSIP packet manager details
   MOSIP_AUTH_URL: str({
     devDefault:
-      "https://dev-api-internal.identity.gov.to/v1/authmanager/authenticate/clientidsecretkey",
+      "http://localhost:20240/v1/authmanager/authenticate/clientidsecretkey",
   }),
   MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
-  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "IRnzMaApEpe0S3dX" }),
+  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
   MOSIP_PACKET_MANAGER_URL: str({
-    devDefault:
-      "https://dev-api-internal.identity.gov.to/commons/v1/packetmanager/createPacket",
+    devDefault: "http://localhost:20240/commons/v1/packetmanager/createPacket",
   }),
 });
