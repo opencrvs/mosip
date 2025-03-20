@@ -150,7 +150,7 @@ export const postBirthRecord = async ({
 
   const residentStatus =
     getQuestionnaireResponseAnswer(
-      request,
+      request.body,
       "birth.child.child-view-group.nonTongan",
     ) === true
       ? "NON-TONGAN"

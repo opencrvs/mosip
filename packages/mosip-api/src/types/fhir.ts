@@ -1,7 +1,6 @@
 // Copypasted types from @opencrvs/commons
 // For this reason, here are shortcuts and `!` assertions, as we haven't copypasted ALL types from @opencrvs/commons
 
-import { OpenCRVSRequest } from "../routes/event-registration";
 import { format } from "date-fns/format";
 
 declare const __nominal__type: unique symbol;
@@ -599,10 +598,10 @@ export function findEntry(
 }
 
 export const getQuestionnaireResponseAnswer = (
-  request: OpenCRVSRequest,
+  bundle: fhir3.Bundle,
   question: string,
 ) => {
-  const resourceType = request.body.entry?.find(
+  const resourceType = bundle.entry?.find(
     (entry) => entry.resource?.resourceType === "QuestionnaireResponse",
   );
   const questionnaireResponse: any = resourceType?.resource;
