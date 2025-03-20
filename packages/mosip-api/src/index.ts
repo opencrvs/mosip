@@ -18,6 +18,7 @@ import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
 import { OIDPUserInfoHandler } from "./routes/oidp-user-info";
+import { initSqlite } from "./database";
 
 const envToLogger = {
   development: {
@@ -109,15 +110,20 @@ export const buildFastify = async () => {
 async function run() {
   const app = await buildFastify();
 
+  const { wasCreated, wasConnected } = initSqlite();
+
+  wasCreated && app.log.info("SQLite token storage created 🚀✅ ");
+  wasConnected && app.log.info("SQLite token storage connected ✅");
+
   await app.ready();
   await app.listen({
     port: env.PORT,
     host: env.HOST,
+    listenTextResolver: () =>
+      `OpenCRVS-MOSIP API running at http://${env.HOST}:${env.PORT} ✅`,
   });
-
-  console.log(`OpenCRVS-MOSIP API running at http://${env.HOST}:${env.PORT}`);
-  console.log(
-    `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation`,
+  app.log.info(
+    `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation ✅`,
   );
 }
 

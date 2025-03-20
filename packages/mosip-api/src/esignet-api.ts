@@ -11,7 +11,6 @@
 
 import * as jwt from "jsonwebtoken";
 import { env } from "./constants";
-import { logger } from "./logger";
 import z from "zod";
 import * as jose from "jose";
 import { isValid, format, Locale, parse } from "date-fns";
@@ -164,7 +163,7 @@ const findAdminStructureLocationWithName = async (name: string) => {
   }
 
   if ((fhirBundleLocations.entry?.length ?? 0) === 0) {
-    logger.warn("No admin structure location found with the name: " + name);
+    // logger.warn("No admin structure location found with the name: " + name);
     return null;
   }
 
