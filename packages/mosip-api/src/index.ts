@@ -95,6 +95,11 @@ export const buildFastify = async () => {
   });
 
   app.addHook("onRequest", async (request, reply) => {
+    // @TODO
+    // @NOTE Remove in production! This disables the JWT authentication for the MOSIP webhook
+    // As we don't have the WebSub documentation available yet, we don't fully know the authentication method so this is not built yet
+    if (request.routeOptions.url === "/webhooks/mosip") return;
+
     try {
       await request.jwtVerify();
     } catch (err) {

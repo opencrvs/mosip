@@ -1,8 +1,8 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as opencrvs from "../opencrvs-api";
-import { generateRegistrationNumber } from "../registration-number";
 import { getTransactionAndDiscard } from "../database";
+import { decode } from "jsonwebtoken";
 
 export const mosipNidSchema = z.object({
   request: z.object({
@@ -26,13 +26,13 @@ export const mosipHandler = async (
     request: { id: transactionId },
     nid,
   } = request.body;
-  const registrationNumber = generateRegistrationNumber(trackingId);
 
-  const token = getTransactionAndDiscard();
+  const { token, registrationNumber } = getTransactionAndDiscard(transactionId);
+  const { recordId } = decode(token) as { recordId: string };
 
   await opencrvs.confirmRegistration(
     {
-      id: eventId,
+      id: recordId,
       registrationNumber,
       identifiers: [{ type: "NATIONAL_ID", value: nid }],
     },

@@ -10,14 +10,14 @@ export class MOSIPError extends Error {
 
 export const postBirthRecord = async ({
   id,
-  trackingId,
+  registrationNumber,
 }: {
   id: string;
-  trackingId: string;
+  registrationNumber: string;
 }) => {
   const response = await fetch(env.MOSIP_BIRTH_WEBHOOK_URL, {
     method: "POST",
-    body: JSON.stringify({ request: { id }, trackingId }),
+    body: JSON.stringify({ request: { id }, registrationNumber }),
     headers: {
       "Content-Type": "application/json",
     },
@@ -31,9 +31,7 @@ export const postBirthRecord = async ({
     );
   }
 
-  return response.json() as Promise<{
-    aid: string;
-  }>;
+  return response.text();
 };
 
 export const deactivateNid = async ({ nid }: { nid: string }) => {

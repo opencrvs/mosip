@@ -29,7 +29,6 @@ const sendNid = async ({
     body: JSON.stringify({ request: { id: transactionId, refId }, nid }),
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
     },
   });
 

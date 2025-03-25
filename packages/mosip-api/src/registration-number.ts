@@ -6,5 +6,5 @@ export const generateRegistrationNumber = (trackingId: string) => {
 };
 
 export const generateTransactionId = (prefix = env.TRANSACTION_ID_PREFIX) => {
-  return `${prefix}${new Array({ length: 10 }, () => Math.floor(Math.random() * 10)).join("")}`;
+  return `${prefix}${Array.from({ length: 10 }, () => Math.floor(Math.random() * 10)).join("")}`;
 };

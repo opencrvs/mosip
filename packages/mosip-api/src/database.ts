@@ -5,9 +5,19 @@ import fs from "node:fs";
 
 /*
  * Lightweight SQLite database for storing transaction id with a JWT token
+ *
  * OpenCRVS Core issues a record-specific token used to confirm the registration after it is received from MOSIP.
  * Optimally, MOSIP could receive this token as metadata and return it back in WebSub to avoid storage, but this is not currently supported by MOSIP.
  */
+
+const DATABASE_SCHEMA = `
+  CREATE TABLE transactions (
+    id TEXT PRIMARY KEY,
+    token TEXT UNIQUE NOT NULL,
+    registration_number TEXT UNIQUE NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  ) STRICT
+`;
 
 let database: Database;
 
@@ -26,16 +36,8 @@ export const initSqlite = () => {
     )
     .get();
 
-  // `CREATE TABLE IF EXISTS` works too, but we want to log differently on creation
   if (!tableExists) {
-    database.exec(`
-      CREATE TABLE transactions (
-        id TEXT PRIMARY KEY,
-        token TEXT UNIQUE,
-        tracking_id TEXT UNIQUE,
-        created_at TEXT DEFAULT (datetime('now'))
-      ) STRICT
-    `);
+    database.exec(DATABASE_SCHEMA);
   }
 
   return { wasCreated: !tableExists, wasConnected: tableExists };
@@ -44,24 +46,27 @@ export const initSqlite = () => {
 export const insertTransaction = (
   id: string,
   token: string,
-  trackingId: string,
+  registrationNumber: string,
 ) =>
   database
     .prepare(
-      "INSERT INTO transactions (id, token, tracking_id) VALUES (?, ?, ?)",
+      "INSERT INTO transactions (id, token, registration_number) VALUES (?, ?, ?)",
     )
-    .run(id, token, trackingId);
+    .run(id, token, registrationNumber);
 
 export const getTransactionAndDiscard = (id: string) => {
   const remove = database
     .prepare(
-      "DELETE FROM transactions WHERE id = ? RETURNING token, tracking_id",
+      "DELETE FROM transactions WHERE id = ? RETURNING token, registration_number",
     )
-    .get(id) as { token: string; tracking_id: string } | undefined;
+    .get(id) as { token: string; registration_number: string } | undefined;
 
   if (!remove) {
     throw new Error(`Transaction with id '${id}' not found.`);
   }
 
-  return { token: remove.token, trackingId: remove.tracking_id };
+  return {
+    token: remove.token,
+    registrationNumber: remove.registration_number,
+  };
 };
