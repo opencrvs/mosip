@@ -1,7 +1,4 @@
 import DatabaseSync, { Database } from "better-sqlite3";
-import { env } from "./constants";
-import path from "node:path";
-import fs from "node:fs";
 
 /*
  * Lightweight SQLite database for storing transaction id with a JWT token
@@ -21,14 +18,8 @@ const DATABASE_SCHEMA = `
 
 let database: Database;
 
-export const initSqlite = () => {
-  const dir = path.dirname(env.SQLITE_DATABASE_PATH);
-
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-
-  database = new DatabaseSync(env.SQLITE_DATABASE_PATH);
+export const initSqlite = (path: string) => {
+  database = new DatabaseSync(path);
 
   const tableExists = database
     .prepare(
@@ -40,7 +31,7 @@ export const initSqlite = () => {
     database.exec(DATABASE_SCHEMA);
   }
 
-  return { wasCreated: !tableExists, wasConnected: tableExists };
+  return { wasCreated: !tableExists, wasConnected: tableExists, database };
 };
 
 export const insertTransaction = (
@@ -70,3 +61,5 @@ export const getTransactionAndDiscard = (id: string) => {
     registrationNumber: remove.registration_number,
   };
 };
+
+export const exit = () => database.close();

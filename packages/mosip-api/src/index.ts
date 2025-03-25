@@ -115,7 +115,9 @@ export const buildFastify = async () => {
 async function run() {
   const app = await buildFastify();
 
-  const { wasCreated, wasConnected } = initSqlite();
+  const { wasCreated, wasConnected, database } = initSqlite(
+    env.SQLITE_DATABASE_PATH,
+  );
 
   wasCreated && app.log.info("SQLite token storage created 🚀✅ ");
   wasConnected && app.log.info("SQLite token storage connected ✅");
@@ -130,6 +132,11 @@ async function run() {
   app.log.info(
     `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation ✅`,
   );
+
+  process.on("exit", () => {
+    database.close();
+    app.close();
+  });
 }
 
 // Only run daemon if it's executed directly - as in `tsx index.ts` for example
