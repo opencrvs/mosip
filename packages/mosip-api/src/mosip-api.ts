@@ -194,7 +194,7 @@ export const postBirthRecord = async ({
 
   const requestBody = JSON.stringify(
     {
-      id: composition.id,
+      id: "string",
       version: "string",
       requesttime: new Date().toISOString(),
       request: {
@@ -208,7 +208,7 @@ export const postBirthRecord = async ({
         metaInfo: {
           metaData:
             '[{\n  "label" : "registrationType",\n  "value" : "CRVS_NEW"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
-          registrationId: "789456125",
+          registrationId: composition.id,
           operationsData:
             '[{\n  "label" : "officerId",\n  "value" : "sithara.bevolv"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
           capturedRegisteredDevices: "[]",
@@ -247,7 +247,7 @@ export const postBirthRecord = async ({
   const authToken = await getMosipAuthToken();
 
   // packet manager: create packet
-  const response = await fetch(env.MOSIP_PACKET_MANAGER_URL, {
+  const createPacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
     method: "PUT",
     body: requestBody,
     headers: {
@@ -256,20 +256,64 @@ export const postBirthRecord = async ({
     },
   });
 
-  if (!response.ok) {
+  if (!createPacketResponse.ok) {
     throw new Error(
-      `Failed sending record to MOSIP, response: ${await response.text()}`,
+      `Failed sending record to MOSIP, response: ${await createPacketResponse.text()}`,
     );
   }
 
-  const responseJson = await response.json();
+  const responseJson = await createPacketResponse.json();
   console.log("responseJson: ", responseJson);
 
   // packet manager: process packet API.
+  const processPacketRequestBody = JSON.stringify(
+    {
+      id: "mosip.registration.processor.workflow.instance",
+      requesttime: new Date().toISOString(),
+      version: "v1",
+      request: {
+        registrationId: "10007100070013220250319091113",
+        process: "CRVS_NEW",
+        source: "OPENCRVS",
+        additionalInfoReqId: "",
+        notificationInfo: {
+          name: "Sample Name",
+          phone: "0774513220",
+          email: "sameple@gmail.com",
+        },
+      },
+    },
+    null,
+    2,
+  );
 
-  return response.json() as Promise<{
-    aid: string;
-  }>;
+  const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
+    method: "POST",
+    body: processPacketRequestBody,
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `Authorization=${authToken};`,
+    },
+  });
+
+  if (!processPacketResponse.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await processPacketResponse.text()}`,
+    );
+  }
+
+  const processPacketResponseJson = await processPacketResponse.json();
+  console.log("processPacketResponseJson: ", processPacketResponseJson);
+
+  if (processPacketResponseJson?.errors?.length > 0) {
+    throw new Error(
+      `Error in processing packet, response: ${await processPacketResponseJson?.errors[0]?.message}`,
+    );
+  }
+
+  // return processPacketResponseJson.response.workflowInstanceId as Promise<{
+  //   aid: string;
+  // }>;
 };
 
 export const deactivateNid = async ({ nid }: { nid: string }) => {

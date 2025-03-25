@@ -42,20 +42,21 @@ export const registrationEventHandler = async (
   const eventType = getEventType(request.body);
 
   if (eventType === EVENT_TYPE.BIRTH) {
-    const { aid } = await mosip.postBirthRecord({
+    // const { workflowInstanceId } =
+    await mosip.postBirthRecord({
       event: { id: eventId, trackingId },
       token,
-      request
+      request,
     });
 
-    await opencrvs.upsertRegistrationIdentifier(
-      {
-        id: eventId,
-        identifierType: "MOSIP_AID",
-        identifierValue: aid,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    // await opencrvs.upsertRegistrationIdentifier(
+    //   {
+    //     id: eventId,
+    //     identifierType: "MOSIP_AID",
+    //     identifierValue: aid,
+    //   },
+    //   { headers: { Authorization: `Bearer ${token}` } },
+    // );
   }
 
   if (eventType === EVENT_TYPE.DEATH) {

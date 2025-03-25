@@ -67,7 +67,11 @@ export const env = cleanEnv(process.env, {
   }),
   MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
   MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
-  MOSIP_PACKET_MANAGER_URL: str({
+  MOSIP_CREATE_PACKET_URL: str({
     devDefault: "http://localhost:20240/commons/v1/packetmanager/createPacket",
+  }),
+  MOSIP_PROCESS_PACKET_URL: str({
+    devDefault:
+      "http://localhost:20240/registrationprocessor/v1/workflowmanager/workflowinstance",
   }),
 });

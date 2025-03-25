@@ -1,6 +1,9 @@
 import Fastify from "fastify";
 import { EMAIL_ENABLED, env } from "./constants";
-import { packetManagerCreateHandler } from "./routes/packet-manager-create";
+import {
+  packetManagerCreateHandler,
+  packetManagerProcessHandler,
+} from "./routes/packet-manager-create";
 import { deactivateNidHandler } from "./routes/deactivate-nid";
 import { packetManagerAuthHandler } from "./routes/packet-manager-auth";
 import { idAuthenticationHandler } from "./ida-auth-sdk/id-authentication";
@@ -20,6 +23,9 @@ app.post("/v1/authmanager/authenticate/clientidsecretkey", {
 });
 app.post("/commons/v1/packetmanager/createPacket", {
   handler: packetManagerCreateHandler,
+});
+app.post("/registrationprocessor/v1/workflowmanager/workflowinstance", {
+  handler: packetManagerProcessHandler,
 });
 
 async function run() {
