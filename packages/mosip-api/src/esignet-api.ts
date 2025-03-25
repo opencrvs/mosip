@@ -191,6 +191,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
   return {
     firstName: userInfo.given_name,
     familyName: userInfo.family_name,
+    middleName: userInfo.middle_name,
     gender: userInfo.gender,
     ...(userInfo.birthdate && {
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
