@@ -82,129 +82,23 @@ export const postBirthRecord = async ({
 }: {
   event: {
     id: string;
-    trackingId: string;
   };
   token: string;
-  request: OpenCRVSRequest;
+  request: any;
 }) => {
-  const composition = getComposition(request.body);
-
-  const child = findEntry(
-    "child-details",
-    composition,
-    request.body,
-  ) as fhir3.Patient;
-
-  const childName:
-    | {
-        use?: string | undefined;
-        given?: string[] | undefined;
-        family?: string | undefined;
-      }
-    | undefined = child.name?.[0];
-
-  const mother = findEntry(
-    "mother-details",
-    composition,
-    request.body,
-  ) as fhir3.Patient;
-
-  const father = findEntry(
-    "father-details",
-    composition,
-    request.body,
-  ) as fhir3.Patient;
-
-  const guardianDetails = mother ?? father;
-  const guardianName:
-    | {
-        use?: string | undefined;
-        given?: string[] | undefined;
-        family?: string | undefined;
-      }
-    | undefined = guardianDetails.name?.[0];
-
-  const informant = getInformantPatient(request.body) as fhir3.Patient;
-
-  const returnParentID = () => {
-    const motherID = mother.identifier?.[0].value;
-    const fatherID = father.identifier?.[0].value;
-
-    if (motherID) {
-      return {
-        identifier: motherID,
-        type: mother.identifier?.[0].type?.coding?.[0].code,
-      };
-    } else if (fatherID) {
-      return {
-        identifier: fatherID,
-        type: father.identifier?.[0].type?.coding?.[0].code,
-      };
-    } else {
-      return {
-        identifier: "",
-        type: "NOT_FOUND",
-      };
-    }
-  };
-
-  const residentStatus =
-    getQuestionnaireResponseAnswer(
-      request.body,
-      "birth.child.child-view-group.nonTongan",
-    ) === true
-      ? "NON-TONGAN"
-      : "TONGAN";
-
-  const requestFields = {
-    fullName: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${childName?.given?.join(" ")} ${childName?.family}\"\n} ]`,
-    dateOfBirth: child.birthDate,
-    gender: `[ {\n  "language" : "eng",\n  "value" :       "${child.gender}"\n}]`,
-    guardianOrParentName: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${guardianName?.given?.join(" ")} ${guardianName?.family}\"\n} ]`,
-    nationalIdNumber:
-      returnParentID().type === "NATIONAL_ID"
-        ? returnParentID().identifier
-        : "",
-    passportNumber:
-      returnParentID().type === "PASSPORT" ? returnParentID().identifier : "",
-    drivingLicenseNumber:
-      returnParentID().type === "DRIVING_LICENSE"
-        ? returnParentID().identifier
-        : "",
-    deceasedStatus:
-      getEventType(request.body) === EVENT_TYPE.DEATH ? true : false,
-    residentStatus: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${residentStatus}\"\n} ]`,
-
-    vid: "JA8023B498309V", // cannot pass from crvs mdediator side (UID & VID created at the same time)
-    email: "", // Task --> contact-person-email
-    phone: "", // Task --> contact-person-phone-number
-    guardianOrParentBirthCertificateNumber: "M89234BYAS0238", // from QuestionnaireResponse
-    birthCertificateNumber: "C83B023548BST", // BRN
-    addressLine1: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Kandy\"\n}]`,
-    addressLine2: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Badulla\"\n}]`,
-    addressLine3: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Badulla\"\n}]`,
-    district: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Vava’u\"\n} ]`,
-    village: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Talihau \"\n} ]`,
-    birthRegistrationCertificate: "base-64 document string",
-    passportId: "base-64 document string",
-    nationalId: "base-64 document string",
-    drivingLicenseId: "base-64 document string",
-    addressProof: "base-64 document string",
-  };
-
   const requestBody = JSON.stringify(
     {
-      id: composition.id,
+      id: event.id,
       version: "string",
       requesttime: new Date().toISOString(),
       request: {
-        id: composition.id,
+        id: event.id,
         refId: "10002_10003",
         offlineMode: false,
         process: "CRVS_NEW",
         source: "OPENCRVS",
         schemaVersion: "0.100",
-        fields: requestFields,
+        fields: request,
         metaInfo: {
           metaData:
             '[{\n  "label" : "registrationType",\n  "value" : "CRVS_NEW"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
@@ -227,7 +121,7 @@ export const postBirthRecord = async ({
             applicationName: "REGISTRATION",
             sessionUserId: "suraj",
             sessionUserName: "suraj m",
-            id: composition.id,
+            id: event.id,
             idType: "REGISTRATION_ID",
             createdBy: "suraj m",
             moduleName: "Packet Handler",

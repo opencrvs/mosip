@@ -11,14 +11,8 @@ import {
 import * as opencrvs from "../opencrvs-api";
 import { generateRegistrationNumber } from "../registration-number";
 
-export const opencrvsRecordSchema = z
-  .object({
-    resourceType: z.enum(["Bundle"]),
-    type: z.enum(["document"]),
-    entry: z.array(z.unknown()),
-  })
-  .catchall(z.unknown())
-  .describe("Record as FHIR Bundle");
+// bypass fhir payload validation as we are not sending fhir
+export const opencrvsRecordSchema = z.unknown().describe("Record as any");
 
 export type OpenCRVSRequest = FastifyRequest<{
   Body: fhir3.Bundle;
@@ -26,26 +20,27 @@ export type OpenCRVSRequest = FastifyRequest<{
 
 /** Handles the calls coming from OpenCRVS countryconfig */
 export const registrationEventHandler = async (
-  request: OpenCRVSRequest,
+  request: any,
   reply: FastifyReply,
 ) => {
-  const trackingId = getTrackingId(request.body);
-  const { id: eventId } = getComposition(request.body);
+  const { compositionId: eventId, ...requestFields } = request.body;
 
   const token = request.headers.authorization!.split(" ")[1];
 
   // We can trust the token as when `confirmRegistration` or `rejectRegistration` are called, the token is verified by OpenCRVS
   // This server should also only be deployed in the local network so no external calls can be made.
 
-  request.log.info({ trackingId }, "Received record from OpenCRVS");
+  // request.log.info({ trackingId }, "Received record from OpenCRVS");
 
-  const eventType = getEventType(request.body);
+  const eventType = requestFields.deceasedStatus
+    ? EVENT_TYPE.DEATH
+    : EVENT_TYPE.BIRTH;
 
   if (eventType === EVENT_TYPE.BIRTH) {
     const { aid } = await mosip.postBirthRecord({
-      event: { id: eventId, trackingId },
+      event: { id: eventId },
       token,
-      request
+      request: requestFields,
     });
 
     await opencrvs.upsertRegistrationIdentifier(
@@ -89,16 +84,17 @@ export const registrationEventHandler = async (
       }
     }
 
-    const registrationNumber = generateRegistrationNumber(trackingId);
+    // TBD later
+    // const registrationNumber = generateRegistrationNumber(trackingId);
 
-    await opencrvs.confirmRegistration(
-      {
-        id: eventId,
-        registrationNumber,
-        comment,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    // await opencrvs.confirmRegistration(
+    //   {
+    //     id: eventId,
+    //     registrationNumber,
+    //     comment,
+    //   },
+    //   { headers: { Authorization: `Bearer ${token}` } },
+    // );
   }
 
   return reply.code(202).send();

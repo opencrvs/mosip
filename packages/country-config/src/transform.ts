@@ -2,6 +2,7 @@ type IdentityInfo = { value: string; language: string };
 
 interface MOSIPPayload
   extends Record<string, IdentityInfo[] | string | boolean> {
+  compositionId: string;
   fullName: IdentityInfo[];
   dateOfBirth: string;
   gender: IdentityInfo[];
