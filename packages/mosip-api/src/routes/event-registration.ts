@@ -9,7 +9,11 @@ import {
   getTrackingId,
 } from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
-import { generateRegistrationNumber } from "../registration-number";
+import {
+  generateRegistrationNumber,
+  generateTransactionId,
+} from "../registration-number";
+import { insertTransaction } from "../database";
 
 export const opencrvsRecordSchema = z
   .object({
@@ -34,27 +38,20 @@ export const registrationEventHandler = async (
 
   const token = request.headers.authorization!.split(" ")[1];
 
-  // We can trust the token as when `confirmRegistration` or `rejectRegistration` are called, the token is verified by OpenCRVS
-  // This server should also only be deployed in the local network so no external calls can be made.
-
   request.log.info({ trackingId }, "Received record from OpenCRVS");
 
   const eventType = getEventType(request.body);
 
   if (eventType === EVENT_TYPE.BIRTH) {
-    const { aid } = await mosip.postBirthRecord({
-      event: { id: eventId, trackingId },
-      token,
+    const transactionId = generateTransactionId();
+    const registrationNumber = generateRegistrationNumber(trackingId);
+
+    await mosip.postBirthRecord({
+      id: transactionId,
+      registrationNumber,
     });
 
-    await opencrvs.upsertRegistrationIdentifier(
-      {
-        id: eventId,
-        identifierType: "MOSIP_AID",
-        identifierValue: aid,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    insertTransaction(transactionId, token, registrationNumber);
   }
 
   if (eventType === EVENT_TYPE.DEATH) {
