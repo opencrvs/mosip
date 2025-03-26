@@ -30,9 +30,9 @@ interface MOSIPPayload
 }
 
 type Resolver = (bundle: fhir3.Bundle) => MOSIPPayload[keyof MOSIPPayload];
-type ResolverMap = {
+type ResolverMap = Partial<{
   [K in keyof MOSIPPayload]: Resolver;
-};
+}>;
 
 export function fhirBundleToMOSIPPayload(
   bundle: fhir3.Bundle,
@@ -40,7 +40,9 @@ export function fhirBundleToMOSIPPayload(
 ): MOSIPPayload {
   const payload = {} as MOSIPPayload;
   for (const [key, resolver] of Object.entries(resolverMap)) {
-    payload[key] = resolver(bundle);
+    if (resolver) {
+      payload[key] = resolver(bundle);
+    }
   }
   return payload as MOSIPPayload;
 }

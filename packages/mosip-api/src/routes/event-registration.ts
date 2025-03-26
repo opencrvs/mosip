@@ -1,26 +1,51 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as mosip from "../mosip-api";
-import {
-  EVENT_TYPE,
-  getDeceasedNid,
-  getComposition,
-  getEventType,
-  getTrackingId,
-} from "../types/fhir";
+import { EVENT_TYPE } from "../types/fhir";
 import * as opencrvs from "../opencrvs-api";
 import { generateRegistrationNumber } from "../registration-number";
 
 // bypass fhir payload validation as we are not sending fhir
 export const opencrvsRecordSchema = z.unknown().describe("Record as any");
 
+type IdentityInfo = { value: string; language: string };
+
+interface MOSIPPayload
+  extends Record<string, IdentityInfo[] | string | boolean> {
+  compositionId: string;
+  fullName: IdentityInfo[];
+  dateOfBirth: string;
+  gender: IdentityInfo[];
+  guardianOrParentName: IdentityInfo[];
+  nationalIdNumber: string;
+  passportNumber: string;
+  drivingLicenseNumber: string;
+  deceasedStatus: boolean;
+  residentStatus: IdentityInfo[];
+  vid: string;
+  email: string;
+  phone: string;
+  guardianOrParentBirthCertificateNumber: string;
+  birthCertificateNumber: string;
+  addressLine1: IdentityInfo[];
+  addressLine2: IdentityInfo[];
+  addressLine3: IdentityInfo[];
+  district: IdentityInfo[];
+  village: IdentityInfo[];
+  birthRegistrationCertificate: string;
+  passportId: string;
+  nationalId: string;
+  drivingLicenseId: string;
+  addressProof: string;
+}
+
 export type OpenCRVSRequest = FastifyRequest<{
-  Body: fhir3.Bundle;
+  Body: MOSIPPayload;
 }>;
 
 /** Handles the calls coming from OpenCRVS countryconfig */
 export const registrationEventHandler = async (
-  request: any,
+  request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
   const { compositionId: eventId, ...requestFields } = request.body;
@@ -40,7 +65,7 @@ export const registrationEventHandler = async (
     const { aid } = await mosip.postBirthRecord({
       event: { id: eventId },
       token,
-      request: requestFields,
+      request,
     });
 
     await opencrvs.upsertRegistrationIdentifier(
@@ -57,7 +82,7 @@ export const registrationEventHandler = async (
     let nid;
 
     try {
-      nid = getDeceasedNid(request.body);
+      nid = requestFields.nationalIdNumber;
     } catch (e) {
       request.log.info(
         `Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted. Bypassing NID deactivation...`,

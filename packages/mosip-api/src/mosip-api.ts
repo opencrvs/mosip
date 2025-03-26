@@ -1,14 +1,6 @@
 import { env } from "./constants";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
 import { OpenCRVSRequest } from "./routes/event-registration";
-import {
-  EVENT_TYPE,
-  findEntry,
-  getComposition,
-  getEventType,
-  getInformantPatient,
-  getQuestionnaireResponseAnswer,
-} from "./types/fhir";
 
 export class MOSIPError extends Error {
   constructor(message: string) {
@@ -84,8 +76,9 @@ export const postBirthRecord = async ({
     id: string;
   };
   token: string;
-  request: any;
+  request: OpenCRVSRequest;
 }) => {
+  const { compositionId, ...requestFields } = request.body;
   const requestBody = JSON.stringify(
     {
       id: event.id,
@@ -98,7 +91,7 @@ export const postBirthRecord = async ({
         process: "CRVS_NEW",
         source: "OPENCRVS",
         schemaVersion: "0.100",
-        fields: request,
+        fields: requestFields,
         metaInfo: {
           metaData:
             '[{\n  "label" : "registrationType",\n  "value" : "CRVS_NEW"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
