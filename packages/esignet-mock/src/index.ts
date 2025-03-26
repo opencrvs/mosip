@@ -132,7 +132,6 @@ app.post("/oidc/userinfo", {
         country: "United Kingdom",
       },
     };
-    console.log(userInfo, "userInfooooooooooooooooooooooooooooooooooooooooooooo")
 
     return reply.send(await generateSignedJwt(userInfo));
   },
