@@ -33,6 +33,8 @@ yarn dev --filter=@opencrvs/mosip-api
 yarn set-version 1.7.0-alpha.16
 ```
 
+This project uses a **SQLite** database to store the record-specific tokens that OpenCRVS Core uses to allow editing the records. See [./packages/mosip-api/src/database.ts](./packages/mosip-api/src/database.ts) for more information.
+
 ## Country configuration
 
 ```sh
@@ -58,7 +60,3 @@ yarn add @opencrvs/mosip
    }
  })
 ```
-
-## Usage
-
-The gateway runs by default in port 2024, the same year the stable version of the MOSIP integration is released. The MOSIP-mock service runs in 2024**0**.
