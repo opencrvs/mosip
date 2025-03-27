@@ -60,46 +60,50 @@ export const registrationEventHandler = async (
   }
 
   if (eventType === EVENT_TYPE.DEATH) {
-    let nid;
+    await mosip.deactivateNid();
 
-    try {
-      nid = getDeceasedNid(request.body);
-    } catch (e) {
-      request.log.info(
-        `Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted. Bypassing NID deactivation...`,
-      );
-    }
+    //   let nid;
 
-    let comment = "NID not entered for deactivation";
+    //   try {
+    //     nid = getDeceasedNid(request.body);
+    //   } catch (e) {
+    //     request.log.info(
+    //       `Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted. Bypassing NID deactivation...`,
+    //     );
+    //   }
 
-    if (nid) {
-      const response = await mosip.deactivateNid({
-        nid,
-      });
+    //   let comment = "NID not entered for deactivation";
 
-      if (response.status === 404) {
-        comment = `NID "${nid}" not found for deactivation`;
-      } else if (response.status === 409) {
-        comment = `NID "${nid}" already deactivated`;
-      } else if (response.ok) {
-        comment = `NID "${nid}" deactivated`;
-      } else {
-        throw new Error(
-          `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
-        );
-      }
-    }
+    //   if (nid) {
+    //     const response = await mosip.deactivateNid({
+    //       nid,
+    //     });
 
-    const registrationNumber = generateRegistrationNumber(trackingId);
+    //     if (response.status === 404) {
+    //       comment = `NID "${nid}" not found for deactivation`;
+    //     } else if (response.status === 409) {
+    //       comment = `NID "${nid}" already deactivated`;
+    //     } else if (response.ok) {
+    //       comment = `NID "${nid}" deactivated`;
+    //     } else {
+    //       throw new Error(
+    //         `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
+    //       );
+    //     }
+    //   }
 
-    await opencrvs.confirmRegistration(
-      {
-        id: eventId,
-        registrationNumber,
-        comment,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    //   const registrationNumber = generateRegistrationNumber(trackingId);
+
+    //   // cannot confirm the registration at this point as we need to wait for the packet to process.
+    //   // can do a upsert in here.
+    //   await opencrvs.confirmRegistration(
+    //     {
+    //       id: eventId,
+    //       registrationNumber,
+    //       comment,
+    //     },
+    //     { headers: { Authorization: `Bearer ${token}` } },
+    //   );
   }
 
   return reply.code(202).send();
