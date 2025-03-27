@@ -103,6 +103,8 @@ export const buildFastify = async () => {
     try {
       await request.jwtVerify();
     } catch (err) {
+      app.log.error(err);
+
       reply.code(401).send({ error: "Unauthorized" });
     }
   });
