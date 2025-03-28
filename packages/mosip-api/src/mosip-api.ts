@@ -4,10 +4,12 @@ import { OpenCRVSRequest } from "./routes/event-registration";
 import {
   EVENT_TYPE,
   findEntry,
+  findTaskExtension,
   getComposition,
   getEventType,
   getInformantPatient,
   getQuestionnaireResponseAnswer,
+  getTaskFromSavedBundle,
 } from "./types/fhir";
 import { schemaJson } from "./types/idSchemaJson";
 
@@ -25,19 +27,17 @@ export async function getMosipAuthToken() {
       "Content-Type": "application/json",
       // cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`,
     },
-    body: `
-    {
-      "id": "string",
-      "version": "string",
-      "requesttime": "2025-03-11T02:53:07.206Z",
-      "metadata": {},
-        "request": {
-            "clientId": "${env.MOSIP_AUTH_CLIENT_ID}",
-            "secretKey": "${env.MOSIP_AUTH_CLIENT_SECRET}",
-            "appId": "admin"
-        }
-    }
-    `,
+    body: JSON.stringify({
+      id: "string",
+      version: "string",
+      requesttime: new Date().toISOString(),
+      metadata: {},
+      request: {
+        clientId: env.MOSIP_AUTH_CLIENT_ID,
+        secretKey: env.MOSIP_AUTH_CLIENT_SECRET,
+        appId: "admin",
+      },
+    }),
   });
 
   if (!response.ok) {
@@ -83,6 +83,15 @@ export const postBirthRecord = async ({
   request: OpenCRVSRequest;
 }) => {
   const composition = getComposition(request.body);
+  const task = getTaskFromSavedBundle(request.body);
+  const emailExtension = findTaskExtension(
+    task,
+    "http://opencrvs.org/specs/extension/contact-person-email",
+  );
+  const contactNumberExtension = findTaskExtension(
+    task,
+    "http://opencrvs.org/specs/extension/contact-person-phone-number",
+  );
 
   const child = findEntry(
     "child-details",
@@ -190,7 +199,7 @@ export const postBirthRecord = async ({
       version: "string",
       requesttime: new Date().toISOString(),
       request: {
-        id: "6520427032",
+        id: "652042703244",
         refId: "10002_10003",
         offlineMode: false,
         process: "CRVS_NEW",
@@ -200,7 +209,7 @@ export const postBirthRecord = async ({
         metaInfo: {
           metaData:
             '[{\n  "label" : "registrationType",\n  "value" : "CRVS_NEW"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
-          registrationId: "6520427032",
+          registrationId: "652042703244",
           operationsData:
             '[{\n  "label" : "officerId",\n  "value" : "sithara.bevolv"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
           capturedRegisteredDevices: "[]",
@@ -219,7 +228,7 @@ export const postBirthRecord = async ({
             applicationName: "REGISTRATION",
             sessionUserId: "suraj",
             sessionUserName: "suraj m",
-            id: "6520427032",
+            id: "652042703244",
             idType: "REGISTRATION_ID",
             createdBy: "suraj m",
             moduleName: "Packet Handler",
@@ -262,14 +271,16 @@ export const postBirthRecord = async ({
       requesttime: new Date().toISOString(),
       version: "v1",
       request: {
-        registrationId: "6520427032",
+        registrationId: "652042703244",
         process: "CRVS_NEW",
         source: "OPENCRVS",
         additionalInfoReqId: "",
         notificationInfo: {
           name: "Sample Name", // informant details should be passed in here.
-          phone: "0774513220",
-          email: "sameple@gmail.com",
+          phone: contactNumberExtension
+            ? contactNumberExtension.valueString
+            : "",
+          email: emailExtension ? emailExtension.valueString : "",
         },
       },
     },
@@ -305,15 +316,24 @@ export const postBirthRecord = async ({
   // }>;
 };
 
-export const deactivateNid = async () => {
+export const deactivateNid = async (request: OpenCRVSRequest) => {
   const authToken = await getMosipAuthToken();
+  const task = getTaskFromSavedBundle(request.body);
+  const emailExtension = findTaskExtension(
+    task,
+    "http://opencrvs.org/specs/extension/contact-person-email",
+  );
+  const contactNumberExtension = findTaskExtension(
+    task,
+    "http://opencrvs.org/specs/extension/contact-person-phone-number",
+  );
 
   const deactivatePacketRequestBody = JSON.stringify({
     id: "string",
     version: "string",
     requesttime: new Date().toISOString(),
     request: {
-      id: "65204270321200",
+      id: "65204270321266",
       refId: "10018_10084",
       offlineMode: false,
       process: "CRVS_DEATH",
@@ -327,7 +347,7 @@ export const deactivateNid = async () => {
       metaInfo: {
         metaData:
           '[{\n  "label" : "registrationType",\n  "value" : "CRVS_DEATH"\n}, {\n  "label" : "machineId",\n  "value" : "10084"\n}, {\n  "label" : "centerId",\n  "value" : "10018"\n}]',
-        registrationId: "65204270321200",
+        registrationId: "65204270321266",
         operationsData:
           '[{\n  "label" : "officerId",\n  "value" : "nambi"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
         capturedRegisteredDevices: "[]",
@@ -346,7 +366,7 @@ export const deactivateNid = async () => {
           applicationName: "REGISTRATION",
           sessionUserId: "suraj",
           sessionUserName: "suraj m",
-          id: "65204270321200",
+          id: "65204270321266",
           idType: "REGISTRATION_ID",
           createdBy: "suraj m",
           moduleName: "Packet Handler",
@@ -381,17 +401,19 @@ export const deactivateNid = async () => {
   const processPacketRequestBody = JSON.stringify(
     {
       id: "mosip.registration.processor.workflow.instance",
-      requesttime: "2025-03-04T08:29:39.276Z",
+      requesttime: new Date().toISOString(),
       version: "v1",
       request: {
-        registrationId: "65204270321200",
+        registrationId: "65204270321266",
         process: "CRVS_DEATH",
         source: "OPENCRVS",
         additionalInfoReqId: "",
         notificationInfo: {
           name: "John Doe", // informant details should be passed in here.
-          phone: "0776543219",
-          email: "sample@gmail.com",
+          phone: contactNumberExtension
+            ? contactNumberExtension.valueString
+            : "",
+          email: emailExtension ? emailExtension.valueString : "",
         },
       },
     },

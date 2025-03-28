@@ -646,3 +646,12 @@ export function getDemographics(patient: fhir3.Patient): {
     dob,
   };
 }
+
+export function findTaskExtension<
+  T extends keyof KnownExtensionType,
+  Task extends SavedTask,
+>(task: Task, extensionUrl: T) {
+  return task.extension.find(
+    (ext): ext is KnownExtensionType[T] => ext.url === extensionUrl,
+  );
+}

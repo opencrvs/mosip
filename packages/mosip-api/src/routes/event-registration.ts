@@ -3,12 +3,10 @@ import { z } from "zod";
 import * as mosip from "../mosip-api";
 import {
   EVENT_TYPE,
-  getDeceasedNid,
   getComposition,
   getEventType,
   getTrackingId,
 } from "../types/fhir";
-import * as opencrvs from "../opencrvs-api";
 import {
   generateRegistrationNumber,
   generateTransactionId,
@@ -65,7 +63,7 @@ export const registrationEventHandler = async (
   }
 
   if (eventType === EVENT_TYPE.DEATH) {
-    await mosip.deactivateNid();
+    await mosip.deactivateNid(request);
 
     //   let nid;
 
