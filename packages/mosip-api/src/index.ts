@@ -49,6 +49,7 @@ const initRoutes = (app: FastifyInstance) => {
       body: opencrvsRecordSchema,
     },
   });
+
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/webhooks/mosip",
     method: "POST",

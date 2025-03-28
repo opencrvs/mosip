@@ -3,12 +3,10 @@ import { z } from "zod";
 import * as mosip from "../mosip-api";
 import {
   EVENT_TYPE,
-  getDeceasedNid,
   getComposition,
   getEventType,
   getTrackingId,
 } from "../types/fhir";
-import * as opencrvs from "../opencrvs-api";
 import {
   generateRegistrationNumber,
   generateTransactionId,
@@ -24,7 +22,7 @@ export const opencrvsRecordSchema = z
   .catchall(z.unknown())
   .describe("Record as FHIR Bundle");
 
-type OpenCRVSRequest = FastifyRequest<{
+export type OpenCRVSRequest = FastifyRequest<{
   Body: fhir3.Bundle;
 }>;
 
@@ -46,55 +44,69 @@ export const registrationEventHandler = async (
     const transactionId = generateTransactionId();
     const registrationNumber = generateRegistrationNumber(trackingId);
 
+    // const { workflowInstanceId } =
     await mosip.postBirthRecord({
-      id: transactionId,
-      registrationNumber,
+      event: { id: transactionId, trackingId },
+      token,
+      request,
     });
-
     insertTransaction(transactionId, token, registrationNumber);
+
+    // await opencrvs.upsertRegistrationIdentifier(
+    //   {
+    //     id: eventId,
+    //     identifierType: "MOSIP_AID",
+    //     identifierValue: aid,
+    //   },
+    //   { headers: { Authorization: `Bearer ${token}` } },
+    // );
   }
 
   if (eventType === EVENT_TYPE.DEATH) {
-    let nid;
+    await mosip.deactivateNid(request);
 
-    try {
-      nid = getDeceasedNid(request.body);
-    } catch (e) {
-      request.log.info(
-        `Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted. Bypassing NID deactivation...`,
-      );
-    }
+    //   let nid;
 
-    let comment = "NID not entered for deactivation";
+    //   try {
+    //     nid = getDeceasedNid(request.body);
+    //   } catch (e) {
+    //     request.log.info(
+    //       `Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted. Bypassing NID deactivation...`,
+    //     );
+    //   }
 
-    if (nid) {
-      const response = await mosip.deactivateNid({
-        nid,
-      });
+    //   let comment = "NID not entered for deactivation";
 
-      if (response.status === 404) {
-        comment = `NID "${nid}" not found for deactivation`;
-      } else if (response.status === 409) {
-        comment = `NID "${nid}" already deactivated`;
-      } else if (response.ok) {
-        comment = `NID "${nid}" deactivated`;
-      } else {
-        throw new Error(
-          `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
-        );
-      }
-    }
+    //   if (nid) {
+    //     const response = await mosip.deactivateNid({
+    //       nid,
+    //     });
 
-    const registrationNumber = generateRegistrationNumber(trackingId);
+    //     if (response.status === 404) {
+    //       comment = `NID "${nid}" not found for deactivation`;
+    //     } else if (response.status === 409) {
+    //       comment = `NID "${nid}" already deactivated`;
+    //     } else if (response.ok) {
+    //       comment = `NID "${nid}" deactivated`;
+    //     } else {
+    //       throw new Error(
+    //         `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
+    //       );
+    //     }
+    //   }
 
-    await opencrvs.confirmRegistration(
-      {
-        id: eventId,
-        registrationNumber,
-        comment,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+    //   const registrationNumber = generateRegistrationNumber(trackingId);
+
+    //   // cannot confirm the registration at this point as we need to wait for the packet to process.
+    //   // can do a upsert in here.
+    //   await opencrvs.confirmRegistration(
+    //     {
+    //       id: eventId,
+    //       registrationNumber,
+    //       comment,
+    //     },
+    //     { headers: { Authorization: `Bearer ${token}` } },
+    //   );
   }
 
   return reply.code(202).send();
