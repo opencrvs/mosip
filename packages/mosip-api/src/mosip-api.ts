@@ -8,6 +8,55 @@ export class MOSIPError extends Error {
   }
 }
 
+export async function getMosipAuthToken() {
+  const response = await fetch(env.MOSIP_AUTH_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      id: "string",
+      version: "string",
+      requesttime: new Date().toISOString(),
+      metadata: {},
+      request: {
+        clientId: env.MOSIP_AUTH_CLIENT_ID,
+        secretKey: env.MOSIP_AUTH_CLIENT_SECRET,
+        appId: env.MOSIP_AUTH_CLIENT_APP_ID,
+      },
+    }),
+  });
+
+  if (!response.ok) {
+    throw new MOSIPError(
+      `Failed getting MOSIP auth token. Response: ${
+        response.status
+      }, response: ${await response.text()}`,
+    );
+  }
+
+  // Get the 'Set-Cookie' header from the response
+  const cookie: string | null = response.headers.get("Set-Cookie");
+
+  if (!cookie || cookie === null) {
+    throw new MOSIPError(
+      `Failed getting MOSIP auth token. Response: ${
+        response.status
+      }, response: ${await response.text()}`,
+    );
+  }
+
+  // Split the string by ';' to separate the cookie parts
+  const cookieParts = cookie.split(";");
+
+  // The first part will be the Authorization token
+  const authorizationPart = cookieParts[0];
+
+  // Extract the token by splitting on '='
+  const token = authorizationPart.split("=")[1];
+  return token;
+}
+
 export const postBirthRecord = async ({
   id,
   registrationNumber,

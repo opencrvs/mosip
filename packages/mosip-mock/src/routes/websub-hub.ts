@@ -2,7 +2,7 @@ import { RouteHandlerMethod } from "fastify";
 import { env } from "../constants";
 import crypto from "node:crypto";
 
-/** Handles WebSub subscription coming from OpenCRVS. The challenge is omitted. */
+/** Handles WebSub subscription coming from OpenCRVS */
 export const webSubHubHandler: RouteHandlerMethod = async (_request, reply) => {
   const challengeToken = crypto.randomUUID();
   const response = await fetch(

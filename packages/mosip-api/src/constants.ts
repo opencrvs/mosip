@@ -23,6 +23,15 @@ export const env = cleanEnv(process.env, {
     desc: "OpenCRVS public key URL. Used to verify JWT authenticity",
   }),
 
+  // MOSIP Auth manager
+  MOSIP_AUTH_URL: str({
+    devDefault:
+      "http://localhost:20240/v1/authmanager/authenticate/clientidsecretkey",
+  }),
+  MOSIP_AUTH_CLIENT_APP_ID: str({ default: "admin" }),
+  MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
+  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
+
   // MOSIP WebSub hub
   MOSIP_WEBSUB_HUB_URL: url({
     devDefault: "http://localhost:20240/websub/hub",
@@ -30,16 +39,16 @@ export const env = cleanEnv(process.env, {
   }),
   MOSIP_WEBSUB_SECRET: str({
     devDefault: "mosip-websub-secret",
-    desc: "MOSIP WebSub secret",
+    desc: "MOSIP WebSub `hub.secret`",
   }),
   MOSIP_WEBSUB_TOPIC: str({
     devDefault: "CREDENTIAL_ISSUED",
-    desc: "The Kafka topic that is listened for ID credential issuance",
+    desc: "The Kafka topic that is listened for ID credential issuance, `hub.topic`",
   }),
   MOSIP_WEBSUB_CALLBACK_URL: str({
     devDefault: "http://localhost:2024/websub/callback",
     example: "https://your-domain.com/websub/callback",
-    desc: "The OpenCRVS side URL MOSIP sends WebSub updates to",
+    desc: "The OpenCRVS side URL MOSIP sends WebSub updates to, `hub.callback`",
   }),
 
   // MOSIP Birth & Death packets
