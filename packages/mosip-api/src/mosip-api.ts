@@ -17,7 +17,13 @@ export const postBirthRecord = async ({
 }) => {
   const response = await fetch(env.MOSIP_BIRTH_WEBHOOK_URL, {
     method: "POST",
-    body: JSON.stringify({ request: { id }, registrationNumber }),
+    body: JSON.stringify({
+      request: {
+        process: "CRVS_NEW",
+        id,
+        fields: { birthCertificateNumber: registrationNumber },
+      },
+    }),
     headers: {
       "Content-Type": "application/json",
     },

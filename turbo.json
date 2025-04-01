@@ -1,7 +1,16 @@
 {
   "tasks": {
     "dev": {
-      "dependsOn": [],
+      "outputs": []
+    },
+    "dev:@opencrvs/mosip-api": {
+      "dependsOn": ["dev:@opencrvs/mosip-mock", "dev:@opencrvs/esignet-mock"],
+      "outputs": []
+    },
+    "dev:@opencrvs/mosip-mock": {
+      "outputs": []
+    },
+    "dev:@opencrvs/esignet-mock": {
       "outputs": []
     }
   }
