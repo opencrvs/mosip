@@ -4,7 +4,6 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { mosipHandler, mosipNidSchema } from "./routes/mosip";
 import {
   registrationEventHandler,
   opencrvsRecordSchema,
@@ -52,14 +51,6 @@ const initRoutes = (app: FastifyInstance) => {
     handler: reviewEventHandler,
     schema: {
       body: opencrvsRecordSchema,
-    },
-  });
-  app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/webhooks/mosip",
-    method: "POST",
-    handler: mosipHandler,
-    schema: {
-      body: mosipNidSchema,
     },
   });
 
@@ -127,7 +118,6 @@ export const buildFastify = async () => {
     // @TODO
     // @NOTE Remove in production! This disables the JWT authentication for the MOSIP webhook
     // As we don't have the WebSub documentation available yet, we don't fully know the authentication method so this is not built yet
-    if (request.routeOptions.url === "/webhooks/mosip") return;
     if (request.routeOptions.url === "/websub/callback") return;
 
     try {
