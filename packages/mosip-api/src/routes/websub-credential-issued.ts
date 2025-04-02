@@ -4,6 +4,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { getTransactionAndDiscard } from "../database";
 import { decode } from "jsonwebtoken";
 import * as opencrvs from "../opencrvs-api";
+import { decryptMosipCredential } from "../websub/crypto";
 
 export const Credential = z.object({
   id: z.string(),
@@ -19,7 +20,7 @@ export const Credential = z.object({
 
 export const CredentialIssuedSchema = z.object({
   publisher: z.string(),
-  topic: z.literal(env.MOSIP_WEBSUB_TOPIC),
+  // topic: z.literal(env.MOSIP_WEBSUB_TOPIC),
   publishedOn: z.string().datetime(),
   event: z.object({
     id: z.string().uuid(),
@@ -31,12 +32,10 @@ export const CredentialIssuedSchema = z.object({
     timestamp: z.string().datetime(),
     data: z.object({
       registrationId: z.string(),
-      credential: Credential, // @TODO: Abdul is working on the encryption of this
-      proof: z
-        .object({
-          signature: z.string(),
-        })
-        .optional(), // @TODO: Not going to be optional, Abdul is working on this
+      credential: z.string(),
+      proof: z.object({
+        signature: z.string(),
+      }),
       credentialType: z.literal("euin"),
       protectionKey: z.string(),
     }),
@@ -52,17 +51,9 @@ export const credentialIssuedHandler = async (
   reply: FastifyReply,
 ) => {
   const {
-    event: {
-      data: {
-        registrationId: transactionId,
-        credential: {
-          credentialSubject: { VID },
-        },
-      },
-    },
-  } = request.body;
-
-  const { token, registrationNumber } = getTransactionAndDiscard(transactionId);
+    credentialSubject: { VID, id },
+  } = decryptMosipCredential(request.body.event.data.credential);
+  const { token, registrationNumber } = getTransactionAndDiscard(id);
   const { recordId } = decode(token) as { recordId: string };
 
   await opencrvs.confirmRegistration(
