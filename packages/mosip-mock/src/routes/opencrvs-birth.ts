@@ -1,7 +1,8 @@
 import { RouteHandlerMethod } from "fastify";
 import { createAid, createNid } from "../random-identifiers";
 import { sendEmail } from "../mailer";
-import { env } from "../constants";
+import { DECRYPT_IDA_AUTH_PRIVATE_KEY, env } from "../constants";
+import { encryptMosipCredential } from "../websub/crypto";
 
 const sendNid = async ({
   id,
@@ -43,20 +44,23 @@ const sendNid = async ({
           ExpiryTimestamp: timestamp,
           TransactionLimit: null,
           // @TODO: `credential` is going to be encrypted
-          credential: {
-            issuedTo: "patner-opencrvs-i1",
-            protectedAttributes: [],
-            issuanceDate: timestamp,
-            credentialSubject: {
-              id,
-              birthCertificateNumber,
-              VID: nid,
+          credential: encryptMosipCredential(
+            {
+              issuedTo: "patner-opencrvs-i1",
+              protectedAttributes: [],
+              issuanceDate: timestamp,
+              credentialSubject: {
+                id,
+                birthCertificateNumber,
+                VID: nid,
+              },
+              id: "http://mosip.io/credentials/04f7a758-b7c7-4f7e-9d97-546204dfc6bb",
+              type: ["MOSIPVerifiableCredential"],
+              consent: "",
+              issuer: "https://mosip.io/issuers/",
             },
-            id: "http://mosip.io/credentials/04f7a758-b7c7-4f7e-9d97-546204dfc6bb",
-            type: ["MOSIPVerifiableCredential"],
-            consent: "",
-            issuer: "https://mosip.io/issuers/",
-          },
+            DECRYPT_IDA_AUTH_PRIVATE_KEY,
+          ),
           proof: {
             signature: "abcdefg", // @TODO: Abdul is working on this
           },

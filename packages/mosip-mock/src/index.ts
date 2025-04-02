@@ -4,7 +4,7 @@ import { EMAIL_ENABLED, env } from "./constants";
 import { opencrvsBirthHandler } from "./routes/opencrvs-birth";
 import { deactivateNidHandler } from "./routes/deactivate-nid";
 import { idAuthenticationHandler } from "./ida-auth-sdk/id-authentication";
-import { webSubHubHandler } from "./routes/websub-hub";
+import { webSubHubHandler } from "./websub/websub-hub";
 import { packetManagerAuthHandler } from "./routes/packet-manager-auth";
 
 const app = Fastify();

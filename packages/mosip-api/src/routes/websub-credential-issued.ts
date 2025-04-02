@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { env } from "../constants";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { getTransactionAndDiscard } from "../database";
 import { decode } from "jsonwebtoken";

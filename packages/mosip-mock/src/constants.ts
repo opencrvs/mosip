@@ -11,7 +11,7 @@ export const env = cleanEnv(process.env, {
   }),
 
   DECRYPT_IDA_AUTH_PRIVATE_KEY_PATH: str({
-    default: join(__dirname, "./mock-only-ida-partner.pem"),
+    default: join(__dirname, "./mock-only-private-key.pem"),
   }),
 
   /*
