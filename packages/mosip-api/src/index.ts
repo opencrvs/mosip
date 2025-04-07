@@ -1,4 +1,4 @@
-import Fastify, { FastifyInstance } from "fastify";
+import Fastify, { FastifyError, FastifyInstance } from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
@@ -89,8 +89,11 @@ export const buildFastify = async () => {
     reply.status(500).send({ error: "An unexpected error occurred" });
   });
 
+  let corePublicKey = await getPublicKey();
+  let publicKeyUpdatedAt = Date.now();
+
   app.register(jwt, {
-    secret: { public: await getPublicKey() },
+    secret: { public: corePublicKey },
     verify: { algorithms: ["RS256"] },
   });
 
@@ -103,9 +106,29 @@ export const buildFastify = async () => {
     try {
       await request.jwtVerify();
     } catch (err) {
-      app.log.error(err);
+      const error = err as FastifyError;
 
-      reply.code(401).send({ error: "Unauthorized" });
+      const moreThanAMinuteSinceLastUpdate =
+        Date.now() - publicKeyUpdatedAt > 60_000;
+
+      if (
+        error.code === "FST_JWT_AUTHORIZATION_TOKEN_INVALID" &&
+        moreThanAMinuteSinceLastUpdate
+      ) {
+        app.log.info("🔁 JWT failed, refreshing public key...");
+        try {
+          corePublicKey = await getPublicKey();
+          publicKeyUpdatedAt = Date.now();
+          await request.jwtVerify();
+          return;
+        } catch (retryErr) {
+          app.log.error("🔐 JWT retry failed:", retryErr);
+        }
+      } else {
+        app.log.error("🔐 JWT verify failed:", err);
+      }
+
+      return reply.code(401).send({ error: "Unauthorized" });
     }
   });
 
