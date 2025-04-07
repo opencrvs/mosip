@@ -26,6 +26,8 @@ export const idAuthenticationHandler: RouteHandlerMethod = async (
     DECRYPT_IDA_AUTH_PRIVATE_KEY,
   );
 
+  console.log(authParams);
+
   const identity = identities.find(({ nid }) => nid === individualId);
 
   if (!identity) {
@@ -62,6 +64,26 @@ export const idAuthenticationHandler: RouteHandlerMethod = async (
           errorCode: "IDA-DEA-001",
           errorMessage: "Demographic data name in eng did not match",
           actionMessage: "Please re-enter your name in eng",
+        },
+      ],
+      responseTime: new Date().toISOString(),
+      response: {
+        authStatus: false,
+        authToken,
+      },
+    };
+  }
+
+  if (authParams.demographics.dob !== identity.birthDate.replaceAll("-", "/")) {
+    return {
+      transactionID,
+      version: "1.0",
+      id: "mosip.identity.auth",
+      errors: [
+        {
+          errorCode: "IDA-DEA-001",
+          errorMessage: "Demographic data dob did not match",
+          actionMessage: "Please re-enter your dob",
         },
       ],
       responseTime: new Date().toISOString(),
