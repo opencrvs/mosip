@@ -2,7 +2,7 @@ import * as crypto from "crypto";
 
 export const createNid = async () => {
   await new Promise((resolve) => setTimeout(resolve, 10000));
-  return Array.from({ length: 15 }, () => Math.floor(Math.random() * 10)).join(
+  return Array.from({ length: 10 }, () => Math.floor(Math.random() * 10)).join(
     "",
   );
 };
