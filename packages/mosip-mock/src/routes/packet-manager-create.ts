@@ -120,3 +120,31 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
     errors: [],
   });
 };
+
+/** Handles the births coming from OpenCRVS */
+export const packetManagerProcessHandler: RouteHandlerMethod = async (
+  request,
+  reply,
+) => {
+  const {
+    request: { id, refId },
+  } = request.body as CrvsNewRequest;
+
+  // @TODO: Amend when we know how the WebSub responds
+
+  // sendNid({ token, eventId: event.id, trackingId: event.trackingId }).catch(
+  //   (e) => {
+  //     console.error(e);
+  //   },
+  // );
+
+  return reply.status(200).send({
+    id: "mosip.registration.processor.workflow.instance",
+    version: "v1",
+    responsetime: new Date().toISOString(),
+    response: {
+      workflowInstanceId: "dd9f218b-279c-4d93-8cda-9857976293ea",
+    },
+    errors: null,
+  });
+};

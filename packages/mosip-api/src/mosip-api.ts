@@ -1,6 +1,7 @@
 import { env } from "./constants";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
 import { OpenCRVSRequest } from "./routes/event-registration";
+import { schemaJson } from "./types/idSchemaJson";
 
 export class MOSIPError extends Error {
   constructor(message: string) {
@@ -10,31 +11,23 @@ export class MOSIPError extends Error {
 }
 
 export async function getMosipAuthToken() {
-  console.log(
-    "env.MOSIP_AUTH_URL: ",
-    env.MOSIP_AUTH_URL,
-    env.MOSIP_AUTH_CLIENT_ID,
-    env.MOSIP_AUTH_CLIENT_SECRET,
-  );
   const response = await fetch(env.MOSIP_AUTH_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       // cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`,
     },
-    body: `
-    {
-      "id": "string",
-      "version": "string",
-      "requesttime": "2025-03-11T02:53:07.206Z",
-      "metadata": {},
-        "request": {
-            "clientId": "${env.MOSIP_AUTH_CLIENT_ID}",
-            "secretKey": "${env.MOSIP_AUTH_CLIENT_SECRET}",
-            "appId": "admin"
-        }
-    }
-    `,
+    body: JSON.stringify({
+      id: "string",
+      version: "string",
+      requesttime: new Date().toISOString(),
+      metadata: {},
+      request: {
+        clientId: env.MOSIP_AUTH_CLIENT_ID,
+        secretKey: env.MOSIP_AUTH_CLIENT_SECRET,
+        appId: "admin",
+      },
+    }),
   });
 
   if (!response.ok) {
@@ -74,6 +67,7 @@ export const postBirthRecord = async ({
 }: {
   event: {
     id: string;
+    trackingId: string;
   };
   token: string;
   request: OpenCRVSRequest;
@@ -81,7 +75,7 @@ export const postBirthRecord = async ({
   const { compositionId, ...requestFields } = request.body;
   const requestBody = JSON.stringify(
     {
-      id: event.id,
+      id: "string",
       version: "string",
       requesttime: new Date().toISOString(),
       request: {
@@ -95,7 +89,7 @@ export const postBirthRecord = async ({
         metaInfo: {
           metaData:
             '[{\n  "label" : "registrationType",\n  "value" : "CRVS_NEW"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
-          registrationId: "789456125",
+          registrationId: "652042703244",
           operationsData:
             '[{\n  "label" : "officerId",\n  "value" : "sithara.bevolv"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
           capturedRegisteredDevices: "[]",
@@ -114,7 +108,7 @@ export const postBirthRecord = async ({
             applicationName: "REGISTRATION",
             sessionUserId: "suraj",
             sessionUserName: "suraj m",
-            id: event.id,
+            id: "652042703244",
             idType: "REGISTRATION_ID",
             createdBy: "suraj m",
             moduleName: "Packet Handler",
@@ -123,8 +117,7 @@ export const postBirthRecord = async ({
             actionTimeStamp: new Date().toISOString(),
           },
         ],
-        schemaJson:
-          '{\n\t"$schema": "http://json-schema.org/draft-07/schema#",\n\t"description": "Tonga digital identity for ID Hub",\n\t"additionalProperties": false,\n\t"title": "Tonga identity",\n\t"type": "object",\n\t"definitions": {\n\t\t"simpleType": {\n\t\t\t"uniqueItems": true,\n\t\t\t"additionalItems": false,\n\t\t\t"type": "array",\n\t\t\t"items": {\n\t\t\t\t"additionalProperties": false,\n\t\t\t\t"type": "object",\n\t\t\t\t"required": [\n\t\t\t\t\t"language",\n\t\t\t\t\t"value"\n\t\t\t\t],\n\t\t\t\t"properties": {\n\t\t\t\t\t"language": {\n\t\t\t\t\t\t"type": "string"\n\t\t\t\t\t},\n\t\t\t\t\t"value": {\n\t\t\t\t\t\t"type": "string"\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t"documentType": {\n\t\t\t"additionalProperties": false,\n\t\t\t"type": "object",\n\t\t\t"properties": {\n\t\t\t\t"format": {\n\t\t\t\t\t"type": "string"\n\t\t\t\t},\n\t\t\t\t"type": {\n\t\t\t\t\t"type": "string"\n\t\t\t\t},\n\t\t\t\t"value": {\n\t\t\t\t\t"type": "string"\n\t\t\t\t},\n\t\t\t\t"refNumber": {\n\t\t\t\t\t"type": [\n\t\t\t\t\t\t"string",\n\t\t\t\t\t\t"null"\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n\t\t},\n\t\t"biometricsType": {\n\t\t\t"additionalProperties": false,\n\t\t\t"type": "object",\n\t\t\t"properties": {\n\t\t\t\t"format": {\n\t\t\t\t\t"type": "string"\n\t\t\t\t},\n\t\t\t\t"version": {\n\t\t\t\t\t"type": "number",\n\t\t\t\t\t"minimum": 0\n\t\t\t\t},\n\t\t\t\t"value": {\n\t\t\t\t\t"type": "string"\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t},\n\t"properties": {\n\t\t"identity": {\n\t\t\t"additionalProperties": false,\n\t\t\t"type": "object",\n\t\t\t"required": [\n\t\t\t\t"IDSchemaVersion",\n\t\t\t\t"fullName",\n\t\t\t\t"dateOfBirth",\n\t\t\t\t"gender",\n\t\t\t\t"addressLine1"\n\t\t\t],\n\t\t\t"properties": {\n\t\t\t\t"proofOfAddress": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"gender": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"sex": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"city": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{0,50}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"postalCode": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^[(?i)A-Z0-9]{5}$|^NA$",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"proofOfException-1": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "evidence",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"referenceIdentityNumber": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^([0-9]{10,30})$",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "kyc",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"individualBiometrics": {\n\t\t\t\t\t"bioAttributes": [\n\t\t\t\t\t\t"leftEye",\n\t\t\t\t\t\t"rightEye",\n\t\t\t\t\t\t"rightIndex",\n\t\t\t\t\t\t"rightLittle",\n\t\t\t\t\t\t"rightRing",\n\t\t\t\t\t\t"rightMiddle",\n\t\t\t\t\t\t"leftIndex",\n\t\t\t\t\t\t"leftLittle",\n\t\t\t\t\t\t"leftRing",\n\t\t\t\t\t\t"leftMiddle",\n\t\t\t\t\t\t"leftThumb",\n\t\t\t\t\t\t"rightThumb",\n\t\t\t\t\t\t"face"\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/biometricsType"\n\t\t\t\t},\n\t\t\t\t"province": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{0,50}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"zone": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"proofOfDateOfBirth": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"addressLine1": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{0,50}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"addressLine2": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{3,50}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"residenceStatus": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "kyc",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"addressLine3": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{3,50}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"district": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{1,100}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"village": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{1,100}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"email": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^[A-Za-z0-9_\\\\-]+(\\\\.[A-Za-z0-9_]+)*@[A-Za-z0-9_-]+(\\\\.[A-Za-z0-9_]+)*(\\\\.[a-zA-Z]{2,})$",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"introducerRID": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "evidence",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"introducerBiometrics": {\n\t\t\t\t\t"bioAttributes": [\n\t\t\t\t\t\t"leftEye",\n\t\t\t\t\t\t"rightEye",\n\t\t\t\t\t\t"rightIndex",\n\t\t\t\t\t\t"rightLittle",\n\t\t\t\t\t\t"rightRing",\n\t\t\t\t\t\t"rightMiddle",\n\t\t\t\t\t\t"leftIndex",\n\t\t\t\t\t\t"leftLittle",\n\t\t\t\t\t\t"leftRing",\n\t\t\t\t\t\t"leftMiddle",\n\t\t\t\t\t\t"leftThumb",\n\t\t\t\t\t\t"rightThumb",\n\t\t\t\t\t\t"face"\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/biometricsType"\n\t\t\t\t},\n\t\t\t\t"fullName": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{3,50}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"dateOfBirth": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(1869|18[7-9][0-9]|19[0-9][0-9]|20[0-9][0-9])/([0][1-9]|1[0-2])/([0][1-9]|[1-2][0-9]|3[01])$",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"individualAuthBiometrics": {\n\t\t\t\t\t"bioAttributes": [\n\t\t\t\t\t\t"leftEye",\n\t\t\t\t\t\t"rightEye",\n\t\t\t\t\t\t"rightIndex",\n\t\t\t\t\t\t"rightLittle",\n\t\t\t\t\t\t"rightRing",\n\t\t\t\t\t\t"rightMiddle",\n\t\t\t\t\t\t"leftIndex",\n\t\t\t\t\t\t"leftLittle",\n\t\t\t\t\t\t"leftRing",\n\t\t\t\t\t\t"leftMiddle",\n\t\t\t\t\t\t"leftThumb",\n\t\t\t\t\t\t"rightThumb",\n\t\t\t\t\t\t"face"\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/biometricsType"\n\t\t\t\t},\n\t\t\t\t"introducerUIN": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "evidence",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"proofOfIdentity": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"IDSchemaVersion": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "none",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "number",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"minimum": 0\n\t\t\t\t},\n\t\t\t\t"proofOfException": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "evidence",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"phone": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^[+]*([0-9]{1})([0-9]{9})$",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"guardianOrParentName": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{1,100}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"guardianOrParentBirthCertificateNumber": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"handle": true\n\t\t\t\t},\n\t\t\t\t"residentStatus": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"introducerName": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "evidence",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"proofOfRelationship": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"UIN": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "none",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"vid": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "none",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "default"\n\t\t\t\t},\n\t\t\t\t"birthCertificateNumber": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"handle": true\n\t\t\t\t},\n\t\t\t\t"passportNumber": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"handle": true\n\t\t\t\t},\n\t\t\t\t"nationalIdNumber": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"handle": true\n\t\t\t\t},\n\t\t\t\t"drivingLicenseNumber": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"handle": true\n\t\t\t\t},\n\t\t\t\t"birthRegistrationCertificate": {\n\t\t\t\t  "bioAttributes": [],\n\t\t\t\t  "fieldCategory": "evidence",\n\t\t\t\t  "format": "none",\n\t\t\t\t  "fieldType": "default",\n\t\t\t\t  "$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"passportId": {\n\t\t\t\t  "bioAttributes": [],\n\t\t\t\t  "fieldCategory": "evidence",\n\t\t\t\t  "format": "none",\n\t\t\t\t  "fieldType": "default",\n\t\t\t\t  "$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"nationalId": {\n\t\t\t\t  "bioAttributes": [],\n\t\t\t\t  "fieldCategory": "evidence",\n\t\t\t\t  "format": "none",\n\t\t\t\t  "fieldType": "default",\n\t\t\t\t  "$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"drivingLicenseId": {\n\t\t\t\t  "bioAttributes": [],\n\t\t\t\t  "fieldCategory": "evidence",\n\t\t\t\t  "format": "none",\n\t\t\t\t  "fieldType": "default",\n\t\t\t\t  "$ref": "#/definitions/documentType"\n\t\t\t\t},\n\t\t\t\t"deceasedStatus": {\n\t\t\t\t  "bioAttributes": [],\n\t\t\t\t  "fieldCategory": "kyc",\n\t\t\t\t  "format": "none",\n\t\t\t\t  "fieldType": "default",\n\t\t\t\t  "type": "boolean"\n\t\t\t\t},\n\t\t\t\t"preferredLang": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"type": "string",\n\t\t\t\t\t"fieldType": "dynamic"\n\t\t\t\t},\n\t\t\t\t"region": {\n\t\t\t\t\t"bioAttributes": [],\n\t\t\t\t\t"validators": [\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t"validator": "^(?=.{0,50}$).*",\n\t\t\t\t\t\t\t"arguments": [],\n\t\t\t\t\t\t\t"type": "regex"\n\t\t\t\t\t\t}\n\t\t\t\t\t],\n\t\t\t\t\t"fieldCategory": "pvt",\n\t\t\t\t\t"format": "none",\n\t\t\t\t\t"fieldType": "default",\n\t\t\t\t\t"$ref": "#/definitions/simpleType"\n\t\t\t\t},\n\t\t\t\t"selectedHandles": {\n\t\t\t\t  "fieldCategory": "none",\n\t\t\t\t  "format": "none",\n\t\t\t\t  "type": "array",\n\t\t\t\t  "items": { "type": "string" },\n\t\t\t\t  "fieldType": "default"\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n}',
+        schemaJson: schemaJson,
       },
     },
     null,
@@ -134,7 +127,7 @@ export const postBirthRecord = async ({
   const authToken = await getMosipAuthToken();
 
   // packet manager: create packet
-  const response = await fetch(env.MOSIP_PACKET_MANAGER_URL, {
+  const createPacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
     method: "POST",
     body: requestBody,
     headers: {
@@ -143,32 +136,181 @@ export const postBirthRecord = async ({
     },
   });
 
-  if (!response.ok) {
+  if (!createPacketResponse.ok) {
     throw new Error(
-      `Failed sending record to MOSIP, response: ${await response.text()}`,
+      `Failed sending record to MOSIP, response: ${await createPacketResponse.text()}`,
     );
   }
 
-  const responseJson = await response.json();
-  console.log("responseJson: ", responseJson);
+  const responseJson = await createPacketResponse.json();
 
   // packet manager: process packet API.
+  const processPacketRequestBody = JSON.stringify(
+    {
+      id: "mosip.registration.processor.workflow.instance",
+      requesttime: new Date().toISOString(),
+      version: "v1",
+      request: {
+        registrationId: "652042703244",
+        process: "CRVS_NEW",
+        source: "OPENCRVS",
+        additionalInfoReqId: "",
+        notificationInfo: {
+          name: "Sample Name", // informant details should be passed in here.
+          phone: requestFields?.contactPersonPhoneNumber || "",
+          email: requestFields?.email || "",
+        },
+      },
+    },
+    null,
+    2,
+  );
 
-  return responseJson as Promise<{
-    aid: string;
-  }>;
-};
-
-export const deactivateNid = async ({ nid }: { nid: string }) => {
-  const response = await fetch(env.MOSIP_DEATH_WEBHOOK_URL, {
+  const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
     method: "POST",
-    body: JSON.stringify({ nid }),
+    body: processPacketRequestBody,
     headers: {
       "Content-Type": "application/json",
+      Cookie: `Authorization=${authToken};`,
     },
   });
 
-  return response;
+  if (!processPacketResponse.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await processPacketResponse.text()}`,
+    );
+  }
+
+  const processPacketResponseJson = await processPacketResponse.json();
+
+  if (processPacketResponseJson?.errors?.length > 0) {
+    throw new Error(
+      `Error in processing packet, response: ${await processPacketResponseJson?.errors[0]?.message}`,
+    );
+  }
+
+  // return processPacketResponseJson.response.workflowInstanceId as Promise<{
+  //   aid: string;
+  // }>;
+};
+
+export const deactivateNid = async (request: OpenCRVSRequest) => {
+  const authToken = await getMosipAuthToken();
+
+  const deactivatePacketRequestBody = JSON.stringify({
+    id: "string",
+    version: "string",
+    requesttime: new Date().toISOString(),
+    request: {
+      id: "65204270321266",
+      refId: "10018_10084",
+      offlineMode: false,
+      process: "CRVS_DEATH",
+      source: "OPENCRVS",
+      schemaVersion: "0.300",
+      fields: {
+        UIN: "6520427661", // UIN to be passed from MOSIP when birth is created.
+        deathDeclared: "yes",
+        dateOfDeath: new Date().toISOString().slice(0, 10).replace(/-/g, "/"),
+      },
+      metaInfo: {
+        metaData:
+          '[{\n  "label" : "registrationType",\n  "value" : "CRVS_DEATH"\n}, {\n  "label" : "machineId",\n  "value" : "10084"\n}, {\n  "label" : "centerId",\n  "value" : "10018"\n}]',
+        registrationId: "65204270321266",
+        operationsData:
+          '[{\n  "label" : "officerId",\n  "value" : "nambi"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
+        capturedRegisteredDevices: "[]",
+        creationDate: "20250225110733",
+      },
+      audits: [
+        {
+          uuid: "c75a6315-96e9-4a3f-bcda-2432ec354336",
+          createdAt: new Date().toISOString(),
+          eventId: "REG-EVT-066",
+          eventName: "PACKET_CREATION_SUCCESS",
+          eventType: "USER",
+          hostName: "desktop-62k46ah",
+          hostIp: "localhost",
+          applicationId: "REG",
+          applicationName: "REGISTRATION",
+          sessionUserId: "suraj",
+          sessionUserName: "suraj m",
+          id: "65204270321266",
+          idType: "REGISTRATION_ID",
+          createdBy: "suraj m",
+          moduleName: "Packet Handler",
+          moduleId: "REG-MOD-117",
+          description: "Packet Succesfully Created",
+          actionTimeStamp: new Date().toISOString(),
+        },
+      ],
+      schemaJson: schemaJson,
+    },
+  });
+
+  // packet manager: deactivate packet
+  const deactivatePacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
+    method: "PUT",
+    body: deactivatePacketRequestBody,
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `Authorization=${authToken};`,
+    },
+  });
+
+  if (!deactivatePacketResponse.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await deactivatePacketResponse.text()}`,
+    );
+  }
+
+  const responseJson = await deactivatePacketResponse.json();
+
+  // packet manager: process packet API.
+  const processPacketRequestBody = JSON.stringify(
+    {
+      id: "mosip.registration.processor.workflow.instance",
+      requesttime: new Date().toISOString(),
+      version: "v1",
+      request: {
+        registrationId: "65204270321266",
+        process: "CRVS_DEATH",
+        source: "OPENCRVS",
+        additionalInfoReqId: "",
+        notificationInfo: {
+          name: "John Doe", // informant details should be passed in here.
+          phone: request?.body?.contactPersonPhoneNumber || "",
+          email: request?.body?.email || "",
+        },
+      },
+    },
+    null,
+    2,
+  );
+
+  const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
+    method: "POST",
+    body: processPacketRequestBody,
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `Authorization=${authToken};`,
+    },
+  });
+
+  if (!processPacketResponse.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await processPacketResponse.text()}`,
+    );
+  }
+
+  const processPacketResponseJson = await processPacketResponse.json();
+
+  if (processPacketResponseJson?.errors?.length > 0) {
+    throw new Error(
+      `Error in processing packet, response: ${await processPacketResponseJson?.errors[0]?.message}`,
+    );
+  }
+  // return processPacketResponse;
 };
 
 export const verifyNid = async ({

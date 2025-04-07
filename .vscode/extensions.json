@@ -1,3 +1,8 @@
 {
-  "recommendations": ["apollographql.vscode-apollo"]
+  "recommendations": [
+    "apollographql.vscode-apollo",
+    "qwtel.sqlite-viewer",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode"
+  ]
 }

@@ -18,6 +18,7 @@ import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
 import { OIDPUserInfoHandler } from "./routes/oidp-user-info";
+import { initSqlite } from "./database";
 
 const envToLogger = {
   development: {
@@ -95,6 +96,11 @@ export const buildFastify = async () => {
   });
 
   app.addHook("onRequest", async (request, reply) => {
+    // @TODO
+    // @NOTE Remove in production! This disables the JWT authentication for the MOSIP webhook
+    // As we don't have the WebSub documentation available yet, we don't fully know the authentication method so this is not built yet
+    if (request.routeOptions.url === "/webhooks/mosip") return;
+
     try {
       await request.jwtVerify();
     } catch (err) {
@@ -110,16 +116,28 @@ export const buildFastify = async () => {
 async function run() {
   const app = await buildFastify();
 
+  const { wasCreated, wasConnected, database } = initSqlite(
+    env.SQLITE_DATABASE_PATH,
+  );
+
+  wasCreated && app.log.info("SQLite token storage created 🚀✅ ");
+  wasConnected && app.log.info("SQLite token storage connected ✅");
+
   await app.ready();
   await app.listen({
     port: env.PORT,
     host: env.HOST,
+    listenTextResolver: () =>
+      `OpenCRVS-MOSIP API running at http://${env.HOST}:${env.PORT} ✅`,
   });
-
-  console.log(`OpenCRVS-MOSIP API running at http://${env.HOST}:${env.PORT}`);
-  console.log(
-    `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation`,
+  app.log.info(
+    `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation ✅`,
   );
+
+  process.on("exit", () => {
+    database.close();
+    app.close();
+  });
 }
 
 // Only run daemon if it's executed directly - as in `tsx index.ts` for example

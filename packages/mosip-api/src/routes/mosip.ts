@@ -1,21 +1,16 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { z } from "zod";
 import * as opencrvs from "../opencrvs-api";
-import { generateRegistrationNumber } from "../registration-number";
+import { getTransactionAndDiscard } from "../database";
+import { decode } from "jsonwebtoken";
 
 export const mosipNidSchema = z.object({
-  eventId: z
-    .string()
-    .describe("The identifier for the event (record) from OpenCRVS"),
-  trackingId: z
-    .string()
-    .describe("The tracking ID for the event (record) from OpenCRVS"),
+  request: z.object({
+    id: z
+      .string()
+      .describe("The tracking ID for the event (record) from OpenCRVS"),
+  }),
   nid: z.string().describe("The identifier for the registration from MOSIP"),
-  token: z
-    .string()
-    .describe(
-      "The one-time token from OpenCRVS. MOSIP should pass this through without using it.",
-    ),
 });
 
 type MosipRequest = FastifyRequest<{
@@ -27,12 +22,17 @@ export const mosipHandler = async (
   request: MosipRequest,
   reply: FastifyReply,
 ) => {
-  const { eventId, trackingId, nid, token } = request.body;
-  const registrationNumber = generateRegistrationNumber(trackingId);
+  const {
+    request: { id: transactionId },
+    nid,
+  } = request.body;
+
+  const { token, registrationNumber } = getTransactionAndDiscard(transactionId);
+  const { recordId } = decode(token) as { recordId: string };
 
   await opencrvs.confirmRegistration(
     {
-      id: eventId,
+      id: recordId,
       registrationNumber,
       identifiers: [{ type: "NATIONAL_ID", value: nid }],
     },
