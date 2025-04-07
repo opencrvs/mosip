@@ -26,8 +26,6 @@ export const idAuthenticationHandler: RouteHandlerMethod = async (
     DECRYPT_IDA_AUTH_PRIVATE_KEY,
   );
 
-  console.log(authParams);
-
   const identity = identities.find(({ nid }) => nid === individualId);
 
   if (!identity) {
