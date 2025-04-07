@@ -38,7 +38,7 @@ export async function getMosipAuthToken() {
   // Get the 'Set-Cookie' header from the response
   const cookie: string | null = response.headers.get("Set-Cookie");
 
-  if (!cookie || cookie === null) {
+  if (!cookie) {
     throw new MOSIPError(
       `Failed getting MOSIP auth token. Response: ${
         response.status
