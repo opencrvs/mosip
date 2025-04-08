@@ -105,12 +105,6 @@ export const env = cleanEnv(process.env, {
   SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
 
   // MOSIP packet manager details
-  MOSIP_AUTH_URL: str({
-    devDefault:
-      "http://localhost:20240/v1/authmanager/authenticate/clientidsecretkey",
-  }),
-  MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
-  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
   MOSIP_CREATE_PACKET_URL: str({
     devDefault: "http://localhost:20240/commons/v1/packetmanager/createPacket",
   }),
