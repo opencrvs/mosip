@@ -1,10 +1,8 @@
 import Fastify from "fastify";
 import formbody from "@fastify/formbody";
 import { EMAIL_ENABLED, env } from "./constants";
-import {
-  packetManagerCreateHandler,
-  packetManagerProcessHandler,
-} from "./routes/packet-manager-create";
+import { packetManagerCreateHandler } from "./routes/packet-manager-create";
+import { packetManagerProcessHandler } from "./routes/packet-manager-process";
 import { deactivateNidHandler } from "./routes/deactivate-nid";
 import { idAuthenticationHandler } from "./ida-auth-sdk/id-authentication";
 import { webSubHubHandler } from "./websub/websub-hub";
