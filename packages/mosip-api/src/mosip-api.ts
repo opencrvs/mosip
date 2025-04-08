@@ -72,7 +72,7 @@ export const postBirthRecord = async ({
   token: string;
   request: OpenCRVSRequest;
 }) => {
-  const { compositionId, ...requestFields } = request.body;
+  const { requestFields } = request.body;
   const requestBody = JSON.stringify(
     {
       id: "string",
@@ -156,9 +156,9 @@ export const postBirthRecord = async ({
         source: "OPENCRVS",
         additionalInfoReqId: "",
         notificationInfo: {
-          name: "Sample Name", // informant details should be passed in here.
-          phone: requestFields?.contactPersonPhoneNumber || "",
-          email: requestFields?.email || "",
+          name: request.body.notification.recipientFullName, // informant details should be passed in here.
+          phone: request.body.notification.recipientPhone || "",
+          email: request.body.notification.recipientEmail || "",
         },
       },
     },
@@ -194,7 +194,16 @@ export const postBirthRecord = async ({
   // }>;
 };
 
-export const deactivateNid = async (request: OpenCRVSRequest) => {
+export const deactivateNid = async ({
+  event,
+  request,
+}: {
+  event: {
+    id: string;
+    trackingId: string;
+  };
+  request: OpenCRVSRequest;
+}) => {
   const authToken = await getMosipAuthToken();
 
   const deactivatePacketRequestBody = JSON.stringify({
@@ -202,7 +211,7 @@ export const deactivateNid = async (request: OpenCRVSRequest) => {
     version: "string",
     requesttime: new Date().toISOString(),
     request: {
-      id: "65204270321266",
+      id: event.id,
       refId: "10018_10084",
       offlineMode: false,
       process: "CRVS_DEATH",
@@ -278,9 +287,9 @@ export const deactivateNid = async (request: OpenCRVSRequest) => {
         source: "OPENCRVS",
         additionalInfoReqId: "",
         notificationInfo: {
-          name: "John Doe", // informant details should be passed in here.
-          phone: request?.body?.contactPersonPhoneNumber || "",
-          email: request?.body?.email || "",
+          name: request.body.notification.recipientFullName, // informant details should be passed in here.
+          phone: request.body.notification.recipientPhone || "",
+          email: request.body.notification.recipientEmail || "",
         },
       },
     },

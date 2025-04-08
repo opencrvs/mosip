@@ -1,32 +1,43 @@
 type IdentityInfo = { value: string; language: string };
 
 interface MOSIPPayload
-  extends Record<string, IdentityInfo[] | string | boolean> {
+  extends Record<
+    string,
+    string | Record<string, boolean | string | IdentityInfo[]>
+  > {
   compositionId: string;
-  fullName: IdentityInfo[];
-  dateOfBirth: string;
-  gender: IdentityInfo[];
-  guardianOrParentName: IdentityInfo[];
-  nationalIdNumber: string;
-  passportNumber: string;
-  drivingLicenseNumber: string;
-  deceasedStatus: boolean;
-  residentStatus: IdentityInfo[];
-  vid: string;
-  email: string;
-  phone: string;
-  guardianOrParentBirthCertificateNumber: string;
-  birthCertificateNumber: string;
-  addressLine1: IdentityInfo[];
-  addressLine2: IdentityInfo[];
-  addressLine3: IdentityInfo[];
-  district: IdentityInfo[];
-  village: IdentityInfo[];
-  birthRegistrationCertificate: string;
-  passportId: string;
-  nationalId: string;
-  drivingLicenseId: string;
-  addressProof: string;
+  trackingId: string;
+  notification: {
+    recipientFullName: string;
+    recipientEmail: string;
+    recipientPhone: string;
+  };
+  requestFields: {
+    fullName: IdentityInfo[];
+    dateOfBirth: string;
+    gender: IdentityInfo[];
+    guardianOrParentName: IdentityInfo[];
+    nationalIdNumber: string;
+    passportNumber: string;
+    drivingLicenseNumber: string;
+    deceasedStatus: boolean;
+    residenceStatus: IdentityInfo[];
+    vid: string;
+    email: string;
+    phone: string;
+    guardianOrParentBirthCertificateNumber: string;
+    birthCertificateNumber: string;
+    addressLine1: IdentityInfo[];
+    addressLine2: IdentityInfo[];
+    addressLine3: IdentityInfo[];
+    district: IdentityInfo[];
+    village: IdentityInfo[];
+    birthRegistrationCertificate: string;
+    passportId: string;
+    nationalId: string;
+    drivingLicenseId: string;
+    addressProof: string;
+  };
 }
 
 type Resolver = (bundle: fhir3.Bundle) => MOSIPPayload[keyof MOSIPPayload];

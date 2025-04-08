@@ -19,33 +19,43 @@ export const opencrvsRecordSchema = z.unknown().describe("Record as any");
 type IdentityInfo = { value: string; language: string };
 
 interface MOSIPPayload
-  extends Record<string, IdentityInfo[] | string | boolean> {
+  extends Record<
+    string,
+    string | Record<string, boolean | string | IdentityInfo[]>
+  > {
   compositionId: string;
   trackingId: string;
-  fullName: IdentityInfo[];
-  dateOfBirth: string;
-  gender: IdentityInfo[];
-  guardianOrParentName: IdentityInfo[];
-  nationalIdNumber: string;
-  passportNumber: string;
-  drivingLicenseNumber: string;
-  deceasedStatus: boolean;
-  residentStatus: IdentityInfo[];
-  vid: string;
-  email: string;
-  phone: string;
-  guardianOrParentBirthCertificateNumber: string;
-  birthCertificateNumber: string;
-  addressLine1: IdentityInfo[];
-  addressLine2: IdentityInfo[];
-  addressLine3: IdentityInfo[];
-  district: IdentityInfo[];
-  village: IdentityInfo[];
-  birthRegistrationCertificate: string;
-  passportId: string;
-  nationalId: string;
-  drivingLicenseId: string;
-  addressProof: string;
+  notification: {
+    recipientFullName: string;
+    recipientEmail: string;
+    recipientPhone: string;
+  };
+  requestFields: {
+    fullName: IdentityInfo[];
+    dateOfBirth: string;
+    gender: IdentityInfo[];
+    guardianOrParentName: IdentityInfo[];
+    nationalIdNumber: string;
+    passportNumber: string;
+    drivingLicenseNumber: string;
+    deceasedStatus: boolean;
+    residenceStatus: IdentityInfo[];
+    vid: string;
+    email: string;
+    phone: string;
+    guardianOrParentBirthCertificateNumber: string;
+    birthCertificateNumber: string;
+    addressLine1: IdentityInfo[];
+    addressLine2: IdentityInfo[];
+    addressLine3: IdentityInfo[];
+    district: IdentityInfo[];
+    village: IdentityInfo[];
+    birthRegistrationCertificate: string;
+    passportId: string;
+    nationalId: string;
+    drivingLicenseId: string;
+    addressProof: string;
+  };
 }
 
 export type OpenCRVSRequest = FastifyRequest<{
@@ -57,7 +67,7 @@ export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  const { compositionId: eventId, trackingId, ...requestFields } = request.body;
+  const { trackingId, requestFields } = request.body;
 
   const token = request.headers.authorization!.split(" ")[1];
 
@@ -90,7 +100,11 @@ export const registrationEventHandler = async (
   }
 
   if (eventType === EVENT_TYPE.DEATH) {
-    await mosip.deactivateNid(request);
+    const transactionId = generateTransactionId();
+    await mosip.deactivateNid({
+      event: { id: transactionId, trackingId },
+      request,
+    });
 
     //   let nid;
 
