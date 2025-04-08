@@ -5,15 +5,18 @@ import fs from "node:fs";
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 20240 }),
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
-  OPENCRVS_MOSIP_API_URL: str({
-    devDefault: "http://localhost:2024/webhooks/mosip",
-    desc: "The URL where @opencrvs/mosip/mosip-api receives webhooks from MOSIP",
-  }),
-
   SENDER_EMAIL_ADDRESS: email({
     default: "noreply@opencrvs.org",
     desc: "The email address that will be used to send emails such as mock NID card and NID (de)activation.",
   }),
+
+  DECRYPT_IDA_AUTH_PRIVATE_KEY_PATH: str({
+    default: join(__dirname, "./mock-only-private-key.pem"),
+  }),
+
+  /*
+   * SMTP configuration to send mock NID card and NID (de)activation emails
+   */
   ALERT_EMAIL: str({
     devDefault: undefined,
     desc: "The email address that will be used to send alert emails.",
@@ -26,8 +29,17 @@ export const env = cleanEnv(process.env, {
   SMTP_USERNAME: str({ devDefault: undefined }),
   SMTP_PASSWORD: str({ devDefault: undefined }),
   SMTP_SECURE: bool({ devDefault: false }),
-  DECRYPT_IDA_AUTH_PRIVATE_KEY_PATH: str({
-    default: join(__dirname, "./mock-only-ida-partner.pem"),
+
+  /**
+   * MOSIP WebSub hub
+   */
+  MOSIP_WEBSUB_TOPIC: str({
+    default: "CREDENTIAL_ISSUED",
+    desc: "The Kafka topic that is listened for ID credential issuance",
+  }),
+  MOSIP_WEBSUB_CALLBACK_URL: str({
+    devDefault: "http://localhost:2024/websub/callback",
+    desc: "The URL where @opencrvs/mosip/mosip-api receives WebSub callbacks from MOSIP",
   }),
 });
 

@@ -1,7 +1,7 @@
 import { RouteHandlerMethod } from "fastify";
 
 export const packetManagerAuthHandler: RouteHandlerMethod = async (
-  request,
+  _request,
   reply,
 ) => {
   const token = "some-token";
