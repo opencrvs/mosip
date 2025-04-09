@@ -58,6 +58,4 @@ export const verifyCredentialOrThrow = async (
   // Step 4: Verify
   const fullJWS = `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
   await compactVerify(fullJWS, key); // throws if invalid
-
-  console.log("✅ Signature is valid");
 };
