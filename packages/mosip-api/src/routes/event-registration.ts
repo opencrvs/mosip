@@ -18,11 +18,7 @@ export const opencrvsRecordSchema = z.unknown().describe("Record as any");
 
 type IdentityInfo = { value: string; language: string };
 
-interface MOSIPPayload
-  extends Record<
-    string,
-    string | Record<string, boolean | string | IdentityInfo[]>
-  > {
+interface MOSIPPayload {
   compositionId: string;
   trackingId: string;
   notification: {

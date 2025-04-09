@@ -1,5 +1,6 @@
 import type * as Hapi from "@hapi/hapi";
 import fetch from "node-fetch";
+import { MOSIPPayload } from "./transform";
 
 interface VerificationStatus {
   father: boolean;
@@ -17,7 +18,7 @@ export const mosipRegistrationHandler = ({
 }: {
   url: string;
   headers: Record<string, string>;
-  payload: Record<string, unknown>;
+  payload: MOSIPPayload;
 }) =>
   (async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const MOSIP_API_REGISTRATION_EVENT_URL = new URL(
