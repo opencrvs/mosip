@@ -50,6 +50,11 @@ export const env = cleanEnv(process.env, {
     example: "https://your-domain.com/websub/callback",
     desc: "The OpenCRVS side URL MOSIP sends WebSub updates to, `hub.callback`",
   }),
+  MOSIP_VERIFIABLE_CREDENTIAL_ALLOWLIST: str({
+    devDefault: "http://localhost:20240/.well-known/public-key.json#keys-1",
+    example: "https://your-domain.com/.well-known/public-key.json#keys-1",
+    desc: "Comma-separated list of verifiable credential allowlist URLs. Used to verify the authenticity of the verifiable credential.",
+  }),
 
   // MOSIP Birth & Death packets
   TRANSACTION_ID_PREFIX: str({
@@ -113,3 +118,6 @@ export const env = cleanEnv(process.env, {
       "http://localhost:20240/registrationprocessor/v1/workflowmanager/workflowinstance",
   }),
 });
+
+export const MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS =
+  env.MOSIP_VERIFIABLE_CREDENTIAL_ALLOWLIST.split(",");

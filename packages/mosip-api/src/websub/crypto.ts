@@ -1,10 +1,9 @@
-import { importPKCS8, jwtDecrypt } from "jose";
 import { asn1, pkcs12, pki, md } from "node-forge";
-import { join } from "node:path";
 import { env } from "../constants";
 import fs from "node:fs";
 import { z } from "zod";
 import crypto from "node:crypto";
+import { MOSIPVerifiableCredential } from "./verify-vc";
 
 /**
  * Reads and extracts private key and certificate from a PKCS#12 file.
@@ -57,7 +56,6 @@ const { privateKeyPkcs8 } = extractKeysFromPkcs12(
 
 export const Credential = z.object({
   id: z.string(),
-  issuedTo: z.string(),
   issuanceDate: z.string().datetime(),
   credentialSubject: z.object({
     birthCertificateNumber: z.string(),
@@ -121,5 +119,5 @@ export function decryptMosipCredential(
   ]);
 
   const decryptedJson = JSON.parse(decrypted.toString("utf-8"));
-  return Credential.parse(decryptedJson);
+  return MOSIPVerifiableCredential.parse(decryptedJson);
 }

@@ -1,8 +1,48 @@
 import { RouteHandlerMethod } from "fastify";
 import { createNid } from "../random-identifiers";
 import { sendEmail } from "../mailer";
-import { DECRYPT_IDA_AUTH_PRIVATE_KEY, env } from "../constants";
+import { PRIVATE_KEY, env } from "../constants";
 import { encryptMosipCredential } from "../websub/crypto";
+import crypto from "node:crypto";
+import { createMockVC } from "../verifiable-credentials/issue";
+
+const privateKey = crypto.createPrivateKey(PRIVATE_KEY);
+const publicKey = crypto.createPublicKey(privateKey);
+
+const createMosipVerifiableCredential = ({
+  id,
+  timestamp,
+  nid,
+}: {
+  id: string;
+  timestamp: string;
+  nid: string;
+}) => ({
+  issuanceDate: timestamp,
+  credentialSubject: {
+    birthCertificateNumber: "8888888838884334",
+    VID: nid,
+    id: "http://credential.idrepo/credentials/" + id,
+    vcVer: "VC-V1",
+  },
+  id: "http://credential.idrepo/credentials/" + crypto.randomUUID(),
+  proof: {
+    type: "RsaSignature2018",
+    created: timestamp,
+    proofPurpose: "assertionMethod",
+    verificationMethod:
+      "https://dev-api.identity.mosip.opencrvs.dev/.well-known/public-key.json",
+    jws: "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJ2OU4zMl9wbGlpdDZmWWt4VU5rVXNQLWVhZUhiM0RzWEJWdXpiQ3VhcHhNIiwiYWxnIjoiUFMyNTYifQ..OP0taxlU5cAcX7G8zYp-z_oaofiumftk_fWxN0S2sjQtxgx4JsLr1q6yElsKbYgbnSoLAKAmigQKWCAijnipYPccFIufRgMF5Gha3Kwr99Sg0XEG3PbwWoBMa_YVHe0CSE0oALwlejRmVQNA3rpfKxlrSqy9VV1FL0OwiE6X7MdxHnbxqbR11cZd2WT71bANPuj5CqdDN-SWr5urDjKDUntYvDC_SVy2o5FPXoi4BLvvbW5Uy6M4APDNKf3d3JoPXJPJd-JlP_tv-x-bY-V8mVwIG88cdYJLh2MFgE1sUJhxeBuAAT1jHxyCSe7PReTpbBltV1vsg5HvJwq7QKkaoQ",
+  },
+  type: ["VerifiableCredential", "MOSIPVerifiableCredential"],
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "https://dev-api.identity.mosip.opencrvs.dev/.well-known/mosip-context.json",
+    { sec: "https://w3id.org/security#" },
+  ],
+  issuer:
+    "https://dev-api.identity.mosip.opencrvs.dev/.well-known/controller.json",
+});
 
 const sendNid = async ({
   id,
@@ -24,50 +64,47 @@ const sendNid = async ({
 
   const timestamp = new Date().toISOString();
 
+  const verifiableCredential = await createMockVC({
+    id,
+    birthCertificateNumber,
+    vid: nid,
+  });
+
+  const body = JSON.stringify({
+    publisher: "CREDENTIAL_SERVICE",
+    topic: env.MOSIP_WEBSUB_TOPIC,
+    publishedOn: timestamp,
+    event: {
+      id: crypto.randomUUID(),
+      transactionId: crypto.randomUUID(),
+      type: {
+        namespace: "mosip",
+        name: "mosip",
+      },
+      timestamp,
+      data: {
+        registrationId: id,
+        templateTypeCode: "RPR_UIN_CARD_TEMPLATE",
+        ExpiryTimestamp: timestamp,
+        TransactionLimit: null,
+        credential: encryptMosipCredential(
+          JSON.stringify(verifiableCredential),
+          PRIVATE_KEY,
+        ),
+        proof: {
+          signature: "abcdefg", // @TODO: ..do we need this if we use verifiable credentials?
+        },
+        credentialType: "vercred",
+        protectionKey: "275700",
+      },
+    },
+  });
+
+  console.log(body, verifiableCredential);
+
   const response = await fetch(env.MOSIP_WEBSUB_CALLBACK_URL, {
     method: "POST",
-    body: JSON.stringify({
-      publisher: "CREDENTIAL_SERVICE",
-      topic: env.MOSIP_WEBSUB_TOPIC,
-      publishedOn: timestamp,
-      event: {
-        id: crypto.randomUUID(),
-        transactionId: crypto.randomUUID(),
-        type: {
-          namespace: "mosip",
-          name: "mosip",
-        },
-        timestamp,
-        data: {
-          registrationId: id,
-          templateTypeCode: "RPR_UIN_CARD_TEMPLATE",
-          ExpiryTimestamp: timestamp,
-          TransactionLimit: null,
-          credential: encryptMosipCredential(
-            {
-              issuedTo: "patner-opencrvs-i1",
-              protectedAttributes: [],
-              issuanceDate: timestamp,
-              credentialSubject: {
-                id,
-                birthCertificateNumber,
-                VID: nid,
-              },
-              id: "http://mosip.io/credentials/04f7a758-b7c7-4f7e-9d97-546204dfc6bb",
-              type: ["MOSIPVerifiableCredential"],
-              consent: "",
-              issuer: "https://mosip.io/issuers/",
-            },
-            DECRYPT_IDA_AUTH_PRIVATE_KEY,
-          ),
-          proof: {
-            signature: "abcdefg", // @TODO: Abdul is working on this
-          },
-          credentialType: "euin",
-          protectionKey: "275700",
-        },
-      },
-    }),
+    body,
     headers: {
       "Content-Type": "application/json",
     },

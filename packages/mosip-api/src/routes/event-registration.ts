@@ -44,13 +44,13 @@ export const registrationEventHandler = async (
     const transactionId = generateTransactionId();
     const registrationNumber = generateRegistrationNumber(trackingId);
 
-    insertTransaction(transactionId, token, registrationNumber);
-
     await mosip.postBirthRecord({
       event: { id: transactionId, trackingId },
       token,
       request,
     });
+
+    insertTransaction(transactionId, token, registrationNumber);
   }
 
   if (eventType === EVENT_TYPE.DEATH) {
