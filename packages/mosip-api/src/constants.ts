@@ -7,15 +7,13 @@ export const env = cleanEnv(process.env, {
   LOCALE: str({ devDefault: "en" }),
   SQLITE_DATABASE_PATH: str({
     devDefault: join(__dirname, "../../../data/sqlite/mosip-api.db"),
-    // A good production default, but needs a Docker volume
-    // default: "/data/sqlite/mosip-api.db",
+    example: "/data/sqlite/mosip-api.db", // A good production default, but needs a Docker volume
     desc: "Path to the SQLite database used to store a OpenCRVS record-only token with the MOSIP transaction ID. Note that you need to add a volume to the Docker container to persist the data.",
   }),
-  TRANSACTION_ID_PREFIX: str({
-    default: "10001",
-    desc: "Used to prefix the numeric transaction ID (1000101234567890) that is sent to MOSIP and received back",
+  CLIENT_APP_URL: url({
+    devDefault: "http://localhost:3000",
+    desc: "OpenCRVS client app URL for CORS",
   }),
-  CLIENT_APP_URL: url({ devDefault: "http://localhost:3000" }),
   OPENCRVS_GRAPHQL_GATEWAY_URL: str({
     devDefault: "http://localhost:7070/graphql",
     desc: "The URL of the OpenCRVS GraphQL Gateway",
@@ -25,7 +23,43 @@ export const env = cleanEnv(process.env, {
     desc: "OpenCRVS public key URL. Used to verify JWT authenticity",
   }),
 
+  // MOSIP Auth manager
+  MOSIP_AUTH_URL: str({
+    devDefault:
+      "http://localhost:20240/v1/authmanager/authenticate/clientidsecretkey",
+  }),
+  MOSIP_AUTH_CLIENT_APP_ID: str({ default: "admin" }),
+  MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
+  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
+
+  // MOSIP WebSub hub
+  MOSIP_WEBSUB_HUB_URL: url({
+    devDefault: "http://localhost:20240/websub/hub",
+    desc: "MOSIP WebSub hub URL",
+  }),
+  MOSIP_WEBSUB_SECRET: str({
+    devDefault: "mosip-websub-secret",
+    desc: "MOSIP WebSub `hub.secret`",
+  }),
+  MOSIP_WEBSUB_TOPIC: str({
+    devDefault: "CREDENTIAL_ISSUED",
+    desc: "The Kafka topic that is listened for ID credential issuance, `hub.topic`",
+  }),
+  MOSIP_WEBSUB_CALLBACK_URL: str({
+    devDefault: "http://localhost:2024/websub/callback",
+    example: "https://your-domain.com/websub/callback",
+    desc: "The OpenCRVS side URL MOSIP sends WebSub updates to, `hub.callback`",
+  }),
+
   // MOSIP Birth & Death packets
+  TRANSACTION_ID_PREFIX: str({
+    default: "10001",
+    desc: "Used to prefix the numeric transaction ID (1000101234567890) that is sent to MOSIP and received back",
+  }),
+  MOSIP_BIRTH_WEBHOOK_URL: str({
+    devDefault: "http://localhost:20240/webhooks/opencrvs/birth",
+    desc: "The URL where MOSIP receives birth webhooks from OpenCRVS",
+  }),
   MOSIP_DEATH_WEBHOOK_URL: str({
     devDefault: "http://localhost:20240/webhooks/opencrvs/death",
     desc: "The URL where MOSIP receives death webhooks from OpenCRVS",
@@ -71,12 +105,6 @@ export const env = cleanEnv(process.env, {
   SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
 
   // MOSIP packet manager details
-  MOSIP_AUTH_URL: str({
-    devDefault:
-      "http://localhost:20240/v1/authmanager/authenticate/clientidsecretkey",
-  }),
-  MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
-  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
   MOSIP_CREATE_PACKET_URL: str({
     devDefault: "http://localhost:20240/commons/v1/packetmanager/createPacket",
   }),

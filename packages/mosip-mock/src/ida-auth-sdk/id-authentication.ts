@@ -72,6 +72,26 @@ export const idAuthenticationHandler: RouteHandlerMethod = async (
     };
   }
 
+  if (authParams.demographics.dob !== identity.birthDate.replaceAll("-", "/")) {
+    return {
+      transactionID,
+      version: "1.0",
+      id: "mosip.identity.auth",
+      errors: [
+        {
+          errorCode: "IDA-DEA-001",
+          errorMessage: "Demographic data dob did not match",
+          actionMessage: "Please re-enter your dob",
+        },
+      ],
+      responseTime: new Date().toISOString(),
+      response: {
+        authStatus: false,
+        authToken,
+      },
+    };
+  }
+
   if (
     authParams.demographics.gender?.[0] &&
     authParams.demographics.gender[0].value !== identity.gender

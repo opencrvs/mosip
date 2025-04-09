@@ -1,10 +1,9 @@
-import Fastify, { FastifyInstance } from "fastify";
+import Fastify, { FastifyError, FastifyInstance } from "fastify";
 import {
   serializerCompiler,
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { mosipHandler, mosipNidSchema } from "./routes/mosip";
 import {
   registrationEventHandler,
   opencrvsRecordSchema,
@@ -19,6 +18,11 @@ import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
 import { OIDPUserInfoHandler } from "./routes/oidp-user-info";
 import { initSqlite } from "./database";
+import {
+  credentialIssuedHandler,
+  CredentialIssuedSchema,
+} from "./routes/websub-credential-issued";
+import { initWebSub } from "./websub/subscribe";
 
 const envToLogger = {
   development: {
@@ -50,14 +54,9 @@ const initRoutes = (app: FastifyInstance) => {
     },
   });
 
-  app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/webhooks/mosip",
-    method: "POST",
-    handler: mosipHandler,
-    schema: {
-      body: mosipNidSchema,
-    },
-  });
+  /*
+   * E-Signet
+   */
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/esignet/get-oidp-user-info",
     method: "POST",
@@ -65,6 +64,26 @@ const initRoutes = (app: FastifyInstance) => {
     schema: {
       body: OIDPUserInfoSchema,
       querystring: OIDPQuerySchema,
+    },
+  });
+
+  /**
+   * MOSIP Kafka WebSub
+   */
+  app.get("/websub/callback", async (request, reply) => {
+    const { "hub.challenge": challenge } = request.query as {
+      "hub.challenge"?: string;
+    };
+    if (challenge) return reply.type("text/plain").send(challenge);
+    else return reply.code(400).send("Missing hub.challenge");
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/websub/callback", // see constants.ts `${env.MOSIP_WEBSUB_CALLBACK_URL}`
+    handler: credentialIssuedHandler,
+    schema: {
+      body: CredentialIssuedSchema,
     },
   });
 };
@@ -90,8 +109,11 @@ export const buildFastify = async () => {
     reply.status(500).send({ error: "An unexpected error occurred" });
   });
 
+  let corePublicKey = await getPublicKey();
+  let publicKeyUpdatedAt = Date.now();
+
   app.register(jwt, {
-    secret: { public: await getPublicKey() },
+    secret: { public: corePublicKey },
     verify: { algorithms: ["RS256"] },
   });
 
@@ -99,12 +121,34 @@ export const buildFastify = async () => {
     // @TODO
     // @NOTE Remove in production! This disables the JWT authentication for the MOSIP webhook
     // As we don't have the WebSub documentation available yet, we don't fully know the authentication method so this is not built yet
-    if (request.routeOptions.url === "/webhooks/mosip") return;
+    if (request.routeOptions.url === "/websub/callback") return;
 
     try {
       await request.jwtVerify();
     } catch (err) {
-      reply.code(401).send({ error: "Unauthorized" });
+      const error = err as FastifyError;
+
+      const moreThanAMinuteSinceLastUpdate =
+        Date.now() - publicKeyUpdatedAt > 60_000;
+
+      if (
+        error.code === "FST_JWT_AUTHORIZATION_TOKEN_INVALID" &&
+        moreThanAMinuteSinceLastUpdate
+      ) {
+        app.log.info("🔁 JWT failed, refreshing public key...");
+        try {
+          corePublicKey = await getPublicKey();
+          publicKeyUpdatedAt = Date.now();
+          await request.jwtVerify();
+          return;
+        } catch (retryErr) {
+          app.log.error("🔐 JWT retry failed:", retryErr);
+        }
+      } else {
+        app.log.error("🔐 JWT verify failed:", err);
+      }
+
+      return reply.code(401).send({ error: "Unauthorized" });
     }
   });
 
@@ -133,6 +177,9 @@ async function run() {
   app.log.info(
     `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation ✅`,
   );
+
+  const { topic } = await initWebSub();
+  app.log.info(`WebSub subscription initialized for topic '${topic}' ✅`);
 
   process.on("exit", () => {
     database.close();

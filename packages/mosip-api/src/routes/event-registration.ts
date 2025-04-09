@@ -77,22 +77,13 @@ export const registrationEventHandler = async (
     const transactionId = generateTransactionId();
     const registrationNumber = generateRegistrationNumber(trackingId);
 
-    // const { workflowInstanceId } =
+    insertTransaction(transactionId, token, registrationNumber);
+
     await mosip.postBirthRecord({
       event: { id: transactionId, trackingId },
       token,
       request,
     });
-    insertTransaction(transactionId, token, registrationNumber);
-
-    // await opencrvs.upsertRegistrationIdentifier(
-    //   {
-    //     id: eventId,
-    //     identifierType: "MOSIP_AID",
-    //     identifierValue: aid,
-    //   },
-    //   { headers: { Authorization: `Bearer ${token}` } },
-    // );
   }
 
   if (eventType === EVENT_TYPE.DEATH) {

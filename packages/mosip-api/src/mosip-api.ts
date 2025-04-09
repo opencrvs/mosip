@@ -15,7 +15,6 @@ export async function getMosipAuthToken() {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      // cookie: `Authorization=${authToken}; OpenCRVSToken=${token};`,
     },
     body: JSON.stringify({
       id: "string",
@@ -25,7 +24,7 @@ export async function getMosipAuthToken() {
       request: {
         clientId: env.MOSIP_AUTH_CLIENT_ID,
         secretKey: env.MOSIP_AUTH_CLIENT_SECRET,
-        appId: "admin",
+        appId: env.MOSIP_AUTH_CLIENT_APP_ID,
       },
     }),
   });
@@ -37,11 +36,11 @@ export async function getMosipAuthToken() {
       }, response: ${await response.text()}`,
     );
   }
-  const responseJson = await response.json();
+
   // Get the 'Set-Cookie' header from the response
   const cookie: string | null = response.headers.get("Set-Cookie");
 
-  if (!cookie || cookie === null) {
+  if (!cookie) {
     throw new MOSIPError(
       `Failed getting MOSIP auth token. Response: ${
         response.status
