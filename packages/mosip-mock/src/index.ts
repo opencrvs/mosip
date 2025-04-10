@@ -24,7 +24,7 @@ app.post("/websub/hub", { handler: webSubHubHandler });
 app.post("/v1/authmanager/authenticate/clientidsecretkey", {
   handler: packetManagerAuthHandler,
 });
-app.post("/commons/v1/packetmanager/createPacket", {
+app.put("/commons/v1/packetmanager/createPacket", {
   handler: packetManagerCreateHandler,
 });
 app.post("/registrationprocessor/v1/workflowmanager/workflowinstance", {

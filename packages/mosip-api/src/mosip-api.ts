@@ -127,7 +127,7 @@ export const postBirthRecord = async ({
 
   // packet manager: create packet
   const createPacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
-    method: "POST",
+    method: "PUT",
     body: requestBody,
     headers: {
       "Content-Type": "application/json",
