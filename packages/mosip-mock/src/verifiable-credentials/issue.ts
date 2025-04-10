@@ -6,7 +6,11 @@ import { env, PRIVATE_KEY } from "../constants";
 const ISSUER = `${env.ISSUER_URL}/.well-known/controller.json`;
 export const PUBLIC_KEY_URL = `${env.ISSUER_URL}/.well-known/public-key.json`;
 
-export async function createMockVC({
+/**
+ * Issues a mock verifiable credential conforming to MOSIP standards. This is _not securely proofed_ as it's an mock. If it is, it's by accident.
+ * Do not use this as a reference for production code.
+ */
+export async function issueVerifiableCredential({
   birthCertificateNumber,
   vid,
   id,
