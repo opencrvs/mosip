@@ -1,10 +1,10 @@
-import { CompactSign, importPKCS8 } from "jose";
+import { FlattenedSign } from "jose";
 import { randomUUID, createPrivateKey } from "node:crypto";
-import { canonicalize } from "json-canonicalize";
+import canonicalize from "canonicalize";
 import { env, PRIVATE_KEY } from "../constants";
 
 const ISSUER = `${env.ISSUER_URL}/.well-known/controller.json`;
-export const VERIFICATION_METHOD = `${env.ISSUER_URL}/.well-known/public-key.json#keys-1`;
+export const PUBLIC_KEY_URL = `${env.ISSUER_URL}/.well-known/public-key.json`;
 
 export async function createMockVC({
   birthCertificateNumber,
@@ -39,21 +39,23 @@ export async function createMockVC({
   };
 
   const canonicalPayload = canonicalize(unsignedVC);
+
   const payloadBytes = new TextEncoder().encode(canonicalPayload);
 
-  const jwsHeader = {
+  const protectedHeader = {
     alg: "PS256",
-    kid: VERIFICATION_METHOD,
     b64: false,
     crit: ["b64"],
+    kid: PUBLIC_KEY_URL,
   };
 
-  const jwsFull = await new CompactSign(payloadBytes)
-    .setProtectedHeader(jwsHeader)
+  const { protected: encodedHeader, signature } = await new FlattenedSign(
+    payloadBytes,
+  )
+    .setProtectedHeader(protectedHeader)
     .sign(privateKey);
 
-  const [protectedHeader, , signature] = jwsFull.split(".");
-  const detachedJws = `${protectedHeader}..${signature}`;
+  const detachedJws = `${encodedHeader}..${signature}`;
 
   return {
     ...unsignedVC,
@@ -61,7 +63,7 @@ export async function createMockVC({
       type: "RsaSignature2018",
       created: issuanceDate,
       proofPurpose: "assertionMethod",
-      verificationMethod: VERIFICATION_METHOD,
+      verificationMethod: PUBLIC_KEY_URL,
       jws: detachedJws,
     },
   };

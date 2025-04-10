@@ -8,7 +8,7 @@ import { idAuthenticationHandler } from "./ida-auth-sdk/id-authentication";
 import { webSubHubHandler } from "./websub/websub-hub";
 import { packetManagerAuthHandler } from "./routes/packet-manager-auth";
 import { createPrivateKey, createPublicKey } from "node:crypto";
-import { VERIFICATION_METHOD } from "./verifiable-credentials/issue";
+import { PUBLIC_KEY_URL } from "./verifiable-credentials/issue";
 
 const app = Fastify();
 
@@ -27,17 +27,11 @@ app.get("/.well-known/public-key.json", (_, reply) => {
     .toString();
 
   const publicKeyJson = {
-    "@context": "https://w3id.org/security#",
-    id: env.ISSUER_URL,
-    publicKey: [
-      {
-        id: VERIFICATION_METHOD,
-        type: "RsaVerificationKey2018",
-        controller: env.ISSUER_URL,
-        publicKeyPem,
-      },
-    ],
-    assertionMethod: [VERIFICATION_METHOD],
+    "@context": "https://w3id.org/security/v2",
+    type: "RsaVerificationKey2018",
+    id: PUBLIC_KEY_URL,
+    controller: `${env.ISSUER_URL}/.well-known/controller.json`,
+    publicKeyPem,
   };
   reply.send(publicKeyJson);
 });

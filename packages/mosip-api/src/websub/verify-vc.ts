@@ -1,6 +1,7 @@
-import { importJWK, compactVerify } from "jose";
+import { compactVerify, flattenedVerify, importSPKI } from "jose";
 import { z } from "zod";
-import { env, MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS } from "../constants";
+import { MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS } from "../constants";
+import canonicalize from "canonicalize";
 
 export const MOSIPVerifiableCredential = z.object({
   issuanceDate: z.string().datetime(),
@@ -37,25 +38,24 @@ export const verifyCredentialOrThrow = async (
   const { proof, ...payload } = credential;
 
   if (!MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS.includes(verificationMethod)) {
-    throw new Error(
-      "❌ The verification method is not allowed. Check the configured allowed URLs or the URL in the verifiable credential.",
-    );
+    throw new Error("❌ Verification method not allowed");
   }
 
-  // Step 1: Fetch the public JWK
   const res = await fetch(verificationMethod);
-  const jwk = await res.json(); // assumes the JWK is directly in the response
-  const key = await importJWK(jwk, "PS256"); // algorithm from 'alg' in JWS header
+  const { publicKeyPem } = await res.json();
+  const key = await importSPKI(publicKeyPem, "PS256");
 
-  // Step 2: Reconstruct JWS input
-  // jws is in detached mode: header..signature
   const [encodedHeader, , encodedSignature] = jws.split(".");
 
-  // Step 3: Canonicalize and encode payload
-  const canonicalPayload = JSON.stringify(payload); // ideally canonicalize via JSON-LD
-  const encodedPayload = Buffer.from(canonicalPayload).toString("base64url");
+  const canonicalPayload = canonicalize(payload);
+  const payloadBytes = new TextEncoder().encode(canonicalPayload);
 
-  // Step 4: Verify
-  const fullJWS = `${encodedHeader}.${encodedPayload}.${encodedSignature}`;
-  await compactVerify(fullJWS, key); // throws if invalid
+  await flattenedVerify(
+    {
+      protected: encodedHeader,
+      payload: payloadBytes,
+      signature: encodedSignature,
+    },
+    key,
+  );
 };

@@ -22,9 +22,6 @@ export const CredentialIssuedSchema = z.object({
     data: z.object({
       registrationId: z.string(),
       credential: z.string(),
-      proof: z.object({
-        signature: z.string(),
-      }),
       credentialType: z.literal("vercred"),
       protectionKey: z.string(),
     }),
@@ -43,7 +40,7 @@ export const credentialIssuedHandler = async (
     request.body.event.data.credential,
   );
 
-  verifyCredentialOrThrow(verifiableCredential);
+  await verifyCredentialOrThrow(verifiableCredential);
 
   const transactionId = verifiableCredential.credentialSubject.id
     .split("/")

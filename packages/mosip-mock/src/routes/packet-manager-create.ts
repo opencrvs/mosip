@@ -91,16 +91,11 @@ const sendNid = async ({
           JSON.stringify(verifiableCredential),
           PRIVATE_KEY,
         ),
-        proof: {
-          signature: "abcdefg", // @TODO: ..do we need this if we use verifiable credentials?
-        },
         credentialType: "vercred",
         protectionKey: "275700",
       },
     },
   });
-
-  console.log(body, verifiableCredential);
 
   const response = await fetch(env.MOSIP_WEBSUB_CALLBACK_URL, {
     method: "POST",

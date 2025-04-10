@@ -51,8 +51,8 @@ export const env = cleanEnv(process.env, {
     desc: "The OpenCRVS side URL MOSIP sends WebSub updates to, `hub.callback`",
   }),
   MOSIP_VERIFIABLE_CREDENTIAL_ALLOWLIST: str({
-    devDefault: "http://localhost:20240/.well-known/public-key.json#keys-1",
-    example: "https://your-domain.com/.well-known/public-key.json#keys-1",
+    devDefault: "http://localhost:20240/.well-known/public-key.json",
+    example: "https://your-domain.com/.well-known/public-key.json",
     desc: "Comma-separated list of verifiable credential allowlist URLs. Used to verify the authenticity of the verifiable credential.",
   }),
 
