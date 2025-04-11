@@ -1,5 +1,6 @@
 import type * as Hapi from "@hapi/hapi";
 import fetch from "node-fetch";
+import { MOSIPPayload } from "./transform";
 
 interface VerificationStatus {
   father: boolean;
@@ -10,7 +11,15 @@ interface VerificationStatus {
 /**
  * Replaces event registration handler in country config
  */
-export const mosipRegistrationHandler = ({ url }: { url: string }) =>
+export const mosipRegistrationHandler = ({
+  url,
+  headers,
+  payload,
+}: {
+  url: string;
+  headers: Record<string, string>;
+  payload: MOSIPPayload;
+}) =>
   (async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     const MOSIP_API_REGISTRATION_EVENT_URL = new URL(
       "./events/registration",
@@ -19,9 +28,9 @@ export const mosipRegistrationHandler = ({ url }: { url: string }) =>
 
     const response = await fetch(MOSIP_API_REGISTRATION_EVENT_URL, {
       method: "POST",
-      body: JSON.stringify(request.payload),
+      body: JSON.stringify(payload),
       headers: {
-        ...request.headers,
+        ...headers,
         "content-type": "application/json",
       },
     });

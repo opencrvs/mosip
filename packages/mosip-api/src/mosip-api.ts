@@ -1,16 +1,6 @@
 import { env } from "./constants";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
 import { OpenCRVSRequest } from "./routes/event-registration";
-import {
-  EVENT_TYPE,
-  findEntry,
-  findTaskExtension,
-  getComposition,
-  getEventType,
-  getInformantPatient,
-  getQuestionnaireResponseAnswer,
-  getTaskFromSavedBundle,
-} from "./types/fhir";
 import { schemaJson } from "./types/idSchemaJson";
 
 export class MOSIPError extends Error {
@@ -81,117 +71,7 @@ export const postBirthRecord = async ({
   token: string;
   request: OpenCRVSRequest;
 }) => {
-  const composition = getComposition(request.body);
-  const task = getTaskFromSavedBundle(request.body);
-  const emailExtension = findTaskExtension(
-    task,
-    "http://opencrvs.org/specs/extension/contact-person-email",
-  );
-  const contactNumberExtension = findTaskExtension(
-    task,
-    "http://opencrvs.org/specs/extension/contact-person-phone-number",
-  );
-
-  const child = findEntry(
-    "child-details",
-    composition,
-    request.body,
-  ) as fhir3.Patient;
-
-  const childName:
-    | {
-        use?: string | undefined;
-        given?: string[] | undefined;
-        family?: string | undefined;
-      }
-    | undefined = child.name?.[0];
-
-  const mother = findEntry(
-    "mother-details",
-    composition,
-    request.body,
-  ) as fhir3.Patient;
-
-  const father = findEntry(
-    "father-details",
-    composition,
-    request.body,
-  ) as fhir3.Patient;
-
-  const guardianDetails = mother ?? father;
-  const guardianName:
-    | {
-        use?: string | undefined;
-        given?: string[] | undefined;
-        family?: string | undefined;
-      }
-    | undefined = guardianDetails.name?.[0];
-
-  const informant = getInformantPatient(request.body) as fhir3.Patient;
-
-  const returnParentID = () => {
-    const motherID = mother.identifier?.[0].value;
-    const fatherID = father.identifier?.[0].value;
-
-    if (motherID) {
-      return {
-        identifier: motherID,
-        type: mother.identifier?.[0].type?.coding?.[0].code,
-      };
-    } else if (fatherID) {
-      return {
-        identifier: fatherID,
-        type: father.identifier?.[0].type?.coding?.[0].code,
-      };
-    } else {
-      return {
-        identifier: "",
-        type: "NOT_FOUND",
-      };
-    }
-  };
-
-  const residentStatus =
-    getQuestionnaireResponseAnswer(
-      request.body,
-      "birth.child.child-view-group.nonTongan",
-    ) === true
-      ? "NON-TONGAN"
-      : "TONGAN";
-
-  const requestFields = {
-    fullName: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${childName?.given?.join(" ")} ${childName?.family}\"\n} ]`,
-    dateOfBirth: child.birthDate,
-    gender: `[ {\n  "language" : "eng",\n  "value" :       "${child.gender}"\n}]`,
-    residenceStatus: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${residentStatus}\"\n} ]`,
-    guardianOrParentName: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"${guardianName?.given?.join(" ")} ${guardianName?.family}\"\n} ]`,
-    nationalIdNumber:
-      returnParentID().type === "NATIONAL_ID"
-        ? returnParentID().identifier
-        : "",
-    passportNumber:
-      returnParentID().type === "PASSPORT" ? returnParentID().identifier : "",
-    drivingLicenseNumber:
-      returnParentID().type === "DRIVING_LICENSE"
-        ? returnParentID().identifier
-        : "",
-    deceasedStatus:
-      getEventType(request.body) === EVENT_TYPE.DEATH ? true : false,
-    email: "", // Task --> contact-person-email
-    phone: "", // Task --> contact-person-phone-number
-    guardianOrParentBirthCertificateNumber: "M89234BYAS0238", // from QuestionnaireResponse
-    birthCertificateNumber: "C83B023548BST", // BRN
-    addressLine1: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Kandy\"\n}]`,
-    addressLine2: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Badulla\"\n}]`,
-    district: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Vava’u\"\n} ]`,
-    village: `[ {\n  \"language\" : \"eng\",\n  \"value\" : \"Talihau \"\n} ]`,
-    birthRegistrationCertificate: "base-64 document string",
-    passportId: "base-64 document string",
-    nationalId: "base-64 document string",
-    drivingLicenseId: "base-64 document string",
-    addressProof: "base-64 document string",
-  };
-
+  const { requestFields } = request.body;
   const requestBody = JSON.stringify(
     {
       id: "string",
@@ -275,11 +155,9 @@ export const postBirthRecord = async ({
         source: "OPENCRVS",
         additionalInfoReqId: "",
         notificationInfo: {
-          name: "Sample Name", // informant details should be passed in here.
-          phone: contactNumberExtension
-            ? contactNumberExtension.valueString
-            : "",
-          email: emailExtension ? emailExtension.valueString : "",
+          name: request.body.notification.recipientFullName, // informant details should be passed in here.
+          phone: request.body.notification.recipientPhone || "",
+          email: request.body.notification.recipientEmail || "",
         },
       },
     },
@@ -315,24 +193,24 @@ export const postBirthRecord = async ({
   // }>;
 };
 
-export const deactivateNid = async (request: OpenCRVSRequest) => {
+export const deactivateNid = async ({
+  event,
+  request,
+}: {
+  event: {
+    id: string;
+    trackingId: string;
+  };
+  request: OpenCRVSRequest;
+}) => {
   const authToken = await getMosipAuthToken();
-  const task = getTaskFromSavedBundle(request.body);
-  const emailExtension = findTaskExtension(
-    task,
-    "http://opencrvs.org/specs/extension/contact-person-email",
-  );
-  const contactNumberExtension = findTaskExtension(
-    task,
-    "http://opencrvs.org/specs/extension/contact-person-phone-number",
-  );
 
   const deactivatePacketRequestBody = JSON.stringify({
     id: "string",
     version: "string",
     requesttime: new Date().toISOString(),
     request: {
-      id: "65204270321266",
+      id: event.id,
       refId: "10018_10084",
       offlineMode: false,
       process: "CRVS_DEATH",
@@ -408,11 +286,9 @@ export const deactivateNid = async (request: OpenCRVSRequest) => {
         source: "OPENCRVS",
         additionalInfoReqId: "",
         notificationInfo: {
-          name: "John Doe", // informant details should be passed in here.
-          phone: contactNumberExtension
-            ? contactNumberExtension.valueString
-            : "",
-          email: emailExtension ? emailExtension.valueString : "",
+          name: request.body.notification.recipientFullName, // informant details should be passed in here.
+          phone: request.body.notification.recipientPhone || "",
+          email: request.body.notification.recipientEmail || "",
         },
       },
     },
