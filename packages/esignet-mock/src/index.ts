@@ -107,7 +107,7 @@ app.post("/oidc/userinfo", {
       name: `${identity.firstName} ${identity.familyName}`,
       given_name: identity.firstName,
       family_name: identity.familyName,
-      middle_name: "",
+      middle_name: identity.middleName,
       nickname: "",
       preferred_username: "",
       profile: "",
