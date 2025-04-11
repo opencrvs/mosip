@@ -4,7 +4,7 @@ import { getTransactionAndDiscard } from "../database";
 import { decode } from "jsonwebtoken";
 import * as opencrvs from "../opencrvs-api";
 import { decryptMosipCredential } from "../websub/crypto";
-import { env } from "../constants";
+import { MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS, env } from "../constants";
 import { verifyCredentialOrThrow } from "../websub/verify-vc";
 
 export const CredentialIssuedSchema = z.object({
@@ -40,7 +40,9 @@ export const credentialIssuedHandler = async (
     request.body.event.data.credential,
   );
 
-  await verifyCredentialOrThrow(verifiableCredential);
+  await verifyCredentialOrThrow(verifiableCredential, {
+    allowList: MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS,
+  });
 
   const transactionId = verifiableCredential.credentialSubject.id
     .split("/")

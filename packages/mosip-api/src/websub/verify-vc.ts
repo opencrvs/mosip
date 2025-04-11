@@ -33,11 +33,12 @@ export const MOSIPVerifiableCredential = z.object({
 
 export const verifyCredentialOrThrow = async (
   credential: z.infer<typeof MOSIPVerifiableCredential>,
+  { allowList }: { allowList: string[] },
 ) => {
   const { jws, verificationMethod } = credential.proof;
   const { proof, ...payload } = credential;
 
-  if (!MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS.includes(verificationMethod)) {
+  if (!allowList.includes(verificationMethod)) {
     throw new Error("❌ Verification method not allowed");
   }
 
