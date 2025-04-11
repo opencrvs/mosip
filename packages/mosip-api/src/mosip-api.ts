@@ -1,5 +1,7 @@
 import { env } from "./constants";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
+import { OpenCRVSRequest } from "./routes/event-registration";
+import { schemaJson } from "./types/idSchemaJson";
 
 export class MOSIPError extends Error {
   constructor(message: string) {
@@ -58,47 +60,265 @@ export async function getMosipAuthToken() {
 }
 
 export const postBirthRecord = async ({
-  id,
-  registrationNumber,
+  event,
+  token,
+  request,
 }: {
-  id: string;
-  registrationNumber: string;
+  event: {
+    id: string;
+    trackingId: string;
+  };
+  token: string;
+  request: OpenCRVSRequest;
 }) => {
-  const response = await fetch(env.MOSIP_BIRTH_WEBHOOK_URL, {
-    method: "POST",
-    body: JSON.stringify({
+  const { requestFields } = request.body;
+  const requestBody = JSON.stringify(
+    {
+      id: "string",
+      version: "string",
+      requesttime: new Date().toISOString(),
       request: {
+        id: event.id,
+        refId: "10002_10003",
+        offlineMode: false,
         process: "CRVS_NEW",
-        id,
-        fields: { birthCertificateNumber: registrationNumber },
+        source: "OPENCRVS",
+        schemaVersion: "0.100",
+        fields: requestFields,
+        metaInfo: {
+          metaData:
+            '[{\n  "label" : "registrationType",\n  "value" : "CRVS_NEW"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
+          registrationId: "652042703244",
+          operationsData:
+            '[{\n  "label" : "officerId",\n  "value" : "sithara.bevolv"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
+          capturedRegisteredDevices: "[]",
+          creationDate: "202503121345",
+        },
+        audits: [
+          {
+            uuid: "c75a6315-96e9-4a3f-bcda-2432ec354336",
+            createdAt: new Date().toISOString(),
+            eventId: "REG-EVT-066",
+            eventName: "PACKET_CREATION_SUCCESS",
+            eventType: "USER",
+            hostName: "desktop-q8u8jfo",
+            hostIp: "localhost",
+            applicationId: "REG",
+            applicationName: "REGISTRATION",
+            sessionUserId: "suraj",
+            sessionUserName: "suraj m",
+            id: "652042703244",
+            idType: "REGISTRATION_ID",
+            createdBy: "suraj m",
+            moduleName: "Packet Handler",
+            moduleId: "REG-MOD-117",
+            description: "Packet Succesfully Created",
+            actionTimeStamp: new Date().toISOString(),
+          },
+        ],
+        schemaJson: schemaJson,
       },
-    }),
+    },
+    null,
+    2,
+  );
+
+  const authToken = await getMosipAuthToken();
+
+  // packet manager: create packet
+  const createPacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
+    method: "PUT",
+    body: requestBody,
     headers: {
       "Content-Type": "application/json",
+      Cookie: `Authorization=${authToken};`,
     },
   });
 
-  if (!response.ok) {
-    throw new MOSIPError(
-      `Failed to post record to MOSIP. Status: ${
-        response.status
-      }, response: ${await response.text()}`,
+  if (!createPacketResponse.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await createPacketResponse.text()}`,
     );
   }
 
-  return response.text();
-};
+  const responseJson = await createPacketResponse.json();
 
-export const deactivateNid = async ({ nid }: { nid: string }) => {
-  const response = await fetch(env.MOSIP_DEATH_WEBHOOK_URL, {
+  // packet manager: process packet API.
+  const processPacketRequestBody = JSON.stringify(
+    {
+      id: "mosip.registration.processor.workflow.instance",
+      requesttime: new Date().toISOString(),
+      version: "v1",
+      request: {
+        registrationId: "652042703244",
+        process: "CRVS_NEW",
+        source: "OPENCRVS",
+        additionalInfoReqId: "",
+        notificationInfo: {
+          name: request.body.notification.recipientFullName, // informant details should be passed in here.
+          phone: request.body.notification.recipientPhone || "",
+          email: request.body.notification.recipientEmail || "",
+        },
+      },
+    },
+    null,
+    2,
+  );
+
+  const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
     method: "POST",
-    body: JSON.stringify({ nid }),
+    body: processPacketRequestBody,
     headers: {
       "Content-Type": "application/json",
+      Cookie: `Authorization=${authToken};`,
     },
   });
 
-  return response;
+  if (!processPacketResponse.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await processPacketResponse.text()}`,
+    );
+  }
+
+  const processPacketResponseJson = await processPacketResponse.json();
+
+  if (processPacketResponseJson?.errors?.length > 0) {
+    throw new Error(
+      `Error in processing packet, response: ${await processPacketResponseJson?.errors[0]?.message}`,
+    );
+  }
+
+  // return processPacketResponseJson.response.workflowInstanceId as Promise<{
+  //   aid: string;
+  // }>;
+};
+
+export const deactivateNid = async ({
+  event,
+  request,
+}: {
+  event: {
+    id: string;
+    trackingId: string;
+  };
+  request: OpenCRVSRequest;
+}) => {
+  const authToken = await getMosipAuthToken();
+
+  const deactivatePacketRequestBody = JSON.stringify({
+    id: "string",
+    version: "string",
+    requesttime: new Date().toISOString(),
+    request: {
+      id: event.id,
+      refId: "10018_10084",
+      offlineMode: false,
+      process: "CRVS_DEATH",
+      source: "OPENCRVS",
+      schemaVersion: "0.300",
+      fields: {
+        UIN: "6520427661", // UIN to be passed from MOSIP when birth is created.
+        deathDeclared: "yes",
+        dateOfDeath: new Date().toISOString().slice(0, 10).replace(/-/g, "/"),
+      },
+      metaInfo: {
+        metaData:
+          '[{\n  "label" : "registrationType",\n  "value" : "CRVS_DEATH"\n}, {\n  "label" : "machineId",\n  "value" : "10084"\n}, {\n  "label" : "centerId",\n  "value" : "10018"\n}]',
+        registrationId: "65204270321266",
+        operationsData:
+          '[{\n  "label" : "officerId",\n  "value" : "nambi"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
+        capturedRegisteredDevices: "[]",
+        creationDate: "20250225110733",
+      },
+      audits: [
+        {
+          uuid: "c75a6315-96e9-4a3f-bcda-2432ec354336",
+          createdAt: new Date().toISOString(),
+          eventId: "REG-EVT-066",
+          eventName: "PACKET_CREATION_SUCCESS",
+          eventType: "USER",
+          hostName: "desktop-62k46ah",
+          hostIp: "localhost",
+          applicationId: "REG",
+          applicationName: "REGISTRATION",
+          sessionUserId: "suraj",
+          sessionUserName: "suraj m",
+          id: "65204270321266",
+          idType: "REGISTRATION_ID",
+          createdBy: "suraj m",
+          moduleName: "Packet Handler",
+          moduleId: "REG-MOD-117",
+          description: "Packet Succesfully Created",
+          actionTimeStamp: new Date().toISOString(),
+        },
+      ],
+      schemaJson: schemaJson,
+    },
+  });
+
+  // packet manager: deactivate packet
+  const deactivatePacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
+    method: "PUT",
+    body: deactivatePacketRequestBody,
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `Authorization=${authToken};`,
+    },
+  });
+
+  if (!deactivatePacketResponse.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await deactivatePacketResponse.text()}`,
+    );
+  }
+
+  const responseJson = await deactivatePacketResponse.json();
+
+  // packet manager: process packet API.
+  const processPacketRequestBody = JSON.stringify(
+    {
+      id: "mosip.registration.processor.workflow.instance",
+      requesttime: new Date().toISOString(),
+      version: "v1",
+      request: {
+        registrationId: "65204270321266",
+        process: "CRVS_DEATH",
+        source: "OPENCRVS",
+        additionalInfoReqId: "",
+        notificationInfo: {
+          name: request.body.notification.recipientFullName, // informant details should be passed in here.
+          phone: request.body.notification.recipientPhone || "",
+          email: request.body.notification.recipientEmail || "",
+        },
+      },
+    },
+    null,
+    2,
+  );
+
+  const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
+    method: "POST",
+    body: processPacketRequestBody,
+    headers: {
+      "Content-Type": "application/json",
+      Cookie: `Authorization=${authToken};`,
+    },
+  });
+
+  if (!processPacketResponse.ok) {
+    throw new Error(
+      `Failed sending record to MOSIP, response: ${await processPacketResponse.text()}`,
+    );
+  }
+
+  const processPacketResponseJson = await processPacketResponse.json();
+
+  if (processPacketResponseJson?.errors?.length > 0) {
+    throw new Error(
+      `Error in processing packet, response: ${await processPacketResponseJson?.errors[0]?.message}`,
+    );
+  }
+  // return processPacketResponse;
 };
 
 export const verifyNid = async ({

@@ -1,7 +1,7 @@
 import { RouteHandlerMethod } from "fastify";
 import identities from "../mock-identities.json" assert { type: "json" };
 import { decryptAuthData } from "./crypto";
-import { DECRYPT_IDA_AUTH_PRIVATE_KEY } from "../constants";
+import { PRIVATE_KEY } from "../constants";
 
 export const idAuthenticationHandler: RouteHandlerMethod = async (
   request,
@@ -23,7 +23,7 @@ export const idAuthenticationHandler: RouteHandlerMethod = async (
   const authParams = decryptAuthData(
     requestBody,
     requestSessionKey,
-    DECRYPT_IDA_AUTH_PRIVATE_KEY,
+    PRIVATE_KEY,
   );
 
   const identity = identities.find(({ nid }) => nid === individualId);

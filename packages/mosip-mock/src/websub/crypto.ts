@@ -7,7 +7,7 @@ import crypto from "node:crypto";
  * @returns Base64-encoded encrypted credential.
  */
 export function encryptMosipCredential(
-  payload: unknown,
+  payload: string,
   publicKeyPem: string,
   options?: {
     versionBytes?: Buffer;
@@ -17,7 +17,7 @@ export function encryptMosipCredential(
   const version = options?.versionBytes ?? Buffer.from("VER_R2");
   const thumbprint = options?.thumbprintBytes ?? Buffer.alloc(32, 0); // 32 bytes dummy
 
-  const plaintext = Buffer.from(JSON.stringify(payload), "utf-8");
+  const plaintext = Buffer.from(payload, "utf-8");
 
   // 1. Generate AES session key and IV
   const sessionKey = crypto.randomBytes(32); // 256-bit
