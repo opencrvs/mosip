@@ -1,13 +1,11 @@
 # OpenCRVS API for MOSIP
 
-> [!WARNING]
-> Work in progress! This release is not yet ready for production use.
+This repository provides an mediator/API layer that facilitates communication between OpenCRVS and MOSIP, enabling secure identity integration. Refer to [OpenCRVS documentation](https://documentation.opencrvs.org/technology/interoperability/national-id-client) for installation and deployment instructions.
 
-This package ensures a secure and a robust integration between OpenCRVS and MOSIP. For instructions on how to setup the integration, please refer to the [installation.md](./docs/installation.md). For local development, see instructions below. For features and core versions supported, please refer to the [compatibility.md](./docs/compatibility.md).
-
-## Pre-requisities
+## Prerequisites
 
 - Node.js (see [`.nvmrc`](./.nvmrc) for version)
+- Yarn (Node.js package manager)
 
 ## Development
 
@@ -22,7 +20,7 @@ yarn install
 yarn dev
 
 # optionally...
-# use a `.env` file at repository root
+# use a `.env` file at repository root for custom config
 touch .env
 yarn dev
 
@@ -33,30 +31,8 @@ yarn dev --filter=@opencrvs/mosip-api
 yarn set-version 1.7.0-alpha.16
 ```
 
-This project uses a **SQLite** database to store the record-specific tokens that OpenCRVS Core uses to allow editing the records. See [./packages/mosip-api/src/database.ts](./packages/mosip-api/src/database.ts) for more information.
+This project uses a **SQLite** database to store the record-specific tokens that OpenCRVS Core uses to allow editing the records. See [`./packages/mosip-api/src/database.ts`](./packages/mosip-api/src/database.ts) for more information.
 
-## Country configuration
+The **environment variables** the server uses can be found at [`./packages/mosip-api/src/constants.ts`](./packages/mosip-api/src/constants.ts). Create a `.env` file in the root of the repository, if you want to override the local values.
 
-```sh
-# installs the npm package that is used to replace the default eventRegistrationHandler
-yarn add @opencrvs/mosip
-```
-
-[@opencrvs/opencrvs-countryconfig/src/index.ts](https://github.com/opencrvs/opencrvs-countryconfig/blob/9531d88008829978ef8553bb345ba04aeaab06de/src/index.ts#L413)
-
-```diff
--import { eventRegistrationHandler } from '@countryconfig/api/event-registration/handler'
-+import { mosipRegistrationHandler } from '@opencrvs/mosip'
-
- server.route({
-   method: 'POST',
-   path: '/event-registration',
--  handler: eventRegistrationHandler,
-+  handler: mosipRegistrationHandler({ url: "http://localhost:2024" })),
-   options: {
-     tags: ['api'],
-     description:
-       'Opportunity for sychrounous integrations with 3rd party systems as a final step in event registration. If successful returns identifiers for that event.'
-   }
- })
-```
+The **identities** for E-Signet and IDA Auth mocks are found at [`./docs/mock-identities.json`](./docs/mock-identities.json).
