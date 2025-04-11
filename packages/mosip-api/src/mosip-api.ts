@@ -198,7 +198,7 @@ export const postBirthRecord = async ({
       version: "string",
       requesttime: new Date().toISOString(),
       request: {
-        id: "652042703244",
+        id: event.id,
         refId: "10002_10003",
         offlineMode: false,
         process: "CRVS_NEW",

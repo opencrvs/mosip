@@ -1,8 +1,10 @@
 import { RouteHandlerMethod } from "fastify";
 import { createNid } from "../random-identifiers";
 import { sendEmail } from "../mailer";
-import { DECRYPT_IDA_AUTH_PRIVATE_KEY, env } from "../constants";
+import { PRIVATE_KEY, env } from "../constants";
 import { encryptMosipCredential } from "../websub/crypto";
+import crypto from "node:crypto";
+import { issueVerifiableCredential } from "../verifiable-credentials/issue";
 
 const sendNid = async ({
   id,
@@ -24,50 +26,42 @@ const sendNid = async ({
 
   const timestamp = new Date().toISOString();
 
+  const verifiableCredential = await issueVerifiableCredential({
+    id,
+    birthCertificateNumber,
+    vid: nid,
+  });
+
+  const body = JSON.stringify({
+    publisher: "CREDENTIAL_SERVICE",
+    topic: env.MOSIP_WEBSUB_TOPIC,
+    publishedOn: timestamp,
+    event: {
+      id: crypto.randomUUID(),
+      transactionId: crypto.randomUUID(),
+      type: {
+        namespace: "mosip",
+        name: "mosip",
+      },
+      timestamp,
+      data: {
+        registrationId: id,
+        templateTypeCode: "RPR_UIN_CARD_TEMPLATE",
+        ExpiryTimestamp: timestamp,
+        TransactionLimit: null,
+        credential: encryptMosipCredential(
+          JSON.stringify(verifiableCredential),
+          PRIVATE_KEY,
+        ),
+        credentialType: "vercred",
+        protectionKey: "275700",
+      },
+    },
+  });
+
   const response = await fetch(env.MOSIP_WEBSUB_CALLBACK_URL, {
     method: "POST",
-    body: JSON.stringify({
-      publisher: "CREDENTIAL_SERVICE",
-      topic: env.MOSIP_WEBSUB_TOPIC,
-      publishedOn: timestamp,
-      event: {
-        id: crypto.randomUUID(),
-        transactionId: crypto.randomUUID(),
-        type: {
-          namespace: "mosip",
-          name: "mosip",
-        },
-        timestamp,
-        data: {
-          registrationId: id,
-          templateTypeCode: "RPR_UIN_CARD_TEMPLATE",
-          ExpiryTimestamp: timestamp,
-          TransactionLimit: null,
-          credential: encryptMosipCredential(
-            {
-              issuedTo: "patner-opencrvs-i1",
-              protectedAttributes: [],
-              issuanceDate: timestamp,
-              credentialSubject: {
-                id,
-                birthCertificateNumber,
-                VID: nid,
-              },
-              id: "http://mosip.io/credentials/04f7a758-b7c7-4f7e-9d97-546204dfc6bb",
-              type: ["MOSIPVerifiableCredential"],
-              consent: "",
-              issuer: "https://mosip.io/issuers/",
-            },
-            DECRYPT_IDA_AUTH_PRIVATE_KEY,
-          ),
-          proof: {
-            signature: "abcdefg", // @TODO: Abdul is working on this
-          },
-          credentialType: "euin",
-          protectionKey: "275700",
-        },
-      },
-    }),
+    body,
     headers: {
       "Content-Type": "application/json",
     },
