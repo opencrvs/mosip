@@ -1,8 +1,8 @@
 # OpenCRVS API for MOSIP
 
-This package ensures a secure and a robust integration between OpenCRVS and MOSIP.
+This repository provides an mediator/API layer that facilitates communication between OpenCRVS and MOSIP, enabling secure identity integration. Refer to [OpenCRVS documentation](https://documentation.opencrvs.org/technology/interoperability/national-id-client) for installation and deployment instructions.
 
-## Pre-requisities
+## Prerequisites
 
 - Node.js (see [`.nvmrc`](./.nvmrc) for version)
 
@@ -19,7 +19,7 @@ yarn install
 yarn dev
 
 # optionally...
-# use a `.env` file at repository root
+# use a `.env` file at repository root for custom config
 touch .env
 yarn dev
 
@@ -31,3 +31,5 @@ yarn set-version 1.7.0-alpha.16
 ```
 
 This project uses a **SQLite** database to store the record-specific tokens that OpenCRVS Core uses to allow editing the records. See [./packages/mosip-api/src/database.ts](./packages/mosip-api/src/database.ts) for more information.
+
+See [./packages/mosip-api/src/constants.ts](./packages/mosip-api/src/constants.ts) for the list of environment variables that can be set to configure the server. Create a `.env` file in the root of the repository, if you want to override the local values.
