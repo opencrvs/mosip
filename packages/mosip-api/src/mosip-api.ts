@@ -71,7 +71,7 @@ export const postBirthRecord = async ({
   token: string;
   request: OpenCRVSRequest;
 }) => {
-  const { requestFields, audits, notification } = request.body;
+  const { requestFields, audit, notification } = request.body;
   const requestBody = JSON.stringify(
     {
       id: "string",
@@ -94,7 +94,7 @@ export const postBirthRecord = async ({
           capturedRegisteredDevices: "[]",
           creationDate: "202503121345",
         },
-        audits: audits,
+        audits: Array.of(audit),
         schemaJson: schemaJson,
       },
     },
@@ -129,7 +129,7 @@ export const postBirthRecord = async ({
       requesttime: new Date().toISOString(),
       version: "v1",
       request: {
-        registrationId: "652042703244",
+        registrationId: event.id,
         process: "CRVS_NEW",
         source: "OPENCRVS",
         additionalInfoReqId: "",
@@ -183,7 +183,7 @@ export const deactivateNid = async ({
   request: OpenCRVSRequest;
 }) => {
   const authToken = await getMosipAuthToken();
-  const { requestFields, audits, notification } = request.body;
+  const { requestFields, audit, notification } = request.body;
 
   const deactivatePacketRequestBody = JSON.stringify({
     id: "string",
@@ -206,7 +206,7 @@ export const deactivateNid = async ({
         capturedRegisteredDevices: "[]",
         creationDate: "20250225110733",
       },
-      audits: audits,
+      audits: Array.of(audit),
       schemaJson: schemaJson,
     },
   });
@@ -236,7 +236,7 @@ export const deactivateNid = async ({
       requesttime: new Date().toISOString(),
       version: "v1",
       request: {
-        registrationId: "65204270321266",
+        registrationId: event.id,
         process: "CRVS_DEATH",
         source: "OPENCRVS",
         additionalInfoReqId: "",

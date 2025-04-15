@@ -56,7 +56,7 @@ interface MOSIPPayload {
     deathDeclared: string;
     dateOfDeath: string;
   };
-  audits: {
+  audit: {
     uuid: string;
     createdAt: string;
     eventId: string;
@@ -75,7 +75,7 @@ interface MOSIPPayload {
     moduleId: string;
     description: string;
     actionTimeStamp: string;
-  }[];
+  };
 }
 
 export type OpenCRVSRequest = FastifyRequest<{
@@ -98,6 +98,7 @@ export const registrationEventHandler = async (
     : EVENT_TYPE.BIRTH;
 
   if (eventType === EVENT_TYPE.BIRTH) {
+    console.log("birth event!!!!");
     const transactionId = generateTransactionId();
     const registrationNumber = generateRegistrationNumber(trackingId);
 

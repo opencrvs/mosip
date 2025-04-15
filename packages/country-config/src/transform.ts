@@ -38,7 +38,7 @@ export interface MOSIPPayload {
     deathDeclared: string;
     dateOfDeath: string;
   };
-  audits: {
+  audit: {
     uuid: string;
     createdAt: string;
     eventId: string;
@@ -57,7 +57,7 @@ export interface MOSIPPayload {
     moduleId: string;
     description: string;
     actionTimeStamp: string;
-  }[];
+  };
 }
 
 type Resolver<T> = (bundle: fhir3.Bundle) => T;
