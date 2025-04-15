@@ -27,31 +27,55 @@ interface MOSIPPayload {
     recipientPhone: string;
   };
   requestFields: {
-    fullName: IdentityInfo[];
+    fullName: string;
     dateOfBirth: string;
-    gender: IdentityInfo[];
-    guardianOrParentName: IdentityInfo[];
+    gender: string;
+    guardianOrParentName: string;
     nationalIdNumber: string;
     passportNumber: string;
     drivingLicenseNumber: string;
     deceasedStatus: boolean;
-    residenceStatus: IdentityInfo[];
+    residenceStatus: string;
     vid: string;
     email: string;
     phone: string;
     guardianOrParentBirthCertificateNumber: string;
     birthCertificateNumber: string;
-    addressLine1: IdentityInfo[];
-    addressLine2: IdentityInfo[];
-    addressLine3: IdentityInfo[];
-    district: IdentityInfo[];
-    village: IdentityInfo[];
+    addressLine1: string;
+    addressLine2: string;
+    addressLine3: string;
+    district: string;
+    village: string;
     birthRegistrationCertificate: string;
     passportId: string;
     nationalId: string;
     drivingLicenseId: string;
     addressProof: string;
+    selectedHandles: string;
+    UIN: string;
+    deathDeclared: string;
+    dateOfDeath: string;
   };
+  audits: {
+    uuid: string;
+    createdAt: string;
+    eventId: string;
+    eventName: string;
+    eventType: string;
+    hostName: string;
+    hostIp: string;
+    applicationId: string;
+    applicationName: string;
+    sessionUserId: string;
+    sessionUserName: string;
+    id: string;
+    idType: string;
+    createdBy: string;
+    moduleName: string;
+    moduleId: string;
+    description: string;
+    actionTimeStamp: string;
+  }[];
 }
 
 export type OpenCRVSRequest = FastifyRequest<{
