@@ -66,6 +66,10 @@ export const mosipRegistrationForReviewHandler = ({ url }: { url: string }) =>
 export const mosipRegistrationForApprovalHandler =
   mosipRegistrationForReviewHandler;
 
+export const mosipCorrectionRequestHandler = mosipRegistrationForReviewHandler;
+export const mosipCorrectionlApprovalHandler = mosipRegistrationHandler;
+export const mosipCorrectionHandler = mosipRegistrationHandler;
+
 export const verify = async ({
   url,
   request,
