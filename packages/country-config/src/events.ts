@@ -67,7 +67,7 @@ export const mosipRegistrationForApprovalHandler =
   mosipRegistrationForReviewHandler;
 
 export const mosipCorrectionRequestHandler = mosipRegistrationForReviewHandler;
-export const mosipCorrectionlApprovalHandler = mosipRegistrationHandler;
+export const mosipCorrectionApprovalHandler = mosipRegistrationHandler;
 export const mosipCorrectionHandler = mosipRegistrationHandler;
 
 export const verify = async ({
