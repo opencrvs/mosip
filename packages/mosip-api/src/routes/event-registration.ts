@@ -98,7 +98,6 @@ export const registrationEventHandler = async (
     : EVENT_TYPE.BIRTH;
 
   if (eventType === EVENT_TYPE.BIRTH) {
-    console.log("birth event!!!!");
     const transactionId = generateTransactionId();
     const registrationNumber = generateRegistrationNumber(trackingId);
 
