@@ -199,7 +199,7 @@ export const reviewEventHandler = async (
   let fatherNid;
 
   try {
-    if (!father) throw new Error("Mother not found in bundle");
+    if (!father) throw new Error("Father not found in bundle");
 
     fatherNid = getPatientNationalId(father);
   } catch (e) {
