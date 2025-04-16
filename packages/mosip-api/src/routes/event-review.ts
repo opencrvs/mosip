@@ -110,14 +110,14 @@ export const reviewEventHandler = async (
     informantType !== "FATHER" &&
     informantType !== "SPOUSE"
   ) {
-    let relatedPerson = findEntry(
+    let relatedPerson = findEntry<fhir3.RelatedPerson>(
       "informant-details",
       composition,
       request.body,
-    ) as fhir3.RelatedPerson;
+    );
     const informant = getFromBundleById(
       request.body,
-      relatedPerson.patient.reference!.split("/")[1],
+      relatedPerson?.patient.reference!.split("/")[1] ?? "throws-to-catch",
     ).resource as fhir3.Patient;
 
     const informantDemographics = getDemographics(informant);
@@ -152,14 +152,16 @@ export const reviewEventHandler = async (
   /*
    * Update mother's details if the NID is available
    */
-  const mother = findEntry(
+  const mother = findEntry<fhir3.Patient>(
     "mother-details",
     composition,
     request.body,
-  ) as fhir3.Patient;
+  );
 
   let motherNid;
   try {
+    if (!mother) throw new Error("Mother not found in bundle");
+
     motherNid = getPatientNationalId(mother);
   } catch (e) {
     request.log.info(
@@ -169,7 +171,7 @@ export const reviewEventHandler = async (
   }
 
   if (motherNid) {
-    const motherDemographics = getDemographics(mother);
+    const motherDemographics = getDemographics(mother!);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
@@ -187,15 +189,17 @@ export const reviewEventHandler = async (
   /*
    * Update father's details if the NID is available
    */
-  const father = findEntry(
+  const father = findEntry<fhir3.Patient>(
     "father-details",
     composition,
     request.body,
-  ) as fhir3.Patient;
+  );
 
   let fatherNid;
 
   try {
+    if (!father) throw new Error("Mother not found in bundle");
+
     fatherNid = getPatientNationalId(father);
   } catch (e) {
     request.log.info(
@@ -205,7 +209,7 @@ export const reviewEventHandler = async (
   }
 
   if (fatherNid) {
-    const fatherDemographics = getDemographics(father);
+    const fatherDemographics = getDemographics(father!);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
@@ -223,14 +227,16 @@ export const reviewEventHandler = async (
   /*
    * Update deceased's details if the NID is available
    */
-  const deceased = findEntry(
+  const deceased = findEntry<fhir3.Patient>(
     "deceased-details",
     composition,
     request.body,
-  ) as fhir3.Patient;
+  );
 
   let deceasedNid;
   try {
+    if (!deceased) throw new Error("Deceased not found in bundle");
+
     deceasedNid = getPatientNationalId(deceased);
   } catch (e) {
     request.log.info(
@@ -240,7 +246,7 @@ export const reviewEventHandler = async (
   }
 
   if (deceasedNid) {
-    const deceasedDemographics = getDemographics(deceased);
+    const deceasedDemographics = getDemographics(deceased!);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
@@ -258,14 +264,16 @@ export const reviewEventHandler = async (
   /*
    * Update spouses's details if the NID is available
    */
-  const spouse = findEntry(
+  const spouse = findEntry<fhir3.Patient>(
     "spouse-details",
     composition,
     request.body,
-  ) as fhir3.Patient;
+  );
 
   let spouseNid;
   try {
+    if (!spouse) throw new Error("Spouse not found in bundle");
+
     spouseNid = getPatientNationalId(spouse);
   } catch (e) {
     request.log.info(
@@ -275,7 +283,7 @@ export const reviewEventHandler = async (
   }
 
   if (spouseNid) {
-    const spouseDemographics = getDemographics(spouse);
+    const spouseDemographics = getDemographics(spouse!);
     const result = await verifyAndUpdateRecord({
       eventId,
       event,
