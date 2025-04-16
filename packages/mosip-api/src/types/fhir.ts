@@ -584,7 +584,7 @@ export function getInformantNationalId(record: fhir3.Bundle) {
   return getPatientNationalId(informantPatient as fhir3.Patient);
 }
 
-export function findEntry(
+export function findEntry<T extends fhir3.FhirResource>(
   code: string,
   composition: fhir3.Composition,
   bundle: fhir3.Bundle,
@@ -594,7 +594,7 @@ export function findEntry(
     return undefined;
   }
   const reference = patientSection.entry[0].reference;
-  return getFromBundleById(bundle, reference!.split("/")[1]).resource;
+  return getFromBundleById(bundle, reference!.split("/")[1]).resource as T;
 }
 
 function transformFhirNameIntoIdentityInfo(name: fhir3.HumanName) {
