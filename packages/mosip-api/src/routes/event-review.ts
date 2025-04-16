@@ -115,15 +115,16 @@ export const reviewEventHandler = async (
       composition,
       request.body,
     );
-    const informant = getFromBundleById(
-      request.body,
-      relatedPerson?.patient.reference!.split("/")[1] ?? "throws-to-catch",
-    ).resource as fhir3.Patient;
 
-    const informantDemographics = getDemographics(informant);
-
+    let informantDemographics;
     let informantNID;
     try {
+      const informant = getFromBundleById(
+        request.body,
+        relatedPerson?.patient.reference!.split("/")[1] ?? "throws-to-catch",
+      ).resource as fhir3.Patient;
+
+      informantDemographics = getDemographics(informant);
       informantNID = getPatientNationalId(informant);
     } catch (e) {
       request.log.info(
@@ -138,9 +139,9 @@ export const reviewEventHandler = async (
         event,
         section: "informant",
         nid: informantNID,
-        name: informantDemographics.name,
-        dob: informantDemographics.dob,
-        gender: informantDemographics.gender,
+        name: informantDemographics!.name,
+        dob: informantDemographics!.dob,
+        gender: informantDemographics!.gender,
         token,
         logger: request.log,
       });
