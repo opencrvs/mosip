@@ -88,6 +88,16 @@ const initRoutes = (app: FastifyInstance) => {
   });
 };
 
+let corePublicKey: string;
+let publicKeyUpdatedAt = Date.now();
+const getCorePublicKey = async () => {
+  if (!corePublicKey) {
+    corePublicKey = await getPublicKey();
+  }
+
+  return corePublicKey;
+};
+
 export const buildFastify = async () => {
   const app = Fastify({
     logger: envToLogger[env.isProd ? "production" : "development"],
@@ -109,11 +119,8 @@ export const buildFastify = async () => {
     reply.status(500).send({ error: "An unexpected error occurred" });
   });
 
-  let corePublicKey = await getPublicKey();
-  let publicKeyUpdatedAt = Date.now();
-
   app.register(jwt, {
-    secret: { public: () => corePublicKey },
+    secret: { public: getCorePublicKey },
     verify: { algorithms: ["RS256"] },
   });
 
