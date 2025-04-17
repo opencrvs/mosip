@@ -13,11 +13,6 @@ import {
 } from "../registration-number";
 import { insertTransaction } from "../database";
 
-// bypass fhir payload validation as we are not sending fhir
-export const opencrvsRecordSchema = z.unknown().describe("Record as any");
-
-type IdentityInfo = { value: string; language: string };
-
 interface MOSIPPayload {
   compositionId: string;
   trackingId: string;
@@ -87,10 +82,7 @@ export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  console.log("wtf");
   const { trackingId, requestFields } = request.body;
-
-  const token = request.headers.authorization!.split(" ")[1];
 
   request.log.info({ trackingId }, "Received record from OpenCRVS");
 
@@ -99,20 +91,19 @@ export const registrationEventHandler = async (
     : EVENT_TYPE.BIRTH;
 
   if (eventType === EVENT_TYPE.BIRTH) {
-    console.log("helloy?");
-
     const transactionId = generateTransactionId();
-    const registrationNumber = generateRegistrationNumber(trackingId);
-
-    console.log("hello?");
 
     await mosip.postBirthRecord({
       event: { id: transactionId, trackingId },
-      token,
       request,
     });
 
-    insertTransaction(transactionId, token, registrationNumber);
+    const token = request.headers.authorization!.split(" ")[1];
+    insertTransaction(
+      transactionId,
+      token,
+      requestFields.birthCertificateNumber,
+    );
   }
 
   if (eventType === EVENT_TYPE.DEATH) {
