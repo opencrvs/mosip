@@ -5,12 +5,17 @@ import fs from "node:fs";
 export const env = cleanEnv(process.env, {
   PORT: port({ default: 20240 }),
   HOST: str({ default: "0.0.0.0", devDefault: "localhost" }),
+  ISSUER_URL: str({
+    devDefault: "http://localhost:20240",
+    example: "https://mosip-mock.mosip.opencrvs.dev",
+    desc: "This is the issuer of the verifiable credential without a `/`.",
+  }),
   SENDER_EMAIL_ADDRESS: email({
     default: "noreply@opencrvs.org",
     desc: "The email address that will be used to send emails such as mock NID card and NID (de)activation.",
   }),
 
-  DECRYPT_IDA_AUTH_PRIVATE_KEY_PATH: str({
+  PRIVATE_KEY_PATH: str({
     default: join(__dirname, "./mock-only-private-key.pem"),
   }),
 
@@ -43,8 +48,6 @@ export const env = cleanEnv(process.env, {
   }),
 });
 
-export const DECRYPT_IDA_AUTH_PRIVATE_KEY = fs
-  .readFileSync(env.DECRYPT_IDA_AUTH_PRIVATE_KEY_PATH)
-  .toString();
+export const PRIVATE_KEY = fs.readFileSync(env.PRIVATE_KEY_PATH).toString();
 
 export const EMAIL_ENABLED = Boolean(env.SMTP_HOST);

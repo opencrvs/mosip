@@ -563,7 +563,7 @@ export function getInformantType(record: fhir3.Bundle) {
     ?.coding?.[0].code;
 }
 
-function getInformantPatient(record: fhir3.Bundle) {
+export function getInformantPatient(record: fhir3.Bundle) {
   const compositionSection = findCompositionSection(
     "informant-details",
     getComposition(record),
@@ -597,6 +597,27 @@ export function findEntry<T extends fhir3.FhirResource>(
   return getFromBundleById(bundle, reference!.split("/")[1]).resource as T;
 }
 
+export const getQuestionnaireResponseAnswer = (
+  bundle: fhir3.Bundle,
+  question: string,
+) => {
+  const resourceType = bundle.entry?.find(
+    (entry) => entry.resource?.resourceType === "QuestionnaireResponse",
+  );
+  const questionnaireResponse: any = resourceType?.resource;
+
+  const answer = questionnaireResponse?.item?.find(
+    (item: any) => item.text === question,
+  );
+
+  if (answer) {
+    // for the current answer fields, type --> valueString
+    // for number fields type can be different
+    return answer.answer[0].valueString;
+  } else {
+    return "";
+  }
+};
 function transformFhirNameIntoIdentityInfo(name: fhir3.HumanName) {
   return {
     value: [name.given?.join(" ").trim(), name.family].join(" ").trim(),
@@ -624,4 +645,13 @@ export function getDemographics(patient: fhir3.Patient): {
     gender,
     dob,
   };
+}
+
+export function findTaskExtension<
+  T extends keyof KnownExtensionType,
+  Task extends SavedTask,
+>(task: Task, extensionUrl: T) {
+  return task.extension.find(
+    (ext): ext is KnownExtensionType[T] => ext.url === extensionUrl,
+  );
 }
