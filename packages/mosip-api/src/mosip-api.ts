@@ -71,7 +71,7 @@ export const postBirthRecord = async ({
   token: string;
   request: OpenCRVSRequest;
 }) => {
-  const { requestFields } = request.body;
+  const { requestFields, audit, notification } = request.body;
   const requestBody = JSON.stringify(
     {
       id: "string",
@@ -94,28 +94,7 @@ export const postBirthRecord = async ({
           capturedRegisteredDevices: "[]",
           creationDate: "202503121345",
         },
-        audits: [
-          {
-            uuid: "c75a6315-96e9-4a3f-bcda-2432ec354336",
-            createdAt: new Date().toISOString(),
-            eventId: "REG-EVT-066",
-            eventName: "PACKET_CREATION_SUCCESS",
-            eventType: "USER",
-            hostName: "desktop-q8u8jfo",
-            hostIp: "localhost",
-            applicationId: "REG",
-            applicationName: "REGISTRATION",
-            sessionUserId: "suraj",
-            sessionUserName: "suraj m",
-            id: "652042703244",
-            idType: "REGISTRATION_ID",
-            createdBy: "suraj m",
-            moduleName: "Packet Handler",
-            moduleId: "REG-MOD-117",
-            description: "Packet Succesfully Created",
-            actionTimeStamp: new Date().toISOString(),
-          },
-        ],
+        audits: Array.of(audit),
         schemaJson: schemaJson,
       },
     },
@@ -150,14 +129,14 @@ export const postBirthRecord = async ({
       requesttime: new Date().toISOString(),
       version: "v1",
       request: {
-        registrationId: "652042703244",
+        registrationId: event.id,
         process: "CRVS_NEW",
         source: "OPENCRVS",
         additionalInfoReqId: "",
         notificationInfo: {
-          name: request.body.notification.recipientFullName, // informant details should be passed in here.
-          phone: request.body.notification.recipientPhone || "",
-          email: request.body.notification.recipientEmail || "",
+          name: notification.recipientFullName,
+          phone: notification.recipientPhone || "",
+          email: notification.recipientEmail || "",
         },
       },
     },
@@ -204,6 +183,7 @@ export const deactivateNid = async ({
   request: OpenCRVSRequest;
 }) => {
   const authToken = await getMosipAuthToken();
+  const { requestFields, audit, notification } = request.body;
 
   const deactivatePacketRequestBody = JSON.stringify({
     id: "string",
@@ -216,11 +196,7 @@ export const deactivateNid = async ({
       process: "CRVS_DEATH",
       source: "OPENCRVS",
       schemaVersion: "0.300",
-      fields: {
-        UIN: "6520427661", // UIN to be passed from MOSIP when birth is created.
-        deathDeclared: "yes",
-        dateOfDeath: new Date().toISOString().slice(0, 10).replace(/-/g, "/"),
-      },
+      fields: requestFields,
       metaInfo: {
         metaData:
           '[{\n  "label" : "registrationType",\n  "value" : "CRVS_DEATH"\n}, {\n  "label" : "machineId",\n  "value" : "10084"\n}, {\n  "label" : "centerId",\n  "value" : "10018"\n}]',
@@ -230,28 +206,7 @@ export const deactivateNid = async ({
         capturedRegisteredDevices: "[]",
         creationDate: "20250225110733",
       },
-      audits: [
-        {
-          uuid: "c75a6315-96e9-4a3f-bcda-2432ec354336",
-          createdAt: new Date().toISOString(),
-          eventId: "REG-EVT-066",
-          eventName: "PACKET_CREATION_SUCCESS",
-          eventType: "USER",
-          hostName: "desktop-62k46ah",
-          hostIp: "localhost",
-          applicationId: "REG",
-          applicationName: "REGISTRATION",
-          sessionUserId: "suraj",
-          sessionUserName: "suraj m",
-          id: "65204270321266",
-          idType: "REGISTRATION_ID",
-          createdBy: "suraj m",
-          moduleName: "Packet Handler",
-          moduleId: "REG-MOD-117",
-          description: "Packet Succesfully Created",
-          actionTimeStamp: new Date().toISOString(),
-        },
-      ],
+      audits: Array.of(audit),
       schemaJson: schemaJson,
     },
   });
@@ -281,14 +236,14 @@ export const deactivateNid = async ({
       requesttime: new Date().toISOString(),
       version: "v1",
       request: {
-        registrationId: "65204270321266",
+        registrationId: event.id,
         process: "CRVS_DEATH",
         source: "OPENCRVS",
         additionalInfoReqId: "",
         notificationInfo: {
-          name: request.body.notification.recipientFullName, // informant details should be passed in here.
-          phone: request.body.notification.recipientPhone || "",
-          email: request.body.notification.recipientEmail || "",
+          name: notification.recipientFullName,
+          phone: notification.recipientPhone || "",
+          email: notification.recipientEmail || "",
         },
       },
     },
