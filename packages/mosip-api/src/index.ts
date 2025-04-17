@@ -113,7 +113,7 @@ export const buildFastify = async () => {
   let publicKeyUpdatedAt = Date.now();
 
   app.register(jwt, {
-    secret: { public: corePublicKey },
+    secret: { public: () => corePublicKey },
     verify: { algorithms: ["RS256"] },
   });
 
