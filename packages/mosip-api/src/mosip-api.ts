@@ -61,14 +61,12 @@ export async function getMosipAuthToken() {
 
 export const postBirthRecord = async ({
   event,
-  token,
   request,
 }: {
   event: {
     id: string;
     trackingId: string;
   };
-  token: string;
   request: OpenCRVSRequest;
 }) => {
   const { requestFields, audit, notification } = request.body;
@@ -120,7 +118,7 @@ export const postBirthRecord = async ({
     );
   }
 
-  const responseJson = await createPacketResponse.json();
+  await createPacketResponse.json();
 
   // packet manager: process packet API.
   const processPacketRequestBody = JSON.stringify(
@@ -166,10 +164,6 @@ export const postBirthRecord = async ({
       `Error in processing packet, response: ${await processPacketResponseJson?.errors[0]?.message}`,
     );
   }
-
-  // return processPacketResponseJson.response.workflowInstanceId as Promise<{
-  //   aid: string;
-  // }>;
 };
 
 export const deactivateNid = async ({

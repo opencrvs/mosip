@@ -88,6 +88,16 @@ const initRoutes = (app: FastifyInstance) => {
   });
 };
 
+let corePublicKey: string;
+let publicKeyUpdatedAt = Date.now();
+const getCorePublicKey = async () => {
+  if (!corePublicKey) {
+    corePublicKey = await getPublicKey();
+  }
+
+  return corePublicKey;
+};
+
 export const buildFastify = async () => {
   const app = Fastify({
     logger: envToLogger[env.isProd ? "production" : "development"],
@@ -109,18 +119,15 @@ export const buildFastify = async () => {
     reply.status(500).send({ error: "An unexpected error occurred" });
   });
 
-  let corePublicKey = await getPublicKey();
-  let publicKeyUpdatedAt = Date.now();
-
   app.register(jwt, {
-    secret: { public: () => corePublicKey },
+    secret: { public: getCorePublicKey },
     verify: { algorithms: ["RS256"] },
   });
 
   app.addHook("onRequest", async (request, reply) => {
-    // @TODO
-    // @NOTE Remove in production! This disables the JWT authentication for the MOSIP webhook
-    // As we don't have the WebSub documentation available yet, we don't fully know the authentication method so this is not built yet
+    // @NOTE This disables the JWT authentication for the MOSIP webhook
+    // The route is open for requests, but the credential will be verified it's from MOSIP
+    // This API should be allowed ONLY from the IP address of MOSIP on network / Traefik level
     if (request.routeOptions.url === "/websub/callback") return;
 
     try {
