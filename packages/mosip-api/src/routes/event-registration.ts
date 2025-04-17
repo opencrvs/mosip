@@ -87,6 +87,7 @@ export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
+  console.log("wtf");
   const { trackingId, requestFields } = request.body;
 
   const token = request.headers.authorization!.split(" ")[1];
@@ -98,8 +99,12 @@ export const registrationEventHandler = async (
     : EVENT_TYPE.BIRTH;
 
   if (eventType === EVENT_TYPE.BIRTH) {
+    console.log("helloy?");
+
     const transactionId = generateTransactionId();
     const registrationNumber = generateRegistrationNumber(trackingId);
+
+    console.log("hello?");
 
     await mosip.postBirthRecord({
       event: { id: transactionId, trackingId },
@@ -116,49 +121,6 @@ export const registrationEventHandler = async (
       event: { id: transactionId, trackingId },
       request,
     });
-
-    //   let nid;
-
-    //   try {
-    //     nid = getDeceasedNid(request.body);
-    //   } catch (e) {
-    //     request.log.info(
-    //       `Couldn't find the deceased's NID. This is non-fatal - it likely wasn't submitted. Bypassing NID deactivation...`,
-    //     );
-    //   }
-
-    //   let comment = "NID not entered for deactivation";
-
-    //   if (nid) {
-    //     const response = await mosip.deactivateNid({
-    //       nid,
-    //     });
-
-    //     if (response.status === 404) {
-    //       comment = `NID "${nid}" not found for deactivation`;
-    //     } else if (response.status === 409) {
-    //       comment = `NID "${nid}" already deactivated`;
-    //     } else if (response.ok) {
-    //       comment = `NID "${nid}" deactivated`;
-    //     } else {
-    //       throw new Error(
-    //         `NID deactivation failed in MOSIP. Response: ${response.statusText}`,
-    //       );
-    //     }
-    //   }
-
-    //   const registrationNumber = generateRegistrationNumber(trackingId);
-
-    //   // cannot confirm the registration at this point as we need to wait for the packet to process.
-    //   // can do a upsert in here.
-    //   await opencrvs.confirmRegistration(
-    //     {
-    //       id: eventId,
-    //       registrationNumber,
-    //       comment,
-    //     },
-    //     { headers: { Authorization: `Bearer ${token}` } },
-    //   );
   }
 
   return reply.code(202).send();

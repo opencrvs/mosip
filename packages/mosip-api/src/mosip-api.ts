@@ -166,10 +166,6 @@ export const postBirthRecord = async ({
       `Error in processing packet, response: ${await processPacketResponseJson?.errors[0]?.message}`,
     );
   }
-
-  // return processPacketResponseJson.response.workflowInstanceId as Promise<{
-  //   aid: string;
-  // }>;
 };
 
 export const deactivateNid = async ({
