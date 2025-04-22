@@ -39,7 +39,7 @@ export const env = cleanEnv(process.env, {
    * MOSIP WebSub hub
    */
   MOSIP_WEBSUB_TOPIC: str({
-    default: "CREDENTIAL_ISSUED",
+    devDefault: "CREDENTIAL_ISSUED",
     desc: "The Kafka topic that is listened for ID credential issuance",
   }),
   MOSIP_WEBSUB_CALLBACK_URL: str({
