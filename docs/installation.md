@@ -10,7 +10,7 @@ For E-Signet, OpenCRVS acts as a relying party. For the E-Signet related environ
 
 ```yml
 mosip-api:
-  image: ghcr.io/opencrvs/mosip-api:${MOSIP_API_VERSION}
+  image: ghcr.io/opencrvs/mosip-api:1.8.0
   volumes:
     - "/data/sqlite:/data/sqlite" # Defines the location of the SQLite database MOSIP API uses
   environment:
