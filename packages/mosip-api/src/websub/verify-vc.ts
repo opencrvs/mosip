@@ -3,14 +3,21 @@ import { z } from "zod";
 import { MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS } from "../constants";
 import canonicalize from "canonicalize";
 
+const BirthSubject = z.object({
+  birthCertificateNumber: z.string(),
+  VID: z.string(),
+  id: z.string().url(),
+  vcVer: z.literal("VC-V1"),
+});
+
+const DeathSubject = z.object({
+  id: z.string().url(),
+  vcVer: z.literal("VC-V1"),
+});
+
 export const MOSIPVerifiableCredential = z.object({
   issuanceDate: z.string().datetime(),
-  credentialSubject: z.object({
-    birthCertificateNumber: z.string(),
-    VID: z.string(),
-    id: z.string().url(),
-    vcVer: z.literal("VC-V1"),
-  }),
+  credentialSubject: z.union([BirthSubject, DeathSubject]),
   id: z.string().url(),
   proof: z.object({
     type: z.string(),
@@ -30,6 +37,12 @@ export const MOSIPVerifiableCredential = z.object({
   ]),
   issuer: z.string().url(),
 });
+
+export const isBirthSubject = (
+  subject: z.infer<typeof BirthSubject> | z.infer<typeof DeathSubject>,
+): subject is z.infer<typeof BirthSubject> => {
+  return "birthCertificateNumber" in subject && "VID" in subject;
+};
 
 export const verifyCredentialOrThrow = async (
   credential: z.infer<typeof MOSIPVerifiableCredential>,

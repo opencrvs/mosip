@@ -54,17 +54,6 @@ const { privateKeyPkcs8 } = extractKeysFromPkcs12(
   env.DECRYPT_P12_FILE_PASSWORD,
 );
 
-export const Credential = z.object({
-  id: z.string(),
-  issuanceDate: z.string().datetime(),
-  credentialSubject: z.object({
-    birthCertificateNumber: z.string(),
-    VID: z.string(),
-    id: z.string(),
-  }),
-  type: z.array(z.literal("MOSIPVerifiableCredential")),
-});
-
 /**
  * Decrypts a MOSIP credential using RSA-OAEP and AES-256-GCM.
  * @param encryptedBase64Credential - The Base64-encoded credential from the payload.

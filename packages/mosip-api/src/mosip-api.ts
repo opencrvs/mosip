@@ -166,7 +166,7 @@ export const postBirthRecord = async ({
   }
 };
 
-export const deactivateNid = async ({
+export const postDeathRecord = async ({
   event,
   request,
 }: {
@@ -221,7 +221,7 @@ export const deactivateNid = async ({
     );
   }
 
-  const responseJson = await deactivatePacketResponse.json();
+  await deactivatePacketResponse.json();
 
   // packet manager: process packet API.
   const processPacketRequestBody = JSON.stringify(
@@ -267,7 +267,6 @@ export const deactivateNid = async ({
       `Error in processing packet, response: ${await processPacketResponseJson?.errors[0]?.message}`,
     );
   }
-  // return processPacketResponse;
 };
 
 export const verifyNid = async ({

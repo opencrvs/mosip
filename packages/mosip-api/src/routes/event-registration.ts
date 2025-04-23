@@ -36,6 +36,7 @@ interface MOSIPPayload {
     phone: string;
     guardianOrParentBirthCertificateNumber: string;
     birthCertificateNumber: string;
+    deathCertificateNumber: string;
     addressLine1: string;
     addressLine2: string;
     addressLine3: string;
@@ -84,6 +85,8 @@ export const registrationEventHandler = async (
 ) => {
   const { trackingId, requestFields } = request.body;
 
+  const token = request.headers.authorization!.split(" ")[1];
+
   request.log.info({ trackingId }, "Received record from OpenCRVS");
 
   const eventType = requestFields.deceasedStatus
@@ -98,7 +101,6 @@ export const registrationEventHandler = async (
       request,
     });
 
-    const token = request.headers.authorization!.split(" ")[1];
     insertTransaction(
       transactionId,
       token,
@@ -108,10 +110,17 @@ export const registrationEventHandler = async (
 
   if (eventType === EVENT_TYPE.DEATH) {
     const transactionId = generateTransactionId();
-    await mosip.deactivateNid({
+
+    await mosip.postDeathRecord({
       event: { id: transactionId, trackingId },
       request,
     });
+
+    insertTransaction(
+      transactionId,
+      token,
+      requestFields.deathCertificateNumber,
+    );
   }
 
   return reply.code(202).send();
