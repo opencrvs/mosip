@@ -4,15 +4,15 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import {
-  registrationEventHandler,
-  opencrvsRecordSchema,
-} from "./routes/event-registration";
+import { registrationEventHandler } from "./routes/event-registration";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
 import { OIDPUserInfoSchema, OIDPQuerySchema } from "./esignet-api";
 import formbody from "@fastify/formbody";
-import { reviewEventHandler } from "./routes/event-review";
+import {
+  opencrvsRecordSchema,
+  reviewEventHandler,
+} from "./routes/event-review";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
@@ -41,9 +41,6 @@ const initRoutes = (app: FastifyInstance) => {
     url: "/events/registration",
     method: "POST",
     handler: registrationEventHandler,
-    schema: {
-      body: opencrvsRecordSchema,
-    },
   });
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/events/review",

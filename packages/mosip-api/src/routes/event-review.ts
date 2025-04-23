@@ -11,6 +11,7 @@ import {
 } from "../types/fhir";
 import { updateField } from "../opencrvs-api";
 import { verifyNid } from "../mosip-api";
+import { z } from "zod";
 
 type OpenCRVSRequest = FastifyRequest<{
   Body: fhir3.Bundle;
@@ -73,6 +74,15 @@ const verifyAndUpdateRecord = async ({
   }
   return authStatus;
 };
+
+export const opencrvsRecordSchema = z
+  .object({
+    resourceType: z.enum(["Bundle"]),
+    type: z.enum(["document"]),
+    entry: z.array(z.unknown()),
+  })
+  .catchall(z.unknown())
+  .describe("Record as FHIR Bundle");
 
 export const reviewEventHandler = async (
   request: OpenCRVSRequest,
