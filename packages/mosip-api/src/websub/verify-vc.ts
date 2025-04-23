@@ -1,6 +1,5 @@
-import { compactVerify, flattenedVerify, importSPKI } from "jose";
+import { flattenedVerify, importSPKI } from "jose";
 import { z } from "zod";
-import { MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS } from "../constants";
 import canonicalize from "canonicalize";
 
 const BirthSubject = z.object({

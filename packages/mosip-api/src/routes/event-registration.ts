@@ -21,7 +21,7 @@ interface MOSIPPayload {
     recipientEmail: string;
     recipientPhone: string;
   };
-  requestFields: {
+  requestFields: Partial<{
     fullName: string;
     dateOfBirth: string;
     gender: string;
@@ -51,7 +51,7 @@ interface MOSIPPayload {
     UIN: string;
     deathDeclared: string;
     dateOfDeath: string;
-  };
+  }>;
   audit: {
     uuid: string;
     createdAt: string;
@@ -89,11 +89,9 @@ export const registrationEventHandler = async (
 
   request.log.info({ trackingId }, "Received record from OpenCRVS");
 
-  const eventType = requestFields.deceasedStatus
-    ? EVENT_TYPE.DEATH
-    : EVENT_TYPE.BIRTH;
+  const birthCertificateNumber = requestFields.birthCertificateNumber;
 
-  if (eventType === EVENT_TYPE.BIRTH) {
+  if (birthCertificateNumber) {
     const transactionId = generateTransactionId();
 
     await mosip.postBirthRecord({
@@ -101,14 +99,12 @@ export const registrationEventHandler = async (
       request,
     });
 
-    insertTransaction(
-      transactionId,
-      token,
-      requestFields.birthCertificateNumber,
-    );
+    insertTransaction(transactionId, token, birthCertificateNumber);
   }
 
-  if (eventType === EVENT_TYPE.DEATH) {
+  const deathCertificateNumber = requestFields.deathCertificateNumber;
+
+  if (deathCertificateNumber) {
     const transactionId = generateTransactionId();
 
     await mosip.postDeathRecord({
@@ -116,11 +112,7 @@ export const registrationEventHandler = async (
       request,
     });
 
-    insertTransaction(
-      transactionId,
-      token,
-      requestFields.deathCertificateNumber,
-    );
+    insertTransaction(transactionId, token, deathCertificateNumber);
   }
 
   return reply.code(202).send();
