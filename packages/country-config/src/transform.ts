@@ -22,6 +22,7 @@ export interface MOSIPPayload {
     email: string;
     phone: string;
     guardianOrParentBirthCertificateNumber: string;
+    deathCertificateNumber: string;
     birthCertificateNumber: string;
     addressLine1: string;
     addressLine2: string;
