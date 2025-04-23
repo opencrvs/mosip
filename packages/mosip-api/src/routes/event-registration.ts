@@ -1,17 +1,13 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
 import * as mosip from "../mosip-api";
-import {
-  EVENT_TYPE,
-  getComposition,
-  getEventType,
-  getTrackingId,
-} from "../types/fhir";
+import { EVENT_TYPE } from "../types/fhir";
 import {
   generateRegistrationNumber,
   generateTransactionId,
 } from "../registration-number";
 import { insertTransaction } from "../database";
+import * as opencrvs from "../opencrvs-api";
+import { decode } from "jsonwebtoken";
 
 interface MOSIPPayload {
   compositionId: string;
@@ -83,6 +79,7 @@ export const registrationEventHandler = async (
   reply: FastifyReply,
 ) => {
   const { trackingId, requestFields } = request.body;
+  const token = request.headers.authorization!.split(" ")[1];
 
   request.log.info({ trackingId }, "Received record from OpenCRVS");
 
@@ -98,7 +95,6 @@ export const registrationEventHandler = async (
       request,
     });
 
-    const token = request.headers.authorization!.split(" ")[1];
     insertTransaction(
       transactionId,
       token,
@@ -108,10 +104,20 @@ export const registrationEventHandler = async (
 
   if (eventType === EVENT_TYPE.DEATH) {
     const transactionId = generateTransactionId();
+    const { recordId } = decode(token) as { recordId: string };
+
     await mosip.deactivateNid({
       event: { id: transactionId, trackingId },
       request,
     });
+
+    await opencrvs.confirmRegistration(
+      {
+        id: recordId,
+        registrationNumber: generateRegistrationNumber(trackingId),
+      },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
   }
 
   return reply.code(202).send();
