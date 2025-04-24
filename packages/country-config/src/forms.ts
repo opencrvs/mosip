@@ -139,9 +139,17 @@ export const idReader = (
   sectionId: string,
   conditionals: any[],
   readers: any[],
+  /** E-Signet callback field name */
+  esignetCallbackFieldName?: string,
 ) => {
   const fieldName: string = "idReader";
   const fieldId: string = `${event}.${sectionId}.${sectionId}-view-group.${fieldName}`;
+  const initialValue = esignetCallbackFieldName
+    ? {
+        dependsOn: [esignetCallbackFieldName],
+        expression: "''",
+      }
+    : "";
   return {
     name: fieldName,
     customQuestionMappingId: fieldId,
@@ -153,7 +161,7 @@ export const idReader = (
       defaultMessage: "ID verification",
     },
     hideInPreview: true,
-    initialValue: "",
+    initialValue,
     validator: [],
     conditionals,
     dividerLabel: {
@@ -342,6 +350,7 @@ export const idReaderFields = (
           "$form?.verified === 'verified' || $form?.verified === 'authenticated' || $form?.verified === 'failed' || $form?.verified === 'failedFetchIdDetails' || !!$form?.esignetCallback?.loading",
       }),
       readers,
+      esignetConfig?.callback.fieldName,
     ),
   ];
   if (esignetConfig) {
