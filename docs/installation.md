@@ -1,3 +1,11 @@
+# FAQ
+
+**What will be the endpoint to share and expose to MOSIP?**
+
+```
+https://mosip-api.{{hostname}}/websub/callback
+```
+
 # Deploying OpenCRVS MOSIP integration
 
 After you have finished your country configuration and tested it locally, you can continue deploying the integration.
