@@ -5,6 +5,7 @@ import { PRIVATE_KEY, env } from "../constants";
 import { encryptMosipCredential } from "../websub/crypto";
 import crypto from "node:crypto";
 import { issueVerifiableCredential } from "../verifiable-credentials/issue";
+import { deactivateNid } from "../deactivate-nid";
 
 const sendVerifiableCredential = async (
   id: string,
@@ -74,6 +75,9 @@ type CrvsDeathRequest = {
   request: {
     process: "CRVS_DEATH";
     id: string;
+    fields: {
+      nationalIdNumber?: string;
+    };
   };
 };
 
@@ -81,6 +85,12 @@ type CrvsRequest = CrvsNewRequest | CrvsDeathRequest;
 
 const isCrvsNewRequest = (request: CrvsRequest): request is CrvsNewRequest => {
   return request.request.process === "CRVS_NEW";
+};
+
+const isCrvsDeathRequest = (
+  request: CrvsRequest,
+): request is CrvsDeathRequest => {
+  return request.request.process === "CRVS_DEATH";
 };
 
 export const packetManagerCreateHandler: RouteHandlerMethod = async (
@@ -109,8 +119,11 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
     }).catch((e) => {
       console.error(e);
     });
-  } else {
+  }
+
+  if (isCrvsDeathRequest(payload)) {
     const id = payload.request.id;
+    const nationalIdNumber = payload.request.fields.nationalIdNumber;
 
     sendVerifiableCredential(id, {
       id: `http://credential.idrepo/credentials/${id}`,
@@ -118,6 +131,8 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
     }).catch((e) => {
       console.error(e);
     });
+
+    nationalIdNumber && deactivateNid(nationalIdNumber);
   }
 
   return reply.status(200).send({
