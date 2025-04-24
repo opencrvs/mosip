@@ -3,6 +3,7 @@ import { EMAIL_ENABLED, env } from "./constants";
 
 export const sendEmail = async (subject: string, text: string) => {
   if (!EMAIL_ENABLED) {
+    console.log(`Interrupted email sending`, { subject, text });
     return;
   }
 

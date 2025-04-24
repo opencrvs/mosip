@@ -10,28 +10,15 @@ export const PUBLIC_KEY_URL = `${env.ISSUER_URL}/.well-known/public-key.json`;
  * Issues a mock verifiable credential conforming to MOSIP standards. This is _not securely proofed_ as it's an mock. If it is, it's by accident.
  * Do not use this as a reference for production code.
  */
-export async function issueVerifiableCredential({
-  birthCertificateNumber,
-  vid,
-  id,
-}: {
-  birthCertificateNumber: string;
-  vid: string;
-  id: string;
-}) {
+export async function issueVerifiableCredential(
+  subject: Record<string, string>,
+) {
   const privateKey = createPrivateKey(PRIVATE_KEY);
   const issuanceDate = new Date().toISOString();
 
-  const credentialSubject = {
-    birthCertificateNumber,
-    VID: vid,
-    id: `http://credential.idrepo/credentials/${id}`,
-    vcVer: "VC-V1",
-  };
-
   const unsignedVC = {
     issuanceDate,
-    credentialSubject,
+    credentialSubject: subject,
     id: `http://credential.idrepo/credentials/${randomUUID()}`,
     type: ["VerifiableCredential", "MOSIPVerifiableCredential"],
     "@context": [

@@ -3,7 +3,6 @@ import formbody from "@fastify/formbody";
 import { EMAIL_ENABLED, env, PRIVATE_KEY } from "./constants";
 import { packetManagerCreateHandler } from "./routes/packet-manager-create";
 import { packetManagerProcessHandler } from "./routes/packet-manager-process";
-import { deactivateNidHandler } from "./routes/deactivate-nid";
 import { idAuthenticationHandler } from "./ida-auth-sdk/id-authentication";
 import { webSubHubHandler } from "./websub/websub-hub";
 import { packetManagerAuthHandler } from "./routes/packet-manager-auth";
@@ -14,7 +13,6 @@ const app = Fastify();
 
 app.register(formbody);
 
-app.post("/webhooks/opencrvs/death", { handler: deactivateNidHandler });
 app.post("/idauthentication/v1/auth/:mispLk/:partnerId/:apiKey", {
   handler: idAuthenticationHandler,
 });

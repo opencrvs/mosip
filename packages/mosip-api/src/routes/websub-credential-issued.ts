@@ -5,7 +5,7 @@ import { decode } from "jsonwebtoken";
 import * as opencrvs from "../opencrvs-api";
 import { decryptMosipCredential } from "../websub/crypto";
 import { MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS, env } from "../constants";
-import { verifyCredentialOrThrow } from "../websub/verify-vc";
+import { isBirthSubject, verifyCredentialOrThrow } from "../websub/verify-vc";
 
 export const CredentialIssuedSchema = z.object({
   publisher: z.string(),
@@ -51,19 +51,29 @@ export const credentialIssuedHandler = async (
   const { token, registrationNumber } = getTransactionAndDiscard(transactionId);
   const { recordId } = decode(token) as { recordId: string };
 
-  await opencrvs.confirmRegistration(
-    {
-      id: recordId,
-      registrationNumber,
-      identifiers: [
-        {
-          type: "NATIONAL_ID",
-          value: verifiableCredential.credentialSubject.VID,
-        },
-      ],
-    },
-    { headers: { Authorization: `Bearer ${token}` } },
-  );
+  if (isBirthSubject(verifiableCredential.credentialSubject)) {
+    await opencrvs.confirmRegistration(
+      {
+        id: recordId,
+        registrationNumber,
+        identifiers: [
+          {
+            type: "NATIONAL_ID",
+            value: verifiableCredential.credentialSubject.VID,
+          },
+        ],
+      },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+  } else {
+    await opencrvs.confirmRegistration(
+      {
+        id: recordId,
+        registrationNumber,
+      },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+  }
 
   return reply.send({ status: "RECEIVED" }).status(200);
 };
