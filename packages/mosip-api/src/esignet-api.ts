@@ -219,5 +219,11 @@ export const fetchUserInfo = async (accessToken: string) => {
 
   const response = await request.text();
   const decodedResponse = decodeUserInfoResponse(response);
+  if (!decodedResponse) {
+    throw new Error(
+      "Something went wrong with the OIDP user info request. No user info was returned. Response from OIDP: " +
+        JSON.stringify(response),
+    );
+  }
   return pickUserInfo(decodedResponse);
 };
