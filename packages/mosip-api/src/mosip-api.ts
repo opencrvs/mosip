@@ -10,7 +10,9 @@ export class MOSIPError extends Error {
   }
 }
 
-export async function getMosipAuthToken() {
+export type AuthType = "PACKET" | "WEBSUB";
+
+export async function getMosipAuthToken(authType: AuthType) {
   const response = await fetch(env.MOSIP_AUTH_URL, {
     method: "POST",
     headers: {
@@ -22,8 +24,14 @@ export async function getMosipAuthToken() {
       requesttime: new Date().toISOString(),
       metadata: {},
       request: {
-        clientId: env.MOSIP_AUTH_CLIENT_ID,
-        secretKey: env.MOSIP_AUTH_CLIENT_SECRET,
+        clientId:
+          authType === "PACKET"
+            ? env.MOSIP_PACKET_AUTH_CLIENT_ID
+            : env.MOSIP_WEBSUB_AUTH_CLIENT_ID,
+        secretKey:
+          authType === "PACKET"
+            ? env.MOSIP_PACKET_AUTH_CLIENT_SECRET
+            : env.MOSIP_WEBSUB_AUTH_CLIENT_SECRET,
         appId: env.MOSIP_AUTH_CLIENT_APP_ID,
       },
     }),
@@ -86,9 +94,8 @@ export const postBirthRecord = async ({
         metaInfo: {
           metaData:
             '[{\n  "label" : "registrationType",\n  "value" : "CRVS_NEW"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
-          registrationId: "652042703244",
-          operationsData:
-            '[{\n  "label" : "officerId",\n  "value" : "sithara.bevolv"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
+          registrationId: audit.id,
+          operationsData: `[{\n  "label" : "officerId",\n  "value" : "sithara.bevolv"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]`,
           capturedRegisteredDevices: "[]",
           creationDate: "202503121345",
         },
@@ -100,7 +107,7 @@ export const postBirthRecord = async ({
     2,
   );
 
-  const authToken = await getMosipAuthToken();
+  const authToken = await getMosipAuthToken("PACKET");
 
   // packet manager: create packet
   const createPacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
@@ -176,7 +183,7 @@ export const postDeathRecord = async ({
   };
   request: OpenCRVSRequest;
 }) => {
-  const authToken = await getMosipAuthToken();
+  const authToken = await getMosipAuthToken("PACKET");
   const { requestFields, audit, notification } = request.body;
 
   const deactivatePacketRequestBody = JSON.stringify({
@@ -194,7 +201,7 @@ export const postDeathRecord = async ({
       metaInfo: {
         metaData:
           '[{\n  "label" : "registrationType",\n  "value" : "CRVS_DEATH"\n}, {\n  "label" : "machineId",\n  "value" : "10084"\n}, {\n  "label" : "centerId",\n  "value" : "10018"\n}]',
-        registrationId: "65204270321266",
+        registrationId: audit.id,
         operationsData:
           '[{\n  "label" : "officerId",\n  "value" : "nambi"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
         capturedRegisteredDevices: "[]",

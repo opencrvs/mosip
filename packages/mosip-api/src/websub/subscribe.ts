@@ -6,7 +6,7 @@ import { getMosipAuthToken } from "../mosip-api";
  * The WebSub eventually informs about a successful credential issuance.
  */
 export const initWebSub = async () => {
-  const authToken = await getMosipAuthToken();
+  const authToken = await getMosipAuthToken("WEBSUB");
 
   const response = await fetch(env.MOSIP_WEBSUB_HUB_URL, {
     method: "POST",
