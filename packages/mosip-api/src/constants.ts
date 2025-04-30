@@ -29,8 +29,8 @@ export const env = cleanEnv(process.env, {
       "http://localhost:20240/v1/authmanager/authenticate/clientidsecretkey",
   }),
   MOSIP_AUTH_CLIENT_APP_ID: str({ default: "admin" }),
-  MOSIP_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
-  MOSIP_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
+  MOSIP_PACKET_AUTH_CLIENT_ID: str({ devDefault: "mosip-regproc-client" }),
+  MOSIP_PACKET_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
 
   // MOSIP WebSub hub
   MOSIP_WEBSUB_HUB_URL: url({
@@ -55,6 +55,8 @@ export const env = cleanEnv(process.env, {
     example: "https://your-domain.com/.well-known/public-key.json",
     desc: "Comma-separated list of verifiable credential allowlist URLs. Used to verify the authenticity of the verifiable credential.",
   }),
+  MOSIP_WEBSUB_AUTH_CLIENT_ID: str({ devDefault: "mosip-websub-client" }),
+  MOSIP_WEBSUB_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
 
   // MOSIP Birth & Death packets
   TRANSACTION_ID_PREFIX: str({
