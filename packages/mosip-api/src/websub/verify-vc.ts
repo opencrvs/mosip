@@ -1,74 +1,38 @@
-import { flattenedVerify, importSPKI } from "jose";
-import { z } from "zod";
-import canonicalize from "canonicalize";
-
-const BirthSubject = z.object({
-  birthCertificateNumber: z.string(),
-  VID: z.string(),
-  id: z.string().url(),
-  vcVer: z.literal("VC-V1"),
-});
-
-const DeathSubject = z.object({
-  id: z.string().url(),
-  vcVer: z.literal("VC-V1"),
-});
-
-export const MOSIPVerifiableCredential = z.object({
-  issuanceDate: z.string().datetime(),
-  credentialSubject: z.union([BirthSubject, DeathSubject]),
-  id: z.string().url(),
-  proof: z.object({
-    type: z.string(),
-    created: z.string().datetime(),
-    proofPurpose: z.string(),
-    verificationMethod: z.string().url(),
-    jws: z.string(),
-  }),
-  type: z.tuple([
-    z.literal("VerifiableCredential"),
-    z.literal("MOSIPVerifiableCredential"),
-  ]),
-  "@context": z.tuple([
-    z.literal("https://www.w3.org/2018/credentials/v1"),
-    z.string().endsWith("/.well-known/mosip-context.json"),
-    z.object({ sec: z.literal("https://w3id.org/security#") }),
-  ]),
-  issuer: z.string().url(),
-});
-
-export const isBirthSubject = (
-  subject: z.infer<typeof BirthSubject> | z.infer<typeof DeathSubject>,
-): subject is z.infer<typeof BirthSubject> => {
-  return "birthCertificateNumber" in subject && "VID" in subject;
-};
+import vc from "@digitalbazaar/vc";
+import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
+import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
+import { securityLoader } from "@digitalbazaar/security-document-loader";
 
 export const verifyCredentialOrThrow = async (
-  credential: z.infer<typeof MOSIPVerifiableCredential>,
+  credential: any, // you can run it through your Zod schema first if you want
   { allowList }: { allowList: string[] },
 ) => {
-  const { jws, verificationMethod } = credential.proof;
-  const { proof, ...payload } = credential;
+  const { verificationMethod } = credential.proof;
 
   if (!allowList.includes(verificationMethod)) {
     throw new Error("❌ Verification method not allowed");
   }
 
-  const res = await fetch(verificationMethod);
-  const { publicKeyPem } = await res.json();
-  const key = await importSPKI(publicKeyPem, "PS256");
+  // Load public key (usually you'd fetch this from verificationMethod URI or a DID)
+  const key = await Ed25519VerificationKey2020.from({
+    id: verificationMethod,
+    controller: credential.issuer,
+    publicKeyMultibase: "<your-public-key-multibase-here>", // Replace with actual key
+  });
 
-  const [encodedHeader, , encodedSignature] = jws.split(".");
+  const suite = new Ed25519Signature2020({ key });
 
-  const canonicalPayload = canonicalize(payload);
-  const payloadBytes = new TextEncoder().encode(canonicalPayload);
+  const documentLoader = securityLoader().build();
 
-  await flattenedVerify(
-    {
-      protected: encodedHeader,
-      payload: payloadBytes,
-      signature: encodedSignature,
-    },
-    key,
-  );
+  const result = await vc.verifyCredential({
+    credential,
+    suite,
+    documentLoader,
+  });
+
+  if (!result.verified) {
+    throw new Error("❌ VC verification failed");
+  }
+
+  return result;
 };

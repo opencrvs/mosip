@@ -20,16 +20,17 @@ app.get("/.well-known/public-key.json", (_, reply) => {
   const privateKey = createPrivateKey(PRIVATE_KEY);
   const publicKey = createPublicKey(privateKey);
 
-  const publicKeyPem = publicKey
-    .export({ format: "pem", type: "spki" })
-    .toString();
+  // const publicKeyPem = publicKey
+  //   .export({ format: "pem", type: "spki" })
+  //   .toString();
 
   const publicKeyJson = {
     "@context": "https://w3id.org/security/v2",
     type: "RsaVerificationKey2018",
     id: PUBLIC_KEY_URL,
     controller: `${env.ISSUER_URL}/.well-known/controller.json`,
-    publicKeyPem,
+    publicKeyPem:
+      "-----BEGIN PUBLIC KEY-----\r\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAw34EhsyQFAbB+jideCNO\r\n2HXAMQDR4NnwsVNQVcV8OxieMhi1pSreJZ8dt/MsgmdI3AW53WQ4ltXiZwdQ1Q/L\r\nm2t2kzFNAY57o8KG/V9sQIc5/oKH+G2y3+gotR+TaWxAg3RvSPG6X2KMSpKA4UB4\r\n+JVuqQNNZLdzGwVCf5+SMvjiamOX5xRnyyjhPJGKloykOIfmKaDRrXmV5QX5Lapk\r\nmy0GoAWIB96JpznDOFQlRMVGMKXr2crlxeHPBjiEm70ZnFpIGaacxCaFnuxWcCeb\r\nIoPufZaF7CkwVoSfKNltztsAgQkDUKO/kZ3hlxjj6do1f35Ow8mxU/RnSrq3mgFW\r\nWQIDAQAB\r\n-----END PUBLIC KEY-----",
   };
   reply.send(publicKeyJson);
 });

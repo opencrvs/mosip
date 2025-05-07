@@ -14,11 +14,11 @@ const main = async () => {
 
     // Crypto encrypt
     encryptCertPath: join(__dirname, "../../../certs/ida-partner.crt"),
-    decryptP12FilePath: join(__dirname, "../../../certs/keystore.p12"),
+    decryptP12FilePath: join(__dirname, "../../../certs/opencrvs.p12"),
     decryptP12FilePassword: "",
 
     // Crypto signature
-    signP12FilePath: join(__dirname, "../../../certs/keystore.p12"),
+    signP12FilePath: join(__dirname, "../../../certs/opencrvs.p12"),
     signP12FilePassword: "",
   });
 

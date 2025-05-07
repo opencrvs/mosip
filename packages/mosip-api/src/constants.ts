@@ -42,7 +42,7 @@ export const env = cleanEnv(process.env, {
     desc: "MOSIP WebSub `hub.secret`",
   }),
   MOSIP_WEBSUB_TOPIC: str({
-    devDefault: "CREDENTIAL_ISSUED",
+    devDefault: "patner-opencrvs-i1/CREDENTIAL_ISSUED",
     desc: "The Kafka topic that is listened for ID credential issuance, `hub.topic`",
   }),
   MOSIP_WEBSUB_CALLBACK_URL: str({
@@ -101,15 +101,15 @@ export const env = cleanEnv(process.env, {
     devDefault: join(__dirname, "../../../certs/ida-partner.crt"),
   }),
   DECRYPT_P12_FILE_PATH: str({
-    devDefault: join(__dirname, "../../../certs/keystore.p12"),
+    devDefault: join(__dirname, "../../../certs/opencrvs.p12"),
   }),
-  DECRYPT_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
+  DECRYPT_P12_FILE_PASSWORD: str({ devDefault: "1234" }),
 
   // MOSIP Crypto signature
   SIGN_P12_FILE_PATH: str({
-    devDefault: join(__dirname, "../../../certs/keystore.p12"),
+    devDefault: join(__dirname, "../../../certs/opencrvs.p12"),
   }),
-  SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
+  SIGN_P12_FILE_PASSWORD: str({ devDefault: "1234" }),
 
   // MOSIP packet manager details
   MOSIP_CREATE_PACKET_URL: str({
