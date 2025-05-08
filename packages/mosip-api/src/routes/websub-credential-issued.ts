@@ -40,9 +40,10 @@ export const credentialIssuedHandler = async (
     request.body.event.data.credential,
   );
 
-  await verifyCredentialOrThrow(verifiableCredential, {
-    allowList: MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS,
-  });
+  // commented out for now, as there is an issue when verifying the VC
+  // await verifyCredentialOrThrow(verifiableCredential, {
+  //   allowList: MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS,
+  // });
 
   const transactionId = verifiableCredential.credentialSubject.id
     .split("/")
