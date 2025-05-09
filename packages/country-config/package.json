@@ -1,6 +1,6 @@
 {
   "name": "@opencrvs/mosip",
-  "version": "1.8.0-beta.7.dev",
+  "version": "1.8.0-beta.8.dev",
   "license": "MPL-2.0",
   "main": "./build/index.js",
   "exports": {
