@@ -331,7 +331,36 @@ export const getInitialValueFromIDReader = (fieldNameInReader: string) => ({
   expression: `$form?.idReader?.${fieldNameInReader} || $form?.esignetCallback?.data?.${fieldNameInReader} || ""`,
 });
 
-export const idReaderFields = (
+// Define a type def so that a country implementor cannot
+// provide both QR and E-Signet config undefined at the same time
+type IDReaderParams = {
+  (
+    event: "birth" | "death",
+    section: "informant" | "mother" | "father" | "spouse" | "deceased",
+    qrConfig: QRConfig,
+    esignetConfig: ESignetConfig,
+    verifiedCustomFieldMapping: any,
+    conditionals?: any[],
+  ): any[];
+  (
+    event: "birth" | "death",
+    section: "informant" | "mother" | "father" | "spouse" | "deceased",
+    qrConfig: QRConfig,
+    esignetConfig: undefined,
+    verifiedCustomFieldMapping: any,
+    conditionals?: any[],
+  ): any[];
+  (
+    event: "birth" | "death",
+    section: "informant" | "mother" | "father" | "spouse" | "deceased",
+    qrConfig: undefined,
+    esignetConfig: ESignetConfig,
+    verifiedCustomFieldMapping: any,
+    conditionals?: any[],
+  ): any[];
+};
+
+export const idReaderFields: IDReaderParams = (
   event: "birth" | "death",
   section: "informant" | "mother" | "father" | "spouse" | "deceased",
   qrConfig: QRConfig | undefined,
