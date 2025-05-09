@@ -334,12 +334,15 @@ export const getInitialValueFromIDReader = (fieldNameInReader: string) => ({
 export const idReaderFields = (
   event: "birth" | "death",
   section: "informant" | "mother" | "father" | "spouse" | "deceased",
-  qrConfig: QRConfig,
+  qrConfig: QRConfig | undefined,
   esignetConfig: ESignetConfig | undefined,
   verifiedCustomFieldMapping: any,
   conditionals: any[] = [],
 ) => {
-  const readers: any[] = [qr(qrConfig)];
+  const readers: any[] = [];
+  if (qrConfig) {
+    readers.push(qr(qrConfig));
+  }
   const fields: any[] = [
     idReader(
       event,
