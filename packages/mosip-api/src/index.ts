@@ -98,6 +98,7 @@ const getCorePublicKey = async () => {
 export const buildFastify = async () => {
   const app = Fastify({
     logger: envToLogger[env.isProd ? "production" : "development"],
+    ignoreTrailingSlash: true, // MOSIP can call /websub/callback/ with a trailing slash
   });
 
   app.setValidatorCompiler(validatorCompiler);
