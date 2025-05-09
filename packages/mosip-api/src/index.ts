@@ -83,6 +83,15 @@ const initRoutes = (app: FastifyInstance) => {
       body: CredentialIssuedSchema,
     },
   });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "POST",
+    url: "/websub/callback/", // see constants.ts `${env.MOSIP_WEBSUB_CALLBACK_URL}`
+    handler: credentialIssuedHandler,
+    schema: {
+      body: CredentialIssuedSchema,
+    },
+  });
 };
 
 let corePublicKey: string;
@@ -125,7 +134,11 @@ export const buildFastify = async () => {
     // @NOTE This disables the JWT authentication for the MOSIP webhook
     // The route is open for requests, but the credential will be verified it's from MOSIP
     // This API should be allowed ONLY from the IP address of MOSIP on network / Traefik level
-    if (request.routeOptions.url === "/websub/callback") return;
+    if (
+      request.routeOptions.url &&
+      request.routeOptions.url.startsWith("/websub/callback")
+    )
+      return;
 
     try {
       await request.jwtVerify();
