@@ -126,11 +126,7 @@ export const buildFastify = async () => {
     // @NOTE This disables the JWT authentication for the MOSIP webhook
     // The route is open for requests, but the credential will be verified it's from MOSIP
     // This API should be allowed ONLY from the IP address of MOSIP on network / Traefik level
-    if (
-      request.routeOptions.url &&
-      request.routeOptions.url.startsWith("/websub/callback")
-    )
-      return;
+    if (request.routeOptions.url === "/websub/callback") return;
 
     try {
       await request.jwtVerify();
