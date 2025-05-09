@@ -83,15 +83,6 @@ const initRoutes = (app: FastifyInstance) => {
       body: CredentialIssuedSchema,
     },
   });
-
-  app.withTypeProvider<ZodTypeProvider>().route({
-    method: "POST",
-    url: "/websub/callback/", // see constants.ts `${env.MOSIP_WEBSUB_CALLBACK_URL}`
-    handler: credentialIssuedHandler,
-    schema: {
-      body: CredentialIssuedSchema,
-    },
-  });
 };
 
 let corePublicKey: string;
@@ -107,6 +98,7 @@ const getCorePublicKey = async () => {
 export const buildFastify = async () => {
   const app = Fastify({
     logger: envToLogger[env.isProd ? "production" : "development"],
+    ignoreTrailingSlash: true, // MOSIP can call /websub/callback/ with a trailing slash
   });
 
   app.setValidatorCompiler(validatorCompiler);
