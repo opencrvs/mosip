@@ -19,7 +19,7 @@ export const initWebSub = async () => {
       "hub.mode": "subscribe",
       "hub.topic": env.MOSIP_WEBSUB_TOPIC,
       "hub.callback": env.MOSIP_WEBSUB_CALLBACK_URL,
-      "hub.secret": "your-hmac-secret",
+      "hub.secret": env.MOSIP_WEBSUB_SECRET,
     }),
   });
 
