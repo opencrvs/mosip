@@ -36,45 +36,76 @@ export const credentialIssuedHandler = async (
   request: CredentialIssuedRequest,
   reply: FastifyReply,
 ) => {
-  const verifiableCredential = decryptMosipCredential(
-    request.body.event.data.credential,
-  );
-
-  // commented out for now, as there is an issue when verifying the VC
-  // await verifyCredentialOrThrow(verifiableCredential, {
-  //   allowList: MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS,
-  // });
-
-  const transactionId = verifiableCredential.credentialSubject.id
-    .split("/")
-    .pop()!;
-
-  const { token, registrationNumber } = getTransactionAndDiscard(transactionId);
-  const { recordId } = decode(token) as { recordId: string };
-
-  if (isBirthSubject(verifiableCredential.credentialSubject)) {
-    await opencrvs.confirmRegistration(
-      {
-        id: recordId,
-        registrationNumber,
-        identifiers: [
-          {
-            type: "NATIONAL_ID",
-            value: verifiableCredential.credentialSubject.VID,
-          },
-        ],
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
+  try {
+    const verifiableCredential = decryptMosipCredential(
+      request.body.event.data.credential,
     );
-  } else {
-    await opencrvs.confirmRegistration(
-      {
-        id: recordId,
-        registrationNumber,
-      },
-      { headers: { Authorization: `Bearer ${token}` } },
-    );
+
+    // commented out for now, as there is an issue when verifying the VC
+    // await verifyCredentialOrThrow(verifiableCredential, {
+    //   allowList: MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS,
+    // });
+
+    const transactionId = verifiableCredential.credentialSubject.id
+      .split("/")
+      .pop()!;
+
+    const { token, registrationNumber } =
+      getTransactionAndDiscard(transactionId);
+    const { recordId } = decode(token) as { recordId: string };
+
+    if (isBirthSubject(verifiableCredential.credentialSubject)) {
+      await opencrvs.confirmRegistration(
+        {
+          id: recordId,
+          registrationNumber,
+          identifiers: [
+            {
+              type: "NATIONAL_ID",
+              value: verifiableCredential.credentialSubject.VID,
+            },
+          ],
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    } else {
+      await opencrvs.confirmRegistration(
+        {
+          id: recordId,
+          registrationNumber,
+        },
+        { headers: { Authorization: `Bearer ${token}` } },
+      );
+    }
+    return reply
+      .send({
+        publisher: request.body.publisher,
+        topic: request.body.topic,
+        publishedOn: new Date().toISOString(),
+        event: {
+          id: request.body.event.id,
+          requestId: request.body.event.transactionId,
+          timestamp: new Date().toISOString(),
+          status: "RECEIVED",
+          url: "",
+        },
+      })
+      .status(200);
+  } catch (error) {
+    console.error("error: ", error);
+    return reply
+      .send({
+        publisher: request.body.publisher,
+        topic: request.body.topic,
+        publishedOn: new Date().toISOString(),
+        event: {
+          id: request.body.event.id,
+          requestId: request.body.event.transactionId,
+          timestamp: new Date().toISOString(),
+          status: "ERROR",
+          url: "",
+        },
+      })
+      .status(200);
   }
-
-  return reply.send({ status: "RECEIVED" }).status(200);
 };
