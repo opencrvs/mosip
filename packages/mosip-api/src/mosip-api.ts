@@ -94,7 +94,7 @@ export const postBirthRecord = async ({
         metaInfo: {
           metaData:
             '[{\n  "label" : "registrationType",\n  "value" : "CRVS_NEW"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
-          registrationId: audit.id,
+          registrationId: requestFields.birthCertificateNumber,
           operationsData: `[{\n  "label" : "officerId",\n  "value" : "sithara.bevolv"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]`,
           capturedRegisteredDevices: "[]",
           creationDate: "202503121345",
@@ -201,7 +201,7 @@ export const postDeathRecord = async ({
       metaInfo: {
         metaData:
           '[{\n  "label" : "registrationType",\n  "value" : "CRVS_DEATH"\n}, {\n  "label" : "machineId",\n  "value" : "10084"\n}, {\n  "label" : "centerId",\n  "value" : "10018"\n}]',
-        registrationId: audit.id,
+        registrationId: requestFields.deathCertificateNumber,
         operationsData:
           '[{\n  "label" : "officerId",\n  "value" : "nambi"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
         capturedRegisteredDevices: "[]",
