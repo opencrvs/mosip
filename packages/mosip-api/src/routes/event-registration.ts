@@ -52,6 +52,13 @@ interface MOSIPPayload {
     deathDeclared: string;
     dateOfDeath: string;
   }>;
+  metaInfo: {
+    metaData: string;
+    registrationId: string;
+    operationsData: string;
+    capturedRegisteredDevices: string;
+    creationDate: string;
+  };
   audit: {
     uuid: string;
     createdAt: string;
