@@ -94,6 +94,8 @@ export const registrationEventHandler = async (
   if (birthCertificateNumber) {
     const transactionId = generateTransactionId();
 
+    request.log.info({ transactionId }, "Event ID");
+
     await mosip.postBirthRecord({
       event: { id: transactionId, trackingId },
       request,
@@ -106,6 +108,8 @@ export const registrationEventHandler = async (
 
   if (deathCertificateNumber) {
     const transactionId = generateTransactionId();
+
+    request.log.info({ transactionId }, "Event ID");
 
     await mosip.postDeathRecord({
       event: { id: transactionId, trackingId },
