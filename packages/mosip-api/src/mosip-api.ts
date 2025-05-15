@@ -186,31 +186,37 @@ export const postDeathRecord = async ({
   const authToken = await getMosipAuthToken("PACKET");
   const { requestFields, audit, notification } = request.body;
 
-  const deactivatePacketRequestBody = JSON.stringify({
-    id: "string",
-    version: "string",
-    requesttime: new Date().toISOString(),
-    request: {
-      id: event.id,
-      refId: "10018_10084",
-      offlineMode: false,
-      process: "CRVS_DEATH",
-      source: "OPENCRVS",
-      schemaVersion: "0.300",
-      fields: requestFields,
-      metaInfo: {
-        metaData:
-          '[{\n  "label" : "registrationType",\n  "value" : "CRVS_DEATH"\n}, {\n  "label" : "machineId",\n  "value" : "10084"\n}, {\n  "label" : "centerId",\n  "value" : "10018"\n}]',
-        registrationId: requestFields.deathCertificateNumber,
-        operationsData:
-          '[{\n  "label" : "officerId",\n  "value" : "nambi"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
-        capturedRegisteredDevices: "[]",
-        creationDate: "20250225110733",
+  const { deathCertificateNumber, ...newRequestBody } = requestFields;
+
+  const deactivatePacketRequestBody = JSON.stringify(
+    {
+      id: "string",
+      version: "string",
+      requesttime: new Date().toISOString(),
+      request: {
+        id: event.id,
+        refId: "10002_10003",
+        offlineMode: false,
+        process: "CRVS_DEATH",
+        source: "OPENCRVS",
+        schemaVersion: "0.100",
+        fields: newRequestBody,
+        metaInfo: {
+          metaData:
+            '[{\n  "label" : "registrationType",\n  "value" : "CRVS_DEATH"\n}, {\n  "label" : "machineId",\n  "value" : "10003"\n}, {\n  "label" : "centerId",\n  "value" : "10002"\n}]',
+          registrationId: deathCertificateNumber,
+          operationsData:
+            '[{\n  "label" : "officerId",\n  "value" : "nambi"\n}, {\n  "label" : "officerPIN",\n  "value" : null\n}, {\n  "label" : "officerPassword",\n  "value" : "true"\n}, {\n  "label" : "officerBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorId",\n  "value" : null\n}, {\n  "label" : "supervisorPIN",\n  "value" : null\n}, {\n  "label" : "supervisorBiometricFileName",\n  "value" : null\n}, {\n  "label" : "supervisorPassword",\n  "value" : null\n}, {\n  "label" : "supervisorOTPAuthentication",\n  "value" : null\n}, {\n  "label" : "officerOTPAuthentication",\n  "value" : null\n}]',
+          capturedRegisteredDevices: "[]",
+          creationDate: "20250225110733",
+        },
+        audits: Array.of(audit),
+        schemaJson: schemaJson,
       },
-      audits: Array.of(audit),
-      schemaJson: schemaJson,
     },
-  });
+    null,
+    2,
+  );
 
   // packet manager: deactivate packet
   const deactivatePacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
