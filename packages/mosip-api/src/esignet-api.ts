@@ -85,8 +85,11 @@ const generateSignedJwt = async (clientId: string) => {
   const payload = {
     iss: clientId,
     sub: clientId,
-    aud: env.OPENID_PROVIDER_CLAIMS,
+    // aud: env.OPENID_PROVIDER_CLAIMS,
+    aud: env.ESIGNET_TOKEN_URL,
   };
+
+  console.log("JWT payload", payload);
 
   const decodeKey = Buffer.from(OIDP_CLIENT_PRIVATE_KEY, "base64")?.toString();
   const jwkObject = JSON.parse(decodeKey);
@@ -114,6 +117,9 @@ export const fetchToken = async ({
     client_assertion: await generateSignedJwt(clientId),
   });
 
+  console.log("fetch token request body", body.toString());
+  console.log("fetch token request url", env.ESIGNET_TOKEN_URL);
+
   const request = await fetch(env.ESIGNET_TOKEN_URL!, {
     method: "POST",
     headers: {
@@ -123,6 +129,7 @@ export const fetchToken = async ({
   });
 
   const response = await request.json();
+  console.log("fetch token response", response);
   return response as { access_token?: string };
 };
 
@@ -219,6 +226,7 @@ export const fetchUserInfo = async (accessToken: string) => {
 
   const response = await request.text();
   const decodedResponse = decodeUserInfoResponse(response);
+  console.log("Decoded response", JSON.stringify(decodedResponse));
   if (!decodedResponse) {
     throw new Error(
       "Something went wrong with the OIDP user info request. No user info was returned. Response from OIDP: " +
