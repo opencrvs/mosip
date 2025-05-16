@@ -52,6 +52,13 @@ interface MOSIPPayload {
     deathDeclared: string;
     dateOfDeath: string;
   }>;
+  metaInfo: {
+    metaData: string;
+    registrationId: string;
+    operationsData: string;
+    capturedRegisteredDevices: string;
+    creationDate: string;
+  };
   audit: {
     uuid: string;
     createdAt: string;
@@ -94,6 +101,8 @@ export const registrationEventHandler = async (
   if (birthCertificateNumber) {
     const transactionId = generateTransactionId();
 
+    request.log.info({ transactionId }, "Event ID");
+
     await mosip.postBirthRecord({
       event: { id: transactionId, trackingId },
       request,
@@ -106,6 +115,8 @@ export const registrationEventHandler = async (
 
   if (deathCertificateNumber) {
     const transactionId = generateTransactionId();
+
+    request.log.info({ transactionId }, "Event ID");
 
     await mosip.postDeathRecord({
       event: { id: transactionId, trackingId },
