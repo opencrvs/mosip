@@ -58,20 +58,6 @@ export const env = cleanEnv(process.env, {
   MOSIP_WEBSUB_AUTH_CLIENT_ID: str({ devDefault: "mosip-websub-client" }),
   MOSIP_WEBSUB_AUTH_CLIENT_SECRET: str({ devDefault: "abcdeABCDE123456" }),
 
-  // MOSIP Birth & Death packets
-  TRANSACTION_ID_PREFIX: str({
-    default: "10001",
-    desc: "Used to prefix the numeric transaction ID (1000101234567890) that is sent to MOSIP and received back",
-  }),
-  MOSIP_BIRTH_WEBHOOK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/birth",
-    desc: "The URL where MOSIP receives birth webhooks from OpenCRVS",
-  }),
-  MOSIP_DEATH_WEBHOOK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/death",
-    desc: "The URL where MOSIP receives death webhooks from OpenCRVS",
-  }),
-
   // E-Signet
   ESIGNET_USERINFO_URL: url({
     devDefault: "http://localhost:20260/oidc/userinfo",
@@ -112,6 +98,10 @@ export const env = cleanEnv(process.env, {
   SIGN_P12_FILE_PASSWORD: str({ devDefault: "mosip123" }),
 
   // MOSIP packet manager details
+  TRANSACTION_ID_PREFIX: str({
+    default: "10001",
+    desc: "Used to prefix the numeric transaction ID (1000101234567890) that is sent to MOSIP and received back",
+  }),
   MOSIP_CREATE_PACKET_URL: str({
     devDefault: "http://localhost:20240/commons/v1/packetmanager/createPacket",
   }),
