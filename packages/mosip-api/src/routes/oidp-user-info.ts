@@ -19,6 +19,12 @@ export const OIDPUserInfoHandler = async (
   const { clientId, redirectUri } = request.body;
   const code = request.query.code;
 
+  console.log("OIDPUserInfoHandler", {
+    clientId,
+    redirectUri,
+    code,
+  });
+
   const tokenResponse = await fetchToken({
     code,
     clientId,
