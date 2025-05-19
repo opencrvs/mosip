@@ -107,6 +107,8 @@ export const fetchToken = async ({
   clientId,
   redirectUri,
 }: FetchTokenProps) => {
+  const clientAssertion = await generateSignedJwt(clientId);
+  console.log("client assertion: ", clientAssertion);
   const body = new URLSearchParams({
     code: code,
     client_id: clientId,
@@ -114,7 +116,7 @@ export const fetchToken = async ({
     grant_type: "authorization_code",
     client_assertion_type:
       "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-    client_assertion: await generateSignedJwt(clientId),
+    client_assertion: clientAssertion,
   });
 
   console.log("fetch token request body", body.toString());
