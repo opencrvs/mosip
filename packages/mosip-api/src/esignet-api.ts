@@ -112,7 +112,7 @@ export const fetchToken = async ({
   const body = new URLSearchParams({
     code: code,
     client_id: clientId,
-    redirect_uri: redirectUri,
+    redirect_uri: redirectUri?.split("?")[0] ?? redirectUri,
     grant_type: "authorization_code",
     client_assertion_type:
       "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
@@ -195,12 +195,13 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
   /*const stateFhirId =
     userInfo.address?.country &&
     (await findAdminStructureLocationWithName(userInfo.address.country));*/
+  const names = userInfo?.name?.split(" ");
 
   return {
-    firstName: userInfo.given_name,
-    familyName: userInfo.family_name,
-    middleName: userInfo.middle_name,
-    gender: userInfo.gender,
+    firstName: names?.[0],
+    familyName: names?.[names?.length - 1],
+    middleName: names?.[1],
+    gender: userInfo?.gender?.toLowerCase(),
     ...(userInfo.birthdate && {
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
     }),
@@ -220,7 +221,7 @@ const decodeUserInfoResponse = (response: string) => {
 
 export const fetchUserInfo = async (accessToken: string) => {
   const request = await fetch(env.ESIGNET_USERINFO_URL, {
-    method: "POST",
+    method: "GET",
     headers: {
       Authorization: "Bearer " + accessToken,
     },
