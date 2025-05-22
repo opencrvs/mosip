@@ -85,7 +85,7 @@ export const postBirthRecord = async ({
       requesttime: new Date().toISOString(),
       request: {
         id: event.id,
-        refId: "10002_10003",
+        refId: `${env.MOSIP_CENTER_ID}_${env.MOSIP_MACHINE_ID}`,
         offlineMode: false,
         process: "CRVS_NEW",
         source: "OPENCRVS",
@@ -188,7 +188,7 @@ export const postDeathRecord = async ({
       requesttime: new Date().toISOString(),
       request: {
         id: event.id,
-        refId: "10002_10003",
+        refId: `${env.MOSIP_CENTER_ID}_${env.MOSIP_MACHINE_ID}`,
         offlineMode: false,
         process: "CRVS_DEATH",
         source: "OPENCRVS",

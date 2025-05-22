@@ -119,6 +119,12 @@ export const env = cleanEnv(process.env, {
     devDefault:
       "http://localhost:20240/registrationprocessor/v1/workflowmanager/workflowinstance",
   }),
+  MOSIP_CENTER_ID: str({
+    devDefault: "10001",
+  }),
+  MOSIP_MACHINE_ID: str({
+    devDefault: "10004",
+  }),
 });
 
 export const MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS =
