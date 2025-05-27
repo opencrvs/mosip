@@ -21,11 +21,8 @@ const isAllowedToSearch = (scope: string[]) => {
  * Rationale:
  * - This should be accompanied with a `rejectRegistration` call via Postman which requires this scope.
  */
-const isAllowedToDelete = (scope: string[]) => {
-  return (
-    isAllowedToSearch(scope) && scope.includes("record.reject-registration")
-  );
-};
+const isAllowedToDelete = (scope: string[]) =>
+  scope.includes("record.reject-registration");
 
 export const getAllTransactionsHandler = async (
   request: FastifyRequest,
