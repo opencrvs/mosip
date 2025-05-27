@@ -23,6 +23,10 @@ import {
   CredentialIssuedSchema,
 } from "./routes/websub-credential-issued";
 import { initWebSub } from "./websub/subscribe";
+import {
+  deleteTransactionHandler,
+  getAllTransactionsHandler,
+} from "./routes/debug-sqlite";
 
 const envToLogger = {
   development: {
@@ -37,6 +41,9 @@ const envToLogger = {
 };
 
 const initRoutes = (app: FastifyInstance) => {
+  /*
+   * OpenCRVS birth / death registration or review events
+   */
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/events/registration",
     method: "POST",
@@ -82,6 +89,21 @@ const initRoutes = (app: FastifyInstance) => {
     schema: {
       body: CredentialIssuedSchema,
     },
+  });
+
+  /*
+   * SQLite debug route
+   */
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/debug/transactions",
+    handler: getAllTransactionsHandler,
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "DELETE",
+    url: "/debug/transactions/:id",
+    handler: deleteTransactionHandler,
   });
 };
 
