@@ -31,7 +31,6 @@ export const getAllTransactionsHandler = async (
   const { scope } = request.user as AuthenticatedUser;
 
   if (!isAllowedToSearch(scope)) {
-    console.log(scope);
     return reply.status(403).send({
       error: "You do not have permission to access this resource.",
     });
