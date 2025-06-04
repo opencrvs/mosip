@@ -16,6 +16,9 @@ cp docs/example-certs/* certs/
 # install dependencies
 yarn install
 
+# create sqlite data directory
+mkdir -p data/sqlite
+
 # start the mosip-api and all the mocked servers
 yarn dev
 
