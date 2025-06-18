@@ -7,7 +7,8 @@ import { env } from "../constants";
 import incomingBirthBundleMother from "../../../../docs/example-events/incoming-birth-bundle.json";
 import incomingBirthBundleMotherFather from "../../../../docs/example-events/incoming-birth-bundle-mother-father.json";
 import incomingBirthBundleInformantMotherFather from "../../../../docs/example-events/incoming-birth-bundle-informant-mother-father.json";
-import incomingBirthBundleDeceasedSpouse from "../../../../docs/example-events/incoming-death-bundle-deceased-spouse.json";
+import incomingDeathBundleDeceasedSpouse from "../../../../docs/example-events/incoming-death-bundle-deceased-spouse.json";
+import incomingDeathBundleDeceasedInformant from "../../../../docs/example-events/incoming-death-bundle-deceased-informant.json";
 import jwt from "jsonwebtoken";
 import { generateKeyPairSync } from "node:crypto";
 
@@ -244,7 +245,7 @@ test("verifies different sets of informants properly", async (t) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${VALID_JWT}`,
         },
-        body: JSON.stringify(incomingBirthBundleDeceasedSpouse),
+        body: JSON.stringify(incomingDeathBundleDeceasedSpouse),
       });
 
       const authenticationStatus = await response.json();
@@ -290,7 +291,7 @@ test("verifies different sets of informants properly", async (t) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${VALID_JWT}`,
         },
-        body: JSON.stringify(incomingBirthBundleDeceasedSpouse),
+        body: JSON.stringify(incomingDeathBundleDeceasedSpouse),
       });
 
       const authenticationStatus = await response.json();
@@ -301,6 +302,40 @@ test("verifies different sets of informants properly", async (t) => {
         informant: false,
         deceased: false,
         spouse: true,
+      });
+    },
+  );
+
+  await t.test(
+    "[☠️ Death] payload includes  [⚰️ Deceased] [👨‍🍼 Father] verifies deceased & informant",
+    async () => {
+      mswServer.use(
+        http.post(env.IDA_AUTH_URL + "/*", () =>
+          HttpResponse.json(
+            { response: { authStatus: true, authToken: "token" } },
+            { status: 200 },
+          ),
+        ),
+      );
+
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/events/review",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${VALID_JWT}`,
+        },
+        body: JSON.stringify(incomingDeathBundleDeceasedInformant),
+      });
+
+      const authenticationStatus = await response.json();
+
+      return assert.deepEqual(authenticationStatus, {
+        mother: false,
+        father: false,
+        informant: true,
+        deceased: true,
+        spouse: false,
       });
     },
   );
