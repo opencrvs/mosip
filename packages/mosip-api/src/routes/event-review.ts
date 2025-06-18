@@ -8,6 +8,7 @@ import {
   getDemographics,
   getPatientNationalId,
   getFromBundleById,
+  informantHasOwnSection,
 } from "../types/fhir";
 import { updateField } from "../opencrvs-api";
 import { verifyNid } from "../mosip-api";
@@ -115,10 +116,8 @@ export const reviewEventHandler = async (
    * Update informants's details if the NID is available
    */
   if (
-    // As the following informant have their own separate sections, skip the verification
-    informantType !== "MOTHER" &&
-    informantType !== "FATHER" &&
-    informantType !== "SPOUSE"
+    // If informant have their own separate sections, skip the verification
+    !informantHasOwnSection(informantType, composition)
   ) {
     let relatedPerson = findEntry<fhir3.RelatedPerson>(
       "informant-details",
