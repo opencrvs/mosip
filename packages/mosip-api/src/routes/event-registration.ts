@@ -1,6 +1,16 @@
 import { FastifyRequest, FastifyReply } from "fastify";
+import { z } from "zod";
 import * as mosip from "../mosip-api";
-import { generateTransactionId } from "../registration-number";
+import {
+  EVENT_TYPE,
+  getComposition,
+  getEventType,
+  getTrackingId,
+} from "../types/fhir";
+import {
+  generateRegistrationNumber,
+  generateTransactionId,
+} from "../registration-number";
 import { insertTransaction } from "../database";
 
 interface MOSIPPayload {
@@ -71,29 +81,13 @@ interface MOSIPPayload {
   };
 }
 
-interface MOSIPBirthPayload extends MOSIPPayload {
-  requestFields: MOSIPPayload["requestFields"] & {
-    birthCertificateNumber: string;
-  };
-}
-
-interface MOSIPDeathPayload extends MOSIPPayload {
-  requestFields: MOSIPPayload["requestFields"] & {
-    deathCertificateNumber: string;
-  };
-}
-
-export type OpenCRVSBirthRequest = FastifyRequest<{
-  Body: MOSIPBirthPayload;
+export type OpenCRVSRequest = FastifyRequest<{
+  Body: MOSIPPayload;
 }>;
 
-export type OpenCRVSDeathRequest = FastifyRequest<{
-  Body: MOSIPDeathPayload;
-}>;
-
-/** Handles the birth events coming from OpenCRVS country config */
-export const birthRegistrationHandler = async (
-  request: OpenCRVSBirthRequest,
+/** Handles the calls coming from OpenCRVS countryconfig */
+export const registrationEventHandler = async (
+  request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
   const { trackingId, requestFields } = request.body;
@@ -102,41 +96,35 @@ export const birthRegistrationHandler = async (
 
   request.log.info({ trackingId }, "Received record from OpenCRVS");
 
-  const transactionId = generateTransactionId();
+  const birthCertificateNumber = requestFields.birthCertificateNumber;
 
-  request.log.info({ transactionId }, "Event ID");
+  if (birthCertificateNumber) {
+    const transactionId = generateTransactionId();
 
-  await mosip.postBirthRecord({
-    event: { id: transactionId, trackingId },
-    request,
-  });
+    request.log.info({ transactionId }, "Event ID");
 
-  insertTransaction(transactionId, token, requestFields.birthCertificateNumber);
+    await mosip.postBirthRecord({
+      event: { id: transactionId, trackingId },
+      request,
+    });
 
-  return reply.code(202).send();
-};
+    insertTransaction(transactionId, token, birthCertificateNumber);
+  }
 
-/** Handles the death events coming from OpenCRVS country config */
-export const deathRegistrationHandler = async (
-  request: OpenCRVSDeathRequest,
-  reply: FastifyReply,
-) => {
-  const { trackingId, requestFields } = request.body;
+  const deathCertificateNumber = requestFields.deathCertificateNumber;
 
-  const token = request.headers.authorization!.split(" ")[1];
+  if (deathCertificateNumber) {
+    const transactionId = generateTransactionId();
 
-  request.log.info({ trackingId }, "Received record from OpenCRVS");
+    request.log.info({ transactionId }, "Event ID");
 
-  const transactionId = generateTransactionId();
+    await mosip.postDeathRecord({
+      event: { id: transactionId, trackingId },
+      request,
+    });
 
-  request.log.info({ transactionId }, "Event ID");
-
-  await mosip.postDeathRecord({
-    event: { id: transactionId, trackingId },
-    request,
-  });
-
-  insertTransaction(transactionId, token, requestFields.deathCertificateNumber);
+    insertTransaction(transactionId, token, deathCertificateNumber);
+  }
 
   return reply.code(202).send();
 };
