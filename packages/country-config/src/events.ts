@@ -1,17 +1,20 @@
 import type * as Hapi from "@hapi/hapi";
 import fetch from "node-fetch";
 import { MOSIPPayload } from "./transform";
+import { VerificationStatus } from "./api";
 
-interface VerificationStatus {
-  father: boolean;
-  mother: boolean;
-  informant: boolean;
-}
+/*
+ * NOTE!
+ *
+ * This file is used in OpenCRVS pre-1.9 country-configs and registrations. You are looking for `api.ts` which caters for OpenCRVS 1.9+.
+ * This file can be removed in future versions.
+ */
 
 /**
+ * @deprecated
  * Replaces event registration handler in country config
  */
-export const deprecated__mosipRegistrationHandler = ({
+export const mosipRegistrationHandler = ({
   url,
   headers,
   payload,
@@ -48,13 +51,10 @@ export const deprecated__mosipRegistrationHandler = ({
   }) satisfies Hapi.ServerRoute["handler"];
 
 /**
+ * @deprecated
  * Replaces `/events/{event}/actions/sent-notification-for-review` handler in country config
  */
-export const deprecated__mosipRegistrationForReviewHandler = ({
-  url,
-}: {
-  url: string;
-}) =>
+export const mosipRegistrationForReviewHandler = ({ url }: { url: string }) =>
   (async (request: Hapi.Request, h: Hapi.ResponseToolkit) => {
     // Corresponds to `packages/mosip-api` /events/review -route
     let response;
@@ -76,8 +76,8 @@ export const deprecated__mosipRegistrationForReviewHandler = ({
  * Replaces `/events/{event}/actions/sent-for-approval` handler in country config
  * Currently the same as `/events/{event}/actions/sent-notification-for-review`
  */
-export const deprecated__mosipRegistrationForApprovalHandler =
-  deprecated__mosipRegistrationForReviewHandler;
+export const mosipRegistrationForApprovalHandler =
+  mosipRegistrationForReviewHandler;
 
 export const verify = async ({
   url,
@@ -103,42 +103,3 @@ export const verify = async ({
 
   return (await response.json()) satisfies Partial<VerificationStatus>;
 };
-
-/**
- * Replaces `/events/${Event.BIRTH}/actions/${ActionType.REGISTER}`
- *      and `/events/${Event.DEATH}/actions/${ActionType.REGISTER}`
- */
-export const mosipOnRegisterHandler = ({
-  url,
-  headers,
-  payload,
-}: {
-  url: string;
-  headers: Record<string, string>;
-  payload: MOSIPPayload;
-}) =>
-  (async (_request: Hapi.Request, h: Hapi.ResponseToolkit) => {
-    const MOSIP_API_REGISTRATION_EVENT_URL = new URL(
-      "./events/registration",
-      url,
-    );
-
-    const response = await fetch(MOSIP_API_REGISTRATION_EVENT_URL, {
-      method: "POST",
-      body: JSON.stringify(payload),
-      headers: {
-        ...headers,
-        "content-type": "application/json",
-      },
-    });
-
-    if (!response.ok) {
-      return h
-        .response({
-          reason: "Unexpected error in OpenCRVS-MOSIP interoperability layer",
-        })
-        .code(400);
-    }
-
-    return h.response().code(202);
-  }) satisfies Hapi.ServerRoute["handler"];

@@ -1,10 +1,24 @@
-import { MOSIPPayload as StrictMOSIPPayload } from "./transform";
+interface BirthRequestFields extends Record<string, unknown> {
+  birthCertificateNumber: string;
+  deathCertificateNumber?: undefined;
+}
 
-/**
- * The v1.8 `@opencrvs/mosip` type asserts that all fields are required due to the way the transformer works.
- * This type is a more relaxed version that allows for partial payloads.
- */
-export type MOSIPPayload = Partial<StrictMOSIPPayload>;
+interface DeathRequestFields extends Record<string, unknown> {
+  deathCertificateNumber: string;
+  birthCertificateNumber?: undefined;
+}
+
+export interface MosipInteropPayload {
+  trackingId: string;
+  notification: {
+    recipientFullName: string;
+    recipientEmail: string;
+    recipientPhone: string;
+  };
+  requestFields: BirthRequestFields | DeathRequestFields;
+  metaInfo: Record<string, unknown>;
+  audit: Record<string, unknown>;
+}
 
 export interface VerificationStatus {
   father: boolean;
@@ -38,7 +52,7 @@ export const createMosipInteropClient = (
   authorizationHeader: string,
 ) => {
   return {
-    register: async (payload: MOSIPPayload) => {
+    register: async (payload: MosipInteropPayload) => {
       const MOSIP_API_REGISTRATION_EVENT_URL = new URL(
         "./events/registration",
         url,

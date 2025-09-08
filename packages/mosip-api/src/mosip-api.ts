@@ -1,7 +1,11 @@
 import { env } from "./constants";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
-import { OpenCRVSRequest } from "./routes/event-registration";
 import { schemaJson } from "./types/idSchemaJson";
+import {
+  BirthRequestFields,
+  DeathRequestFields,
+  MosipInteropPayload,
+} from "@opencrvs/mosip/api";
 
 export class MOSIPError extends Error {
   constructor(message: string) {
@@ -69,15 +73,20 @@ export async function getMosipAuthToken(authType: AuthType) {
 
 export const postBirthRecord = async ({
   event,
-  request,
+  requestFields,
+  audit,
+  metaInfo,
+  notification,
 }: {
   event: {
     id: string;
     trackingId: string;
   };
-  request: OpenCRVSRequest;
+  requestFields: BirthRequestFields;
+  audit: MosipInteropPayload["audit"];
+  metaInfo: MosipInteropPayload["metaInfo"];
+  notification: MosipInteropPayload["notification"];
 }) => {
-  const { requestFields, audit, notification, metaInfo } = request.body;
   const requestBody = JSON.stringify(
     {
       id: "string",
@@ -168,16 +177,21 @@ export const postBirthRecord = async ({
 
 export const postDeathRecord = async ({
   event,
-  request,
+  requestFields,
+  audit,
+  metaInfo,
+  notification,
 }: {
   event: {
     id: string;
     trackingId: string;
   };
-  request: OpenCRVSRequest;
+  requestFields: DeathRequestFields;
+  audit: MosipInteropPayload["audit"];
+  metaInfo: MosipInteropPayload["metaInfo"];
+  notification: MosipInteropPayload["notification"];
 }) => {
   const authToken = await getMosipAuthToken("PACKET");
-  const { requestFields, audit, notification, metaInfo } = request.body;
 
   const { deathCertificateNumber, ...newRequestBody } = requestFields;
 

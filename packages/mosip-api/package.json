@@ -13,6 +13,7 @@
     "@fastify/jwt": "^9.0.4",
     "@fastify/swagger": "^9.2.0",
     "@fastify/swagger-ui": "^5.1.0",
+    "@opencrvs/toolkit": "^1.8.1-rc.83b6756",
     "@types/better-sqlite3": "^7.6.12",
     "@types/node": "^22.8.2",
     "@types/node-forge": "^1.3.11",

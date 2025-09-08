@@ -1,4 +1,5 @@
 import { env } from "./constants";
+import { createClient } from "@opencrvs/toolkit/api";
 
 export class OpenCRVSError extends Error {
   constructor(message: string) {
