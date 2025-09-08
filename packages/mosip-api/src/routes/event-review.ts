@@ -10,7 +10,6 @@ import {
   getFromBundleById,
   informantHasOwnSection,
 } from "../types/fhir";
-import { updateField } from "../opencrvs-api";
 import { verifyNid } from "../mosip-api";
 import { z } from "zod";
 
@@ -54,11 +53,14 @@ const verifyAndUpdateRecord = async ({
       `Person verified. ✅ Updating '${event}.${section}.${section}-view-group.verified'...`,
     );
 
-    await updateField(
-      eventId,
-      `${event}.${section}.${section}-view-group.verified`,
-      "verified",
-      { headers: { Authorization: `Bearer ${token}` } },
+    // await updateField(
+    //   eventId,
+    //   `${event}.${section}.${section}-view-group.verified`,
+    //   "verified",
+    //   { headers: { Authorization: `Bearer ${token}` } },
+    // );
+    throw new Error(
+      "@TODO: Updating with verified status is not implemented yet!",
     );
   } else {
     logger.info(
@@ -66,11 +68,14 @@ const verifyAndUpdateRecord = async ({
       `Person verification failed. ❌ Updating '${event}.${section}.${section}-view-group.verified'...`,
     );
 
-    await updateField(
-      eventId,
-      `${event}.${section}.${section}-view-group.verified`,
-      "failed",
-      { headers: { Authorization: `Bearer ${token}` } },
+    // await updateField(
+    //   eventId,
+    //   `${event}.${section}.${section}-view-group.verified`,
+    //   "failed",
+    //   { headers: { Authorization: `Bearer ${token}` } },
+    // );
+    throw new Error(
+      "@TODO: Updating with verified status is not implemented yet!",
     );
   }
   return authStatus;

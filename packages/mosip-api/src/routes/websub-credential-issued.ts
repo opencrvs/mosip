@@ -4,8 +4,8 @@ import { getTransactionAndDiscard } from "../database";
 import { decode } from "jsonwebtoken";
 import * as opencrvs from "../opencrvs-api";
 import { decryptMosipCredential } from "../websub/crypto";
-import { MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS, env } from "../constants";
-import { isBirthSubject, verifyCredentialOrThrow } from "../websub/verify-vc";
+import { env } from "../constants";
+import { isBirthSubject } from "../websub/verify-vc";
 
 export const CredentialIssuedSchema = z.object({
   publisher: z.string(),
@@ -57,24 +57,21 @@ export const credentialIssuedHandler = async (
     if (isBirthSubject(verifiableCredential.credentialSubject)) {
       await opencrvs.confirmRegistration(
         {
-          id: recordId,
+          eventId: recordId,
+          actionId: "@TODO",
           registrationNumber,
-          identifiers: [
-            {
-              type: "NATIONAL_ID",
-              value: verifiableCredential.credentialSubject.VID,
-            },
-          ],
+          nationalId: "@TODO",
         },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { token },
       );
     } else {
       await opencrvs.confirmRegistration(
         {
-          id: recordId,
+          eventId: recordId,
+          actionId: "@TODO",
           registrationNumber,
         },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { token },
       );
     }
     return reply
