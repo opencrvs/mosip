@@ -177,7 +177,7 @@ async function run() {
     port: env.PORT,
     host: env.HOST,
     listenTextResolver: () =>
-      `OpenCRVS-MOSIP API running at http://${env.HOST}:${env.PORT} ✅`,
+      `OpenCRVS-MOSIP interoperability API running at http://${env.HOST}:${env.PORT} ✅`,
   });
   app.log.info(
     `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation ✅`,
