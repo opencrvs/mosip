@@ -1,5 +1,6 @@
 import { env } from "./constants";
 import { createClient } from "@opencrvs/toolkit/api";
+import crypto from "node:crypto";
 
 export class OpenCRVSError extends Error {
   constructor(message: string) {
@@ -43,83 +44,13 @@ export const confirmRegistration = (
   const client = createClient(url, `Bearer ${token}`);
 
   return client.event.actions.register.accept.mutate({
+    annotation: {},
+    transactionId: `mosip-interop-${crypto.randomUUID()}`,
     eventId,
     actionId,
-    nationalId,
     registrationNumber,
+    content: {
+      nationalId,
+    },
   });
 };
-
-// export const rejectRegistration = (
-//   id: string,
-//   { reason, comment }: { reason: string; comment: string },
-//   { headers }: { headers: Record<string, any> },
-// ) =>
-//   post({
-//     query: /* GraphQL */ `
-//       mutation rejectRegistration(
-//         $id: ID!
-//         $details: RejectRegistrationInput!
-//       ) {
-//         rejectRegistration(id: $id, details: $details)
-//       }
-//     `,
-//     variables: {
-//       id,
-//       details: {
-//         reason,
-//         comment,
-//       },
-//     },
-//     headers,
-//   });
-
-// export const upsertRegistrationIdentifier = (
-//   {
-//     id,
-//     identifierType,
-//     identifierValue,
-//   }: {
-//     id: string;
-//     identifierType: string;
-//     identifierValue: string;
-//   },
-//   { headers }: { headers: Record<string, any> },
-// ) =>
-//   post({
-//     query: /* GraphQL */ `
-//       mutation upsertRegistrationIdentifier(
-//         $id: ID!
-//         $identifierType: String!
-//         $identifierValue: String!
-//       ) {
-//         upsertRegistrationIdentifier(
-//           id: $id
-//           identifierType: $identifierType
-//           identifierValue: $identifierValue
-//         )
-//       }
-//     `,
-//     variables: {
-//       id,
-//       identifierType,
-//       identifierValue,
-//     },
-//     headers,
-//   });
-
-// export const updateField = (
-//   id: string,
-//   fieldId: string,
-//   valueString: string,
-//   { headers }: { headers: Record<string, any> },
-// ) =>
-//   post({
-//     query: /* GraphQL */ `
-//       mutation updateField($id: ID!, $details: UpdateFieldInput!) {
-//         updateField(id: $id, details: $details)
-//       }
-//     `,
-//     variables: { id, details: { fieldId, valueString } },
-//     headers,
-//   });

@@ -28,6 +28,11 @@ export const CredentialIssuedSchema = z.object({
   }),
 });
 
+interface TokenPayload {
+  eventId: string;
+  actionId: string;
+}
+
 type CredentialIssuedRequest = FastifyRequest<{
   Body: z.infer<typeof CredentialIssuedSchema>;
 }>;
@@ -52,23 +57,23 @@ export const credentialIssuedHandler = async (
 
     const { token, registrationNumber } =
       getTransactionAndDiscard(transactionId);
-    const { recordId } = decode(token) as { recordId: string };
+    const { eventId, actionId } = decode(token) as TokenPayload;
 
     if (isBirthSubject(verifiableCredential.credentialSubject)) {
-      await opencrvs.confirmRegistration(
+      opencrvs.confirmRegistration(
         {
-          eventId: recordId,
-          actionId: "@TODO",
+          eventId,
+          actionId,
           registrationNumber,
-          nationalId: "@TODO",
+          nationalId: verifiableCredential.credentialSubject.VID,
         },
         { token },
       );
     } else {
-      await opencrvs.confirmRegistration(
+      opencrvs.confirmRegistration(
         {
-          eventId: recordId,
-          actionId: "@TODO",
+          eventId,
+          actionId,
           registrationNumber,
         },
         { token },

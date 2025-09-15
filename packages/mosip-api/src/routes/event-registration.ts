@@ -56,5 +56,5 @@ export const registrationEventHandler = async (
     insertTransaction(transactionId, token, deathCertificateNumber);
   }
 
-  return reply.code(202).send();
+  return reply.code(202).send({});
 };
