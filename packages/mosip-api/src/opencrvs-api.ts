@@ -36,7 +36,7 @@ export const confirmRegistration = (
     eventId: string;
     actionId: string;
     nationalId?: string;
-    registrationNumber?: string;
+    registrationNumber: string;
   },
   { token }: { token: string },
 ) => {
@@ -44,13 +44,12 @@ export const confirmRegistration = (
   const client = createClient(url, `Bearer ${token}`);
 
   return client.event.actions.register.accept.mutate({
-    annotation: {},
     transactionId: `mosip-interop-${crypto.randomUUID()}`,
     eventId,
     actionId,
     registrationNumber,
-    content: {
-      nationalId,
+    declaration: {
+      "child.nationalId": nationalId,
     },
   });
 };
