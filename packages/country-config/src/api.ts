@@ -1,9 +1,11 @@
-interface BirthRequestFields extends Record<string, unknown> {
+import type { EventDocument, FieldValue } from "@opencrvs/toolkit/events";
+
+export interface BirthRequestFields extends Record<string, unknown> {
   birthCertificateNumber: string;
   deathCertificateNumber?: undefined;
 }
 
-interface DeathRequestFields extends Record<string, unknown> {
+export interface DeathRequestFields extends Record<string, unknown> {
   deathCertificateNumber: string;
   birthCertificateNumber?: undefined;
 }
@@ -18,6 +20,13 @@ export interface MosipInteropPayload {
   requestFields: BirthRequestFields | DeathRequestFields;
   metaInfo: Record<string, unknown>;
   audit: Record<string, unknown>;
+}
+
+export interface VerifyNidPayload {
+  nid: FieldValue;
+  gender?: FieldValue;
+  dob: FieldValue;
+  name: FieldValue;
 }
 
 export interface VerificationStatus {
@@ -75,6 +84,24 @@ export const createMosipInteropClient = (
       }
 
       return response.json();
+    },
+    verifyNid: async (payload: VerifyNidPayload) => {
+      const MOSIP_API_VERIFY_URL = new URL("./verify", url).href;
+
+      const response = await fetchWithTimeout(MOSIP_API_VERIFY_URL, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: {
+          Authorization: authorizationHeader,
+          "content-type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to register event: ${await response.text()}`);
+      }
+
+      return response.text() as Promise<"verified" | "failed">;
     },
   };
 };

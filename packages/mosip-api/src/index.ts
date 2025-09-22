@@ -23,6 +23,7 @@ import {
   CredentialIssuedSchema,
 } from "./routes/websub-credential-issued";
 import { initWebSub } from "./websub/subscribe";
+import { verifyHandler, VerifySchema } from "./routes/verify";
 
 const envToLogger = {
   development: {
@@ -48,6 +49,14 @@ const initRoutes = (app: FastifyInstance) => {
     handler: reviewEventHandler,
     schema: {
       body: opencrvsRecordSchema,
+    },
+  });
+  app.withTypeProvider<ZodTypeProvider>().route({
+    url: "/verify",
+    method: "POST",
+    handler: verifyHandler,
+    schema: {
+      body: VerifySchema,
     },
   });
 

@@ -570,6 +570,20 @@
     uuid "^9.0.0"
     zod-openapi "^4.2.4"
 
+"@opencrvs/toolkit@^1.8.1-rc.af15018":
+  version "1.8.1-rc.af15018"
+  resolved "https://registry.yarnpkg.com/@opencrvs/toolkit/-/toolkit-1.8.1-rc.af15018.tgz#a63737cca67f28fc066c04adabd3085ea7cc825c"
+  integrity sha512-TrG7KmjguywmyCVIKlbffM/QnYXLtA0rO+Eyuuu5xxZZifH/zPLzV1XJ6XpEepN0ckuLAGAw7KnBIz98DEcgjA==
+  dependencies:
+    "@trpc/client" "11.4.3"
+    "@trpc/server" "11.4.3"
+    ajv "^8.17.1"
+    ajv-formats "^3.0.1"
+    object-hash "^3.0.0"
+    superjson "1.9.0-0"
+    uuid "^9.0.0"
+    zod-openapi "^4.2.4"
+
 "@sideway/address@^4.1.5":
   version "4.1.5"
   resolved "https://registry.yarnpkg.com/@sideway/address/-/address-4.1.5.tgz#4bc149a0076623ced99ca8208ba780d65a99b9d5"
@@ -2077,6 +2091,11 @@ jws@^3.2.2:
     jwa "^1.4.1"
     safe-buffer "^5.0.1"
 
+jwt-decode@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/jwt-decode/-/jwt-decode-4.0.0.tgz#2270352425fd413785b2faf11f6e755c5151bd4b"
+  integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
+
 keyv@^4.5.3, keyv@^4.5.4:
   version "4.5.4"
   resolved "https://registry.yarnpkg.com/keyv/-/keyv-4.5.4.tgz#a879a99e29452f942439f2a405e3af8b31d4de93"
@@ -2152,6 +2171,11 @@ lodash.once@^4.0.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/lodash.once/-/lodash.once-4.1.1.tgz#0dd3971213c7c56df880977d504c88fb471a97ac"
   integrity sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==
+
+lodash@^4.17.21:
+  version "4.17.21"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
+  integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
 
 lru-cache@^11.0.0:
   version "11.0.2"
