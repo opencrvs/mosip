@@ -27,6 +27,8 @@ export interface VerifyNidPayload {
   gender?: FieldValue;
   dob: FieldValue;
   name: FieldValue;
+  /** Adds logging of the auth status using this id to mosip-api */
+  transactionId?: string;
 }
 
 export interface VerificationStatus {

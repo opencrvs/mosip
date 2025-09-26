@@ -8,6 +8,7 @@ export const VerifySchema = z.object({
   dob: DateValue,
   name: NameFieldValue,
   gender: TextValue.optional(),
+  transactionId: z.string().optional(),
 });
 
 export type OpenCRVSRequest = FastifyRequest<{
@@ -34,6 +35,12 @@ export const verifyHandler = async (
       ? [{ language: "eng", value: request.body.gender }]
       : undefined,
   });
+
+  const transactionId = request.body.transactionId;
+
+  if (transactionId) {
+    request.log.info({ transactionId, authStatus });
+  }
 
   return reply.code(200).send(authStatus ? "verified" : "failed");
 };
