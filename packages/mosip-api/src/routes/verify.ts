@@ -24,7 +24,7 @@ export const verifyHandler = async (
     response: { authStatus },
   } = await verifyNid({
     nid: request.body.nid,
-    dob: request.body.dob,
+    dob: request.body.dob.replaceAll("-", "/"),
     name: [
       {
         language: "eng",
