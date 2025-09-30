@@ -49,7 +49,7 @@ export const confirmRegistration = (
     actionId,
     registrationNumber,
     declaration: {
-      "child.nationalId": nationalId,
+      "child.nid": nationalId,
     },
   });
 };
