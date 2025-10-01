@@ -9,10 +9,6 @@ import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
 import { OIDPUserInfoSchema, OIDPQuerySchema } from "./esignet-api";
 import formbody from "@fastify/formbody";
-import {
-  opencrvsRecordSchema,
-  reviewEventHandler,
-} from "./routes/event-review";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
@@ -42,14 +38,6 @@ const initRoutes = (app: FastifyInstance) => {
     url: "/events/registration",
     method: "POST",
     handler: registrationEventHandler,
-  });
-  app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/events/review",
-    method: "POST",
-    handler: reviewEventHandler,
-    schema: {
-      body: opencrvsRecordSchema,
-    },
   });
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/verify",
