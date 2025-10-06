@@ -9,10 +9,6 @@ import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
 import { OIDPUserInfoSchema, OIDPQuerySchema } from "./esignet-api";
 import formbody from "@fastify/formbody";
-import {
-  opencrvsRecordSchema,
-  reviewEventHandler,
-} from "./routes/event-review";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
@@ -23,6 +19,7 @@ import {
   CredentialIssuedSchema,
 } from "./routes/websub-credential-issued";
 import { initWebSub } from "./websub/subscribe";
+import { verifyHandler, VerifySchema } from "./routes/verify";
 
 const envToLogger = {
   development: {
@@ -43,11 +40,11 @@ const initRoutes = (app: FastifyInstance) => {
     handler: registrationEventHandler,
   });
   app.withTypeProvider<ZodTypeProvider>().route({
-    url: "/events/review",
+    url: "/verify",
     method: "POST",
-    handler: reviewEventHandler,
+    handler: verifyHandler,
     schema: {
-      body: opencrvsRecordSchema,
+      body: VerifySchema,
     },
   });
 
@@ -177,7 +174,7 @@ async function run() {
     port: env.PORT,
     host: env.HOST,
     listenTextResolver: () =>
-      `OpenCRVS-MOSIP API running at http://${env.HOST}:${env.PORT} ✅`,
+      `OpenCRVS-MOSIP interoperability API running at http://${env.HOST}:${env.PORT} ✅`,
   });
   app.log.info(
     `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation ✅`,

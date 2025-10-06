@@ -1,4 +1,6 @@
 import { env } from "./constants";
+import { createClient } from "@opencrvs/toolkit/api";
+import crypto from "node:crypto";
 
 export class OpenCRVSError extends Error {
   constructor(message: string) {
@@ -24,141 +26,30 @@ export const getPublicKey = async (): Promise<string> => {
   }
 };
 
-/** Communicates with opencrvs-core's GraphQL gateway */
-const post = async ({
-  query,
-  variables,
-  headers,
-}: {
-  query: string;
-  variables: Record<string, any>;
-  headers: Record<string, any>;
-}) => {
-  const response = await fetch(env.OPENCRVS_GRAPHQL_GATEWAY_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
-    body: JSON.stringify({
-      variables,
-      query,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new OpenCRVSError(
-      `POST to OpenCRVS GraphQL Gateway not ok: ${await response.text()}`,
-    );
-  }
-
-  return response;
-};
-
 export const confirmRegistration = (
   {
-    id,
-    identifiers,
+    eventId,
+    actionId,
+    nationalId,
     registrationNumber,
-    comment,
   }: {
-    id: string;
-    identifiers?: Array<{ type: string; value: string }>;
+    eventId: string;
+    actionId: string;
+    nationalId?: string;
     registrationNumber: string;
-    comment?: string;
   },
-  { headers }: { headers: Record<string, any> },
-) =>
-  post({
-    query: /* GraphQL */ `
-      mutation confirmRegistration(
-        $id: ID!
-        $details: ConfirmRegistrationInput!
-      ) {
-        confirmRegistration(id: $id, details: $details)
-      }
-    `,
-    variables: {
-      id,
-      details: {
-        identifiers,
-        registrationNumber,
-        comment,
-      },
-    },
-    headers,
-  });
+  { token }: { token: string },
+) => {
+  const url = new URL("events", env.OPENCRVS_GATEWAY_URL).toString();
+  const client = createClient(url, `Bearer ${token}`);
 
-export const rejectRegistration = (
-  id: string,
-  { reason, comment }: { reason: string; comment: string },
-  { headers }: { headers: Record<string, any> },
-) =>
-  post({
-    query: /* GraphQL */ `
-      mutation rejectRegistration(
-        $id: ID!
-        $details: RejectRegistrationInput!
-      ) {
-        rejectRegistration(id: $id, details: $details)
-      }
-    `,
-    variables: {
-      id,
-      details: {
-        reason,
-        comment,
-      },
+  return client.event.actions.register.accept.mutate({
+    transactionId: `mosip-interop-${crypto.randomUUID()}`,
+    eventId,
+    actionId,
+    registrationNumber,
+    declaration: {
+      "child.nid": nationalId,
     },
-    headers,
   });
-
-export const upsertRegistrationIdentifier = (
-  {
-    id,
-    identifierType,
-    identifierValue,
-  }: {
-    id: string;
-    identifierType: string;
-    identifierValue: string;
-  },
-  { headers }: { headers: Record<string, any> },
-) =>
-  post({
-    query: /* GraphQL */ `
-      mutation upsertRegistrationIdentifier(
-        $id: ID!
-        $identifierType: String!
-        $identifierValue: String!
-      ) {
-        upsertRegistrationIdentifier(
-          id: $id
-          identifierType: $identifierType
-          identifierValue: $identifierValue
-        )
-      }
-    `,
-    variables: {
-      id,
-      identifierType,
-      identifierValue,
-    },
-    headers,
-  });
-
-export const updateField = (
-  id: string,
-  fieldId: string,
-  valueString: string,
-  { headers }: { headers: Record<string, any> },
-) =>
-  post({
-    query: /* GraphQL */ `
-      mutation updateField($id: ID!, $details: UpdateFieldInput!) {
-        updateField(id: $id, details: $details)
-      }
-    `,
-    variables: { id, details: { fieldId, valueString } },
-    headers,
-  });
+};
