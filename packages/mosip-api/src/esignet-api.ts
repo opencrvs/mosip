@@ -140,7 +140,7 @@ export const fetchLocationFromFHIR = <T = any>(
   method = "GET",
   body: string | undefined = undefined,
 ): Promise<T> => {
-  return fetch(`${env.OPENCRVS_GRAPHQL_GATEWAY_URL}${suffix}`, {
+  return fetch(`${env.OPENCRVS_GATEWAY_URL}/${suffix}`, {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -161,23 +161,6 @@ const searchLocationFromFHIR = (name: string) =>
   fetchLocationFromFHIR<fhir2.Bundle>(
     `/locations?${new URLSearchParams({ name, type: "ADMIN_STRUCTURE" })}`,
   );
-
-const findAdminStructureLocationWithName = async (name: string) => {
-  const fhirBundleLocations = await searchLocationFromFHIR(name);
-
-  if ((fhirBundleLocations.entry?.length ?? 0) > 1) {
-    throw new Error(
-      "Multiple admin structure locations found with the same name",
-    );
-  }
-
-  if ((fhirBundleLocations.entry?.length ?? 0) === 0) {
-    // logger.warn("No admin structure location found with the name: " + name);
-    return null;
-  }
-
-  return fhirBundleLocations.entry?.[0].resource?.id;
-};
 
 function formatDate(dateString: string, formatStr = "PP") {
   const date = parse(dateString, "yyyy/MM/dd", new Date());
@@ -201,6 +184,11 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
     firstName: names?.[0],
     familyName: names?.[names?.length - 1],
     middleName: names && names?.length > 2 ? names?.[1] : "",
+    name: {
+      firstname: names?.[0],
+      middlename: names && names?.length > 2 ? names?.[1] : "",
+      surname: names?.[names?.length - 1],
+    },
     gender: userInfo?.gender?.toLowerCase(),
     ...(userInfo.birthdate && {
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
