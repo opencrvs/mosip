@@ -193,6 +193,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
     ...(userInfo.birthdate && {
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
     }),
+    verificationStatus: "authenticated",
     /*stateFhirId,
     districtFhirId:
       userInfo.address?.region &&
