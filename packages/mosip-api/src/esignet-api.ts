@@ -185,9 +185,9 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
     familyName: names?.[names?.length - 1],
     middleName: names && names?.length > 2 ? names?.[1] : "",
     name: {
-      firstname: names?.[0],
-      middlename: names && names?.length > 2 ? names?.[1] : "",
-      surname: names?.[names?.length - 1],
+      firstname: userInfo.given_name,
+      middlename: userInfo.middle_name,
+      surname: userInfo.family_name,
     },
     gender: userInfo?.gender?.toLowerCase(),
     ...(userInfo.birthdate && {
