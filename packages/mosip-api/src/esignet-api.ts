@@ -173,17 +173,7 @@ function formatDate(dateString: string, formatStr = "PP") {
 }
 
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
-  // TODO: refactor starting with a leaf level search
-  // Dont throw any errors if location can't be found
-  /*const stateFhirId =
-    userInfo.address?.country &&
-    (await findAdminStructureLocationWithName(userInfo.address.country));*/
-  const names = userInfo?.name?.split(" ");
-
   return {
-    firstName: names?.[0],
-    familyName: names?.[names?.length - 1],
-    middleName: names && names?.length > 2 ? names?.[1] : "",
     name: {
       firstname: userInfo.given_name,
       middlename: userInfo.middle_name,
@@ -194,13 +184,8 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
     }),
     verificationStatus: "authenticated",
-    /*stateFhirId,
-    districtFhirId:
-      userInfo.address?.region &&
-      (await findAdminStructureLocationWithName(userInfo.address.region)),
-    locationLevel3FhirId:
-      userInfo.address?.locality &&
-      (await findAdminStructureLocationWithName(userInfo.address.locality)),*/
+    idType: null,
+    nid: null,
   };
 };
 
