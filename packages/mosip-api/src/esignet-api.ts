@@ -181,6 +181,7 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
     },
     gender: userInfo?.gender?.toLowerCase(),
     ...(userInfo.birthdate && {
+      dobUnknown: null,
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
     }),
     verificationStatus: "authenticated",
