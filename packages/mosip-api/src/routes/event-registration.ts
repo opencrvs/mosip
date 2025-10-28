@@ -27,6 +27,8 @@ export const registrationEventHandler = async (
 
     request.log.info({ transactionId }, "Event ID");
 
+    insertTransaction(transactionId, token, birthCertificateNumber);
+
     await mosip.postBirthRecord({
       event: { id: transactionId, trackingId },
       requestFields,
@@ -34,8 +36,6 @@ export const registrationEventHandler = async (
       metaInfo,
       notification,
     });
-
-    insertTransaction(transactionId, token, birthCertificateNumber);
   }
 
   const deathCertificateNumber = requestFields.deathCertificateNumber;
@@ -45,6 +45,8 @@ export const registrationEventHandler = async (
 
     request.log.info({ transactionId }, "Event ID");
 
+    insertTransaction(transactionId, token, deathCertificateNumber);
+
     await mosip.postDeathRecord({
       event: { id: transactionId, trackingId },
       requestFields,
@@ -52,8 +54,6 @@ export const registrationEventHandler = async (
       metaInfo,
       notification,
     });
-
-    insertTransaction(transactionId, token, deathCertificateNumber);
   }
 
   return reply.code(202).send({});
