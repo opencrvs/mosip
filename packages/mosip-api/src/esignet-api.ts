@@ -186,6 +186,8 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
     verificationStatus: "authenticated",
     idType: null,
     nid: null,
+    passport: null,
+    brn: null,
   };
 };
 
