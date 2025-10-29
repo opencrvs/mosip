@@ -100,7 +100,7 @@ export const createMosipInteropClient = (
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to register event: ${await response.text()}`);
+        throw new Error(`Failed to verify: ${await response.text()}`);
       }
 
       return response.text() as Promise<"verified" | "failed">;
