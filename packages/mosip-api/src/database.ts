@@ -62,4 +62,23 @@ export const getTransactionAndDiscard = (id: string) => {
   };
 };
 
+/**
+ * Retrieves all transactions from the database.
+ *
+ * @warning
+ * This function is intended for **debugging purposes only** as it exposes sensitive data.
+ */
+export const getAllTransactions = () => {
+  return database
+    .prepare(
+      "SELECT id, registration_number, token, created_at FROM transactions",
+    )
+    .all() as Array<{
+    id: string;
+    registration_number: string;
+    token: string;
+    created_at: string;
+  }>;
+};
+
 export const exit = () => database.close();
