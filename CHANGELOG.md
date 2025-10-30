@@ -1,0 +1,11 @@
+# Changelog
+
+## 1.9.0
+
+Before version 1.9, communication between country-config and mosip-api was handled via FHIR and GraphQL. OpenCRVS 1.9 introduces a refactored data model, new REST APIs, and new country configuration hooks such as onRegisterHandler. These changes require updates to country configurations, as the @opencrvs/mosip package has been updated accordingly. For detailed upgrade instructions, refer to [documentation.opencrvs.org](https://documentation.opencrvs.org).
+
+### Country configuration changes
+
+- `@opencrvs/mosip` now exposes `createMosipInteropClient`, which can be used to `register` and `verifyNid` based on custom rules.
+- `@opencrvs/mosip` has deprecated `mosipRegistrationHandler` and `mosipRegistrationForReviewHandler` in favor of the new APIs.
+- `@opencrvs/mosip` has deprecated `fhirBundleToMOSIPPayload`, as version 1.9 no longer uses FHIR.

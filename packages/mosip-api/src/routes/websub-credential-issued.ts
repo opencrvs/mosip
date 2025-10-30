@@ -4,8 +4,8 @@ import { getTransactionAndDiscard } from "../database";
 import { decode } from "jsonwebtoken";
 import * as opencrvs from "../opencrvs-api";
 import { decryptMosipCredential } from "../websub/crypto";
-import { MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS, env } from "../constants";
-import { isBirthSubject, verifyCredentialOrThrow } from "../websub/verify-vc";
+import { env } from "../constants";
+import { isBirthSubject } from "../websub/verify-vc";
 
 export const CredentialIssuedSchema = z.object({
   publisher: z.string(),
@@ -27,6 +27,11 @@ export const CredentialIssuedSchema = z.object({
     }),
   }),
 });
+
+interface TokenPayload {
+  eventId: string;
+  actionId: string;
+}
 
 type CredentialIssuedRequest = FastifyRequest<{
   Body: z.infer<typeof CredentialIssuedSchema>;
@@ -52,29 +57,26 @@ export const credentialIssuedHandler = async (
 
     const { token, registrationNumber } =
       getTransactionAndDiscard(transactionId);
-    const { recordId } = decode(token) as { recordId: string };
+    const { eventId, actionId } = decode(token) as TokenPayload;
 
     if (isBirthSubject(verifiableCredential.credentialSubject)) {
-      await opencrvs.confirmRegistration(
+      opencrvs.confirmRegistration(
         {
-          id: recordId,
+          eventId,
+          actionId,
           registrationNumber,
-          identifiers: [
-            {
-              type: "NATIONAL_ID",
-              value: verifiableCredential.credentialSubject.VID,
-            },
-          ],
+          nationalId: verifiableCredential.credentialSubject.VID,
         },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { token },
       );
     } else {
-      await opencrvs.confirmRegistration(
+      opencrvs.confirmRegistration(
         {
-          id: recordId,
+          eventId,
+          actionId,
           registrationNumber,
         },
-        { headers: { Authorization: `Bearer ${token}` } },
+        { token },
       );
     }
     return reply

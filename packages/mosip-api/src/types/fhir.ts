@@ -655,3 +655,26 @@ export function findTaskExtension<
     (ext): ext is KnownExtensionType[T] => ext.url === extensionUrl,
   );
 }
+
+export function compositionHasSection(
+  composition: fhir3.Composition,
+  sectionCode: string,
+): boolean {
+  return !!composition.section?.find((section) =>
+    section.code?.coding?.some((coding) => coding.code === sectionCode),
+  );
+}
+
+export function informantHasOwnSection(
+  informantType: string | undefined,
+  composition: fhir3.Composition,
+): boolean {
+  if (informantType === "MOTHER") {
+    return compositionHasSection(composition, "mother-details");
+  } else if (informantType === "FATHER") {
+    return compositionHasSection(composition, "father-details");
+  } else if (informantType === "SPOUSE") {
+    return compositionHasSection(composition, "spouse-details");
+  }
+  return false;
+}

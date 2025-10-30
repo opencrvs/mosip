@@ -86,7 +86,7 @@ type OIDPUserInfo = {
   updated_at?: number;
 };
 
-app.post("/oidc/userinfo", {
+app.get("/oidc/userinfo", {
   handler: async (request, reply) => {
     // see `index.html` if you're wondering where this comes from
     const { code } = jwt.decode(

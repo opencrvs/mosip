@@ -1,88 +1,11 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import { z } from "zod";
 import * as mosip from "../mosip-api";
-import {
-  EVENT_TYPE,
-  getComposition,
-  getEventType,
-  getTrackingId,
-} from "../types/fhir";
-import {
-  generateRegistrationNumber,
-  generateTransactionId,
-} from "../registration-number";
+import { generateTransactionId } from "../registration-number";
 import { insertTransaction } from "../database";
-
-interface MOSIPPayload {
-  compositionId: string;
-  trackingId: string;
-  notification: {
-    recipientFullName: string;
-    recipientEmail: string;
-    recipientPhone: string;
-  };
-  requestFields: Partial<{
-    fullName: string;
-    dateOfBirth: string;
-    gender: string;
-    guardianOrParentName: string;
-    nationalIdNumber: string;
-    passportNumber: string;
-    drivingLicenseNumber: string;
-    deceasedStatus: boolean;
-    residenceStatus: string;
-    vid: string;
-    email: string;
-    phone: string;
-    guardianOrParentBirthCertificateNumber: string;
-    birthCertificateNumber: string;
-    deathCertificateNumber: string;
-    addressLine1: string;
-    addressLine2: string;
-    addressLine3: string;
-    district: string;
-    village: string;
-    birthRegistrationCertificate: string;
-    passportId: string;
-    nationalId: string;
-    drivingLicenseId: string;
-    addressProof: string;
-    selectedHandles: string;
-    UIN: string;
-    deathDeclared: string;
-    dateOfDeath: string;
-  }>;
-  metaInfo: {
-    metaData: string;
-    registrationId: string;
-    operationsData: string;
-    capturedRegisteredDevices: string;
-    creationDate: string;
-  };
-  audit: {
-    uuid: string;
-    createdAt: string;
-    eventId: string;
-    eventName: string;
-    eventType: string;
-    hostName: string;
-    hostIp: string;
-    applicationId: string;
-    applicationName: string;
-    sessionUserId: string;
-    sessionUserName: string;
-    id: string;
-    idType: string;
-    createdBy: string;
-    moduleName: string;
-    moduleId: string;
-    description: string;
-    actionTimeStamp: string;
-  };
-}
+import { MosipInteropPayload } from "@opencrvs/mosip/api";
 
 export type OpenCRVSRequest = FastifyRequest<{
-  Body: MOSIPPayload;
+  Body: MosipInteropPayload;
 }>;
 
 /** Handles the calls coming from OpenCRVS countryconfig */
@@ -90,7 +13,8 @@ export const registrationEventHandler = async (
   request: OpenCRVSRequest,
   reply: FastifyReply,
 ) => {
-  const { trackingId, requestFields } = request.body;
+  const { trackingId, requestFields, audit, metaInfo, notification } =
+    request.body;
 
   const token = request.headers.authorization!.split(" ")[1];
 
@@ -103,12 +27,15 @@ export const registrationEventHandler = async (
 
     request.log.info({ transactionId }, "Event ID");
 
+    insertTransaction(transactionId, token, birthCertificateNumber);
+
     await mosip.postBirthRecord({
       event: { id: transactionId, trackingId },
-      request,
+      requestFields,
+      audit,
+      metaInfo,
+      notification,
     });
-
-    insertTransaction(transactionId, token, birthCertificateNumber);
   }
 
   const deathCertificateNumber = requestFields.deathCertificateNumber;
@@ -118,13 +45,16 @@ export const registrationEventHandler = async (
 
     request.log.info({ transactionId }, "Event ID");
 
+    insertTransaction(transactionId, token, deathCertificateNumber);
+
     await mosip.postDeathRecord({
       event: { id: transactionId, trackingId },
-      request,
+      requestFields,
+      audit,
+      metaInfo,
+      notification,
     });
-
-    insertTransaction(transactionId, token, deathCertificateNumber);
   }
 
-  return reply.code(202).send();
+  return reply.code(202).send({});
 };

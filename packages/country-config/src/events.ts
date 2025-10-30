@@ -1,14 +1,17 @@
 import type * as Hapi from "@hapi/hapi";
 import fetch from "node-fetch";
 import { MOSIPPayload } from "./transform";
+import { VerificationStatus } from "./api";
 
-interface VerificationStatus {
-  father: boolean;
-  mother: boolean;
-  informant: boolean;
-}
+/*
+ * NOTE!
+ *
+ * This file is used in OpenCRVS pre-1.9 country-configs and registrations. You are looking for `api.ts` which caters for OpenCRVS 1.9+.
+ * This file can be removed in future versions.
+ */
 
 /**
+ * @deprecated
  * Replaces event registration handler in country config
  */
 export const mosipRegistrationHandler = ({
@@ -48,6 +51,7 @@ export const mosipRegistrationHandler = ({
   }) satisfies Hapi.ServerRoute["handler"];
 
 /**
+ * @deprecated
  * Replaces `/events/{event}/actions/sent-notification-for-review` handler in country config
  */
 export const mosipRegistrationForReviewHandler = ({ url }: { url: string }) =>

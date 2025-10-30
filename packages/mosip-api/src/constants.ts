@@ -14,8 +14,8 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:3000",
     desc: "OpenCRVS client app URL for CORS",
   }),
-  OPENCRVS_GRAPHQL_GATEWAY_URL: str({
-    devDefault: "http://localhost:7070/graphql",
+  OPENCRVS_GATEWAY_URL: str({
+    devDefault: "http://localhost:7070",
     desc: "The URL of the OpenCRVS GraphQL Gateway",
   }),
   OPENCRVS_PUBLIC_KEY_URL: str({

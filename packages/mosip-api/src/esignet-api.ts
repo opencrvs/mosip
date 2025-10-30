@@ -140,7 +140,7 @@ export const fetchLocationFromFHIR = <T = any>(
   method = "GET",
   body: string | undefined = undefined,
 ): Promise<T> => {
-  return fetch(`${env.OPENCRVS_GRAPHQL_GATEWAY_URL}${suffix}`, {
+  return fetch(`${env.OPENCRVS_GATEWAY_URL}/${suffix}`, {
     method,
     headers: {
       "Content-Type": "application/json",
@@ -162,23 +162,6 @@ const searchLocationFromFHIR = (name: string) =>
     `/locations?${new URLSearchParams({ name, type: "ADMIN_STRUCTURE" })}`,
   );
 
-const findAdminStructureLocationWithName = async (name: string) => {
-  const fhirBundleLocations = await searchLocationFromFHIR(name);
-
-  if ((fhirBundleLocations.entry?.length ?? 0) > 1) {
-    throw new Error(
-      "Multiple admin structure locations found with the same name",
-    );
-  }
-
-  if ((fhirBundleLocations.entry?.length ?? 0) === 0) {
-    // logger.warn("No admin structure location found with the name: " + name);
-    return null;
-  }
-
-  return fhirBundleLocations.entry?.[0].resource?.id;
-};
-
 function formatDate(dateString: string, formatStr = "PP") {
   const date = parse(dateString, "yyyy/MM/dd", new Date());
   if (!isValid(date)) {
@@ -190,28 +173,20 @@ function formatDate(dateString: string, formatStr = "PP") {
 }
 
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
-  // TODO: refactor starting with a leaf level search
-  // Dont throw any errors if location can't be found
-  /*const stateFhirId =
-    userInfo.address?.country &&
-    (await findAdminStructureLocationWithName(userInfo.address.country));*/
-  const names = userInfo?.name?.split(" ");
-
   return {
-    firstName: names?.[0],
-    familyName: names?.[names?.length - 1],
-    middleName: names && names?.length > 2 ? names?.[1] : "",
+    name: {
+      firstname: userInfo.given_name,
+      middlename: userInfo.middle_name,
+      surname: userInfo.family_name,
+    },
     gender: userInfo?.gender?.toLowerCase(),
     ...(userInfo.birthdate && {
+      dobUnknown: null,
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
     }),
-    /*stateFhirId,
-    districtFhirId:
-      userInfo.address?.region &&
-      (await findAdminStructureLocationWithName(userInfo.address.region)),
-    locationLevel3FhirId:
-      userInfo.address?.locality &&
-      (await findAdminStructureLocationWithName(userInfo.address.locality)),*/
+    verificationStatus: "authenticated",
+    idType: null,
+    nid: null,
   };
 };
 
