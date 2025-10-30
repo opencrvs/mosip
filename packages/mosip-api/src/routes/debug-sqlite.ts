@@ -1,5 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { getAllTransactions, getTransactionAndDiscard } from "../database";
+import { SCOPES } from "@opencrvs/toolkit/scopes";
 
 interface AuthenticatedUser {
   scope: string[];
@@ -12,17 +13,19 @@ interface AuthenticatedUser {
  * - Users with this scope would be able to see record UUID's and registration numbers in the UI anyway.
  */
 const isAllowedToSearch = (scope: string[]) => {
-  return scope.includes("search.birth") && scope.includes("search.death");
+  return (
+    scope.includes(SCOPES.SEARCH_BIRTH) && scope.includes(SCOPES.SEARCH_DEATH)
+  );
 };
 
 /**
  * Allow deleting transactions for users that have `record.reject-registration` scope.
  *
  * Rationale:
- * - This should be accompanied with a `rejectRegistration` call via Postman which requires this scope.
+ * - This should be accompanied with a `client.event.actions.register.reject` call via Postman which requires this scope.
  */
 const isAllowedToDelete = (scope: string[]) =>
-  scope.includes("record.reject-registration");
+  scope.includes(SCOPES.RECORD_REJECT_REGISTRATION);
 
 export const getAllTransactionsHandler = async (
   request: FastifyRequest,

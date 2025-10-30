@@ -39,7 +39,7 @@ const envToLogger = {
 
 const initRoutes = (app: FastifyInstance) => {
   /*
-   * OpenCRVS birth / death registration or review events
+   * OpenCRVS birth / death registration and personal information verification
    */
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/events/registration",
