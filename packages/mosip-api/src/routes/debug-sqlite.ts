@@ -1,6 +1,8 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { getAllTransactions, getTransactionAndDiscard } from "../database";
 import { SCOPES } from "@opencrvs/toolkit/scopes";
+import { TokenPayload } from "./websub-credential-issued";
+import { decode } from "jsonwebtoken";
 
 interface AuthenticatedUser {
   scope: string[];
@@ -39,7 +41,17 @@ export const getAllTransactionsHandler = async (
     });
   }
 
-  return getAllTransactions();
+  const transactions = getAllTransactions();
+
+  return transactions.map(({ token, ...rest }) => {
+    const { eventId, actionId } = decode(token) as TokenPayload;
+
+    return {
+      eventId,
+      actionId,
+      ...rest,
+    };
+  });
 };
 
 export type DeleteTransactionRequest = FastifyRequest<{

@@ -70,10 +70,13 @@ export const getTransactionAndDiscard = (id: string) => {
  */
 export const getAllTransactions = () => {
   return database
-    .prepare("SELECT id, registration_number, created_at FROM transactions")
+    .prepare(
+      "SELECT id, registration_number, token, created_at FROM transactions",
+    )
     .all() as Array<{
     id: string;
     registration_number: string;
+    token: string;
     created_at: string;
   }>;
 };
