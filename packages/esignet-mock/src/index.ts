@@ -86,17 +86,33 @@ type OIDPUserInfo = {
   updated_at?: number;
 };
 
+/**
+ * When user is redirected to ./mock-authorizer/index.html, we add the `redirect_uri` to this list.
+ * Then, when userinfo is requested, we check if this list includes it.
+ *
+ * If it doesn't, we throw an error. It's not transactionally safe, but it's a mock server after all.
+ */
+const VALID_REDIRECT_URIS: string[] = [];
+
 app.get("/oidc/userinfo", {
   handler: async (request, reply) => {
     // see `index.html` if you're wondering where this comes from
-    const { code } = jwt.decode(
+    const { code, redirect_uri } = jwt.decode(
       request.headers.authorization!.split("Bearer ")[1]!,
-    ) as { code: string };
+    ) as { code: string; redirect_uri: string };
     const nid = atob(code);
 
     const identity = identities.find(
       (mockIdentity) => mockIdentity.nid === nid,
     );
+
+    /** @see VALID_REDIRECT_URIS for explanation */
+    const validRedirectUriIndex = VALID_REDIRECT_URIS.indexOf(redirect_uri);
+    if (validRedirectUriIndex === -1) {
+      throw new Error("Invalid redirect_uri provided!");
+    } else {
+      VALID_REDIRECT_URIS.splice(validRedirectUriIndex, 1);
+    }
 
     if (!identity) {
       throw new Error(`Identity "${nid}" not found! Uh oh...`);
@@ -177,6 +193,9 @@ app.get("/authorize", {
       .replace(/{{claims}}/g, request.query.claims)
       .replace(/{{state}}/g, request.query.state)
       .replace(/{{redirect_uri}}/g, request.query.redirect_uri);
+
+    /** @see VALID_REDIRECT_URIS for explanation */
+    VALID_REDIRECT_URIS.push(request.query.redirect_uri);
 
     return reply.type("text/html").send(modifiedHtml);
   },
