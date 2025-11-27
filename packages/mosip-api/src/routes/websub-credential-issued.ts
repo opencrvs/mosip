@@ -28,7 +28,7 @@ export const CredentialIssuedSchema = z.object({
   }),
 });
 
-interface TokenPayload {
+export interface TokenPayload {
   eventId: string;
   actionId: string;
 }
