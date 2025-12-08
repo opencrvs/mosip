@@ -194,8 +194,9 @@ app.get("/authorize", {
       .replace(/{{state}}/g, request.query.state)
       .replace(/{{redirect_uri}}/g, request.query.redirect_uri);
 
+    /** See `packages/mosip-api/src/esignet-api.ts` for `redirect_uri: redirectUri?.split("?")[0] ?? redirectUri` to understand the matching of this */
     /** @see VALID_REDIRECT_URIS for explanation */
-    VALID_REDIRECT_URIS.push(request.query.redirect_uri);
+    VALID_REDIRECT_URIS.push(request.query.redirect_uri.split("?")[0]);
 
     return reply.type("text/html").send(modifiedHtml);
   },
