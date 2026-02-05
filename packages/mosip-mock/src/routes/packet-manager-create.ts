@@ -144,7 +144,7 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
       {
         id: payload.request.id,
         packetName: "111111112_evidence",
-        source: "OPENCRVS",
+        source: "CRVS1",
         process: "CRVS_NEW",
         refId: payload.request.id,
         schemaVersion: "0.1",
@@ -158,7 +158,7 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
       {
         id: payload.request.id,
         packetName: "111111112_optional",
-        source: "OPENCRVS",
+        source: "CRVS1",
         process: "CRVS_NEW",
         refId: payload.request.id,
         schemaVersion: "0.1",
@@ -172,7 +172,7 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
       {
         id: payload.request.id,
         packetName: "111111112_id",
-        source: "OPENCRVS",
+        source: "CRVS1",
         process: "CRVS_NEW",
         refId: payload.request.id,
         schemaVersion: "0.1",

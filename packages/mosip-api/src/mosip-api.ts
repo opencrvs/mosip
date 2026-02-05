@@ -205,7 +205,7 @@ export const postDeathRecord = async ({
         refId: `${env.MOSIP_CENTER_ID}_${env.MOSIP_MACHINE_ID}`,
         offlineMode: false,
         process: "CRVS_DEATH",
-        source: "OPENCRVS",
+        source: "CRVS1",
         schemaVersion: "0.100",
         fields: newRequestBody,
         metaInfo: metaInfo,
@@ -244,7 +244,7 @@ export const postDeathRecord = async ({
       request: {
         registrationId: event.id,
         process: "CRVS_DEATH",
-        source: "OPENCRVS",
+        source: "CRVS1",
         additionalInfoReqId: "",
         notificationInfo: {
           name: notification.recipientFullName,
