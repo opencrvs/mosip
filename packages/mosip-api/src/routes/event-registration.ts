@@ -3,6 +3,7 @@ import * as mosip from "../mosip-api";
 import { generateTransactionId } from "../registration-number";
 import { insertTransaction } from "../database";
 import { MosipInteropPayload } from "@opencrvs/mosip/api";
+import { env } from "../constants";
 
 export type OpenCRVSRequest = FastifyRequest<{
   Body: MosipInteropPayload;
@@ -19,6 +20,17 @@ export const registrationEventHandler = async (
   const token = request.headers.authorization!.split(" ")[1];
 
   request.log.info({ trackingId }, "Received record from OpenCRVS");
+
+  if (!env.isProd) {
+    const host = request.headers.host;
+    const baseUrl = host
+      ? `${request.protocol}://${host}`
+      : `http://${env.HOST}:${env.PORT}`;
+    const body = JSON.stringify(request.body).replace(/'/g, "'\\''");
+    const curl = `curl -X POST "${baseUrl}/events/registration" -H "Authorization: Bearer ${token}" -H "Content-Type: application/json" --data-raw '${body}'`;
+
+    request.log.info({ trackingId, curl }, "Dev retry curl");
+  }
 
   const birthCertificateNumber = requestFields.birthCertificateNumber;
 

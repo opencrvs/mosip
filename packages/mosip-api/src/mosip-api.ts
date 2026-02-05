@@ -14,10 +14,68 @@ export class MOSIPError extends Error {
   }
 }
 
+const logFetch = async (
+  url: string,
+  options: RequestInit,
+  response: Response,
+) => {
+  const requestHeaders = options.headers ?? {};
+  const requestBody =
+    typeof options.body === "string"
+      ? options.body
+      : options.body
+        ? "[non-string body]"
+        : "";
+  const responseText = await response.clone().text();
+  const responseHeaders: Record<string, string> = {};
+
+  response.headers.forEach((value, key) => {
+    responseHeaders[key] = value;
+  });
+
+  console.log("MOSIP fetch request", {
+    url,
+    method: options.method ?? "GET",
+    headers: requestHeaders,
+    body: requestBody,
+  });
+
+  console.log("MOSIP fetch response", {
+    url,
+    status: response.status,
+    statusText: response.statusText,
+    headers: responseHeaders,
+    body: responseText,
+  });
+};
+
+const fetchWithLogging = async (url: string, options: RequestInit) => {
+  const response = await fetch(url, options);
+  await logFetch(url, options, response);
+  return response;
+};
+
+const logAuthenticatorResponse = async (response: Response) => {
+  const responseText = await response.clone().text();
+  const responseHeaders: Record<string, string> = {};
+
+  response.headers.forEach((value, key) => {
+    responseHeaders[key] = value;
+  });
+
+  console.log("MOSIP authenticator response", {
+    url: response.url,
+    status: response.status,
+    statusText: response.statusText,
+    headers: responseHeaders,
+    body: responseText,
+  });
+};
+
 export type AuthType = "PACKET" | "WEBSUB";
 
 export async function getMosipAuthToken(authType: AuthType) {
-  const response = await fetch(env.MOSIP_AUTH_URL, {
+  const response = await fetchWithLogging(env.MOSIP_AUTH_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -97,8 +155,8 @@ export const postBirthRecord = async ({
         refId: `${env.MOSIP_CENTER_ID}_${env.MOSIP_MACHINE_ID}`,
         offlineMode: false,
         process: "CRVS_NEW",
-        source: "OPENCRVS",
-        schemaVersion: "0.100",
+        source: "CRVS1",
+        schemaVersion: "0.500",
         fields: requestFields,
         metaInfo: metaInfo,
         audits: Array.of(audit),
@@ -112,14 +170,17 @@ export const postBirthRecord = async ({
   const authToken = await getMosipAuthToken("PACKET");
 
   // packet manager: create packet
-  const createPacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
-    method: "PUT",
-    body: requestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
+  const createPacketResponse = await fetchWithLogging(
+    env.MOSIP_CREATE_PACKET_URL,
+    {
+      method: "PUT",
+      body: requestBody,
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `Authorization=${authToken};`,
+      },
     },
-  });
+  );
 
   if (!createPacketResponse.ok) {
     throw new Error(
@@ -138,7 +199,7 @@ export const postBirthRecord = async ({
       request: {
         registrationId: event.id,
         process: "CRVS_NEW",
-        source: "OPENCRVS",
+        source: "CRVS1",
         additionalInfoReqId: "",
         notificationInfo: {
           name: notification.recipientFullName,
@@ -151,14 +212,17 @@ export const postBirthRecord = async ({
     2,
   );
 
-  const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
-    method: "POST",
-    body: processPacketRequestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
+  const processPacketResponse = await fetchWithLogging(
+    env.MOSIP_PROCESS_PACKET_URL,
+    {
+      method: "POST",
+      body: processPacketRequestBody,
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `Authorization=${authToken};`,
+      },
     },
-  });
+  );
 
   if (!processPacketResponse.ok) {
     throw new Error(
@@ -218,14 +282,17 @@ export const postDeathRecord = async ({
   );
 
   // packet manager: deactivate packet
-  const deactivatePacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
-    method: "PUT",
-    body: deactivatePacketRequestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
+  const deactivatePacketResponse = await fetchWithLogging(
+    env.MOSIP_CREATE_PACKET_URL,
+    {
+      method: "PUT",
+      body: deactivatePacketRequestBody,
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `Authorization=${authToken};`,
+      },
     },
-  });
+  );
 
   if (!deactivatePacketResponse.ok) {
     throw new Error(
@@ -257,14 +324,17 @@ export const postDeathRecord = async ({
     2,
   );
 
-  const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
-    method: "POST",
-    body: processPacketRequestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
+  const processPacketResponse = await fetchWithLogging(
+    env.MOSIP_PROCESS_PACKET_URL,
+    {
+      method: "POST",
+      body: processPacketRequestBody,
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: `Authorization=${authToken};`,
+      },
     },
-  });
+  );
 
   if (!processPacketResponse.ok) {
     throw new Error(
@@ -317,12 +387,18 @@ export const verifyNid = async ({
     consent: true,
   });
 
+  await logAuthenticatorResponse(response);
+
   if (!response.ok) {
     throw new Error(`Error in MOSIP Authenticator: ${await response.text()}`);
   }
 
-  return (await response.json()) as {
+  const responseJson = (await response.json()) as {
     responseTime: string;
     response: { authStatus: boolean; authToken: string };
   };
+
+  console.log("MOSIP Authenticator response", responseJson);
+
+  return responseJson;
 };
