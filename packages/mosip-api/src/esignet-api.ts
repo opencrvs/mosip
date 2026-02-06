@@ -17,6 +17,7 @@ import { isValid, format, Locale, parse } from "date-fns";
 import { enGB } from "date-fns/locale/en-GB";
 import { fr } from "date-fns/locale/fr";
 import fs from "node:fs";
+import crypto from "node:crypto";
 
 const OIDP_CLIENT_PRIVATE_KEY = fs
   .readFileSync(env.OIDP_CLIENT_PRIVATE_KEY_PATH)
@@ -85,8 +86,8 @@ const generateSignedJwt = async (clientId: string) => {
   const payload = {
     iss: clientId,
     sub: clientId,
-    // aud: env.OPENID_PROVIDER_CLAIMS,
     aud: env.ESIGNET_TOKEN_URL,
+    jti: crypto.randomUUID(),
   };
 
   console.log("JWT payload", payload);
@@ -157,11 +158,6 @@ export const fetchLocationFromFHIR = <T = any>(
     });
 };
 
-const searchLocationFromFHIR = (name: string) =>
-  fetchLocationFromFHIR<fhir2.Bundle>(
-    `/locations?${new URLSearchParams({ name, type: "ADMIN_STRUCTURE" })}`,
-  );
-
 function formatDate(dateString: string, formatStr = "PP") {
   const date = parse(dateString, "yyyy/MM/dd", new Date());
   if (!isValid(date)) {
@@ -175,9 +171,9 @@ function formatDate(dateString: string, formatStr = "PP") {
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
   return {
     name: {
-      firstname: userInfo.given_name,
-      middlename: userInfo.middle_name,
-      surname: userInfo.family_name,
+      firstname: userInfo.name?.split(" ")[0],
+      surname: userInfo.name?.split(" ").at(-1),
+      // middlename: userInfo.middle_name?.split(' ')[0],[1],
     },
     gender: userInfo?.gender?.toLowerCase(),
     ...(userInfo.birthdate && {
