@@ -42,7 +42,7 @@ export const env = cleanEnv(process.env, {
     desc: "MOSIP WebSub `hub.secret`",
   }),
   MOSIP_WEBSUB_TOPIC: str({
-    devDefault: "CREDENTIAL_ISSUED",
+    devDefault: "crvs_partner_CREDENTIAL_ISSUED",
     desc: "The Kafka topic that is listened for ID credential issuance, `hub.topic`",
   }),
   MOSIP_WEBSUB_CALLBACK_URL: str({
@@ -62,14 +62,6 @@ export const env = cleanEnv(process.env, {
   TRANSACTION_ID_PREFIX: str({
     default: "10001",
     desc: "Used to prefix the numeric transaction ID (1000101234567890) that is sent to MOSIP and received back",
-  }),
-  MOSIP_BIRTH_WEBHOOK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/birth",
-    desc: "The URL where MOSIP receives birth webhooks from OpenCRVS",
-  }),
-  MOSIP_DEATH_WEBHOOK_URL: str({
-    devDefault: "http://localhost:20240/webhooks/opencrvs/death",
-    desc: "The URL where MOSIP receives death webhooks from OpenCRVS",
   }),
 
   // E-Signet

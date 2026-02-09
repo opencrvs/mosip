@@ -41,6 +41,8 @@ export const credentialIssuedHandler = async (
   request: CredentialIssuedRequest,
   reply: FastifyReply,
 ) => {
+  console.log("Credential issued:", request.body);
+
   try {
     const verifiableCredential = decryptMosipCredential(
       request.body.event.data.credential,
@@ -65,7 +67,7 @@ export const credentialIssuedHandler = async (
           eventId,
           actionId,
           registrationNumber,
-          nationalId: verifiableCredential.credentialSubject.VID,
+          nationalId: verifiableCredential.credentialSubject.UIN,
         },
         { token },
       );

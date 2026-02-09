@@ -3,10 +3,8 @@ import { z } from "zod";
 import canonicalize from "canonicalize";
 
 const BirthSubject = z.object({
-  birthCertificateNumber: z.string(),
-  VID: z.string(),
-  id: z.string().url(),
-  vcVer: z.literal("VC-V1"),
+  id: z.string(),
+  UIN: z.string(),
 });
 
 const DeathSubject = z.object({

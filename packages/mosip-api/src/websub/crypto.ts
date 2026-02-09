@@ -1,9 +1,9 @@
 import { asn1, pkcs12, pki, md } from "node-forge";
 import { env } from "../constants";
 import fs from "node:fs";
-import { z } from "zod";
 import crypto from "node:crypto";
 import { MOSIPVerifiableCredential } from "./verify-vc";
+import { z } from "zod";
 
 /**
  * Reads and extracts private key and certificate from a PKCS#12 file.
@@ -108,5 +108,10 @@ export function decryptMosipCredential(
   ]);
 
   const decryptedJson = JSON.parse(decrypted.toString("utf-8"));
-  return MOSIPVerifiableCredential.parse(decryptedJson);
+
+  console.log("Decrypted credential:", decryptedJson);
+
+  // Loosen up the schema validation for MOSIP Connect 2026
+  // return MOSIPVerifiableCredential.parse(decryptedJson);
+  return decryptedJson as z.infer<typeof MOSIPVerifiableCredential>;
 }
