@@ -38,7 +38,7 @@ export const MOSIPVerifiableCredential = z.object({
 export const isBirthSubject = (
   subject: z.infer<typeof BirthSubject> | z.infer<typeof DeathSubject>,
 ): subject is z.infer<typeof BirthSubject> => {
-  return "birthCertificateNumber" in subject && "VID" in subject;
+  return "UIN" in subject;
 };
 
 export const verifyCredentialOrThrow = async (
