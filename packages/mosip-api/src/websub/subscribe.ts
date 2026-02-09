@@ -8,6 +8,13 @@ import { getMosipAuthToken } from "../mosip-api";
 export const initWebSub = async () => {
   const authToken = await getMosipAuthToken("WEBSUB");
 
+  console.log("Init web sub", {
+    "hub.mode": "subscribe",
+    "hub.topic": env.MOSIP_WEBSUB_TOPIC,
+    "hub.callback": env.MOSIP_WEBSUB_CALLBACK_URL,
+    "hub.secret": env.MOSIP_WEBSUB_SECRET,
+  });
+
   const response = await fetch(env.MOSIP_WEBSUB_HUB_URL, {
     method: "POST",
     headers: {

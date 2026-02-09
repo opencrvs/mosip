@@ -202,8 +202,9 @@ async function run() {
     `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation ✅`,
   );
 
-  const { topic } = await initWebSub();
+  const { topic, response } = await initWebSub();
   app.log.info(`WebSub subscription initialized for topic '${topic}' ✅`);
+  app.log.info(`WebSub response: ${response}`);
 
   process.on("exit", () => {
     database.close();
