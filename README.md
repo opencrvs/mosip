@@ -34,6 +34,16 @@ yarn dev --filter=@opencrvs/mosip-api
 yarn set-version 1.7.0-alpha.16
 ```
 
+## API documentation (Swagger)
+
+When `mosip-api` is running, Swagger UI is available at:
+
+- `http://localhost:2024/documentation`
+
+The OpenAPI JSON spec is available at:
+
+- `http://localhost:2024/documentation/json`
+
 This project uses a **SQLite** database to store the record-specific tokens that OpenCRVS Core uses to allow editing the records. See [`./packages/mosip-api/src/database.ts`](./packages/mosip-api/src/database.ts) for more information.
 
 The **environment variables** the server uses can be found at [`./packages/mosip-api/src/constants.ts`](./packages/mosip-api/src/constants.ts). Create a `.env` file in the root of the repository, if you want to override the local values.

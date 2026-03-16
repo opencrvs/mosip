@@ -24,6 +24,7 @@ import {
   getAllTransactionsHandler,
 } from "./routes/debug-sqlite";
 import { verifyHandler, VerifySchema } from "./routes/verify";
+import { MosipInteropPayloadSchema } from "@opencrvs/mosip/api";
 
 const loggerRedactPaths = [
   "req.headers.authorization",
@@ -73,6 +74,9 @@ const initRoutes = (app: FastifyInstance) => {
     url: "/events/registration",
     method: "POST",
     handler: registrationEventHandler,
+    schema: {
+      body: MosipInteropPayloadSchema,
+    },
   });
   app.withTypeProvider<ZodTypeProvider>().route({
     url: "/verify",
@@ -147,7 +151,9 @@ const getCorePublicKey = async () => {
 export const buildFastify = async () => {
   const app = Fastify({
     logger: envToLogger[env.isProd ? "production" : "development"],
-    ignoreTrailingSlash: true, // MOSIP can call /websub/callback/ with a trailing slash
+    routerOptions: {
+      ignoreTrailingSlash: true, // MOSIP can call /websub/callback/ with a trailing slash
+    },
   });
 
   app.setValidatorCompiler(validatorCompiler);
@@ -176,7 +182,12 @@ export const buildFastify = async () => {
     // @NOTE This disables the JWT authentication for the MOSIP webhook
     // The route is open for requests, but the credential will be verified it's from MOSIP
     // This API should be allowed ONLY from the IP address of MOSIP on network / Traefik level
-    if (request.routeOptions.url === "/websub/callback") return;
+    if (
+      request.routeOptions.url === "/websub/callback" ||
+      request.url.startsWith("/documentation")
+    ) {
+      return;
+    }
 
     try {
       await request.jwtVerify();
