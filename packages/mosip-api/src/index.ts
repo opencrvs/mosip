@@ -68,6 +68,33 @@ const envToLogger = {
 
 const initRoutes = (app: FastifyInstance) => {
   /*
+   * Operations and production debugging
+   */
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "GET",
+    url: "/debug/transactions",
+    handler: getAllTransactionsHandler,
+    schema: {
+      tags: ["Operations (Prod Debug)"],
+      summary: "List pending MOSIP transactions",
+      description:
+        "Returns pending OpenCRVS-to-MOSIP transaction mappings for operational troubleshooting. Requires both search scopes (birth and death).",
+    },
+  });
+
+  app.withTypeProvider<ZodTypeProvider>().route({
+    method: "DELETE",
+    url: "/debug/transactions/:id",
+    handler: deleteTransactionHandler,
+    schema: {
+      tags: ["Operations (Prod Debug)"],
+      summary: "Discard a pending transaction",
+      description:
+        "Deletes a stored transaction so a stuck registration can be unblocked. Intended for production support workflows and requires record.reject-registration scope.",
+    },
+  });
+
+  /*
    * OpenCRVS birth / death registration and personal information verification
    */
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -118,21 +145,6 @@ const initRoutes = (app: FastifyInstance) => {
     schema: {
       body: CredentialIssuedSchema,
     },
-  });
-
-  /*
-   * SQLite debug route
-   */
-  app.withTypeProvider<ZodTypeProvider>().route({
-    method: "GET",
-    url: "/debug/transactions",
-    handler: getAllTransactionsHandler,
-  });
-
-  app.withTypeProvider<ZodTypeProvider>().route({
-    method: "DELETE",
-    url: "/debug/transactions/:id",
-    handler: deleteTransactionHandler,
   });
 };
 
