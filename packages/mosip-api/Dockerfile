@@ -9,7 +9,7 @@ COPY tsconfig.json tsconfig.json
 RUN yarn install --production --frozen-lockfile && yarn cache clean
 COPY src/ src/
 
-RUN mkdir -p /data/sqlite && chown -R node:node /usr/src/app /data/sqlite
+RUN chown -R node:node /usr/src/app
 
 USER node
 
