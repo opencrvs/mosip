@@ -15,7 +15,8 @@ jobs:
         include:
           - service: mosip-api
             port: 2024
-            run_command: NODE_ENV=development ./node_modules/.bin/tsx src/index.ts
+            run_command: >-
+              NODE_ENV=development ./node_modules/.bin/tsx -e "import { buildFastify } from './src/index.ts'; (async () => { const app = await buildFastify(); await app.listen({ port: Number(process.env.PORT ?? 2024), host: process.env.HOST ?? '0.0.0.0' }); })();"
           - service: mosip-mock
             port: 20240
             run_command: NODE_ENV=development ./node_modules/.bin/tsx src/index.ts
@@ -31,20 +32,22 @@ jobs:
         run: |
           case "${{ matrix.service }}" in
             mosip-api)
-              cp yarn.lock packages/mosip-api/yarn.lock
-              echo "BUILD_CONTEXT=packages/mosip-api" >> "$GITHUB_ENV"
+              echo "BUILD_CONTEXT=." >> "$GITHUB_ENV"
+              echo "DOCKERFILE=packages/mosip-api/Dockerfile" >> "$GITHUB_ENV"
               ;;
             mosip-mock)
               mkdir -p images/mosip-mock
               rsync -a --copy-links packages/mosip-mock/ images/mosip-mock/
               cp yarn.lock images/mosip-mock/yarn.lock
               echo "BUILD_CONTEXT=images/mosip-mock" >> "$GITHUB_ENV"
+              echo "DOCKERFILE=images/mosip-mock/Dockerfile" >> "$GITHUB_ENV"
               ;;
             esignet-mock)
               mkdir -p images/esignet-mock
               rsync -a --copy-links packages/esignet-mock/ images/esignet-mock/
               cp yarn.lock images/esignet-mock/yarn.lock
               echo "BUILD_CONTEXT=images/esignet-mock" >> "$GITHUB_ENV"
+              echo "DOCKERFILE=images/esignet-mock/Dockerfile" >> "$GITHUB_ENV"
               ;;
             *)
               echo "Unknown service: ${{ matrix.service }}"
@@ -53,7 +56,7 @@ jobs:
           esac
 
       - name: Build image
-        run: docker build -t "local/${{ matrix.service }}:smoke" "${BUILD_CONTEXT}"
+        run: docker build -f "${DOCKERFILE}" -t "local/${{ matrix.service }}:smoke" "${BUILD_CONTEXT}"
 
       - name: Run container smoke checks
         run: |
@@ -75,6 +78,16 @@ jobs:
             docker_run_args+=(
               -v "$GITHUB_WORKSPACE/docs/example-certs/esignet-jwk.txt:/tmp/dev-secrets/esignet-jwk.txt:ro"
               -e OIDP_CLIENT_PRIVATE_KEY_PATH=/tmp/dev-secrets/esignet-jwk.txt
+            )
+          fi
+
+          if [ "${{ matrix.service }}" = "mosip-api" ]; then
+            docker_run_args+=(
+              -v "$GITHUB_WORKSPACE/docs/example-certs/ida-partner.crt:/tmp/dev-secrets/ida-partner.crt:ro"
+              -v "$GITHUB_WORKSPACE/docs/example-certs/keystore.p12:/tmp/dev-secrets/keystore.p12:ro"
+              -e ENCRYPT_CERT_PATH=/tmp/dev-secrets/ida-partner.crt
+              -e DECRYPT_P12_FILE_PATH=/tmp/dev-secrets/keystore.p12
+              -e SIGN_P12_FILE_PATH=/tmp/dev-secrets/keystore.p12
             )
           fi
 

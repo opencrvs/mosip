@@ -1,25 +1,11 @@
 import { env } from "./constants";
 import MOSIPAuthenticator from "@mosip/ida-auth-sdk";
 import { schemaJson } from "./types/idSchemaJson";
-type BirthRequestFields = {
-  birthCertificateNumber: string;
-  deathCertificateNumber?: undefined;
-} & Record<string, unknown>;
-
-type DeathRequestFields = {
-  deathCertificateNumber: string;
-  birthCertificateNumber?: undefined;
-} & Record<string, unknown>;
-
-type MosipInteropPayload = {
-  notification: {
-    recipientFullName: string;
-    recipientEmail: string;
-    recipientPhone: string;
-  };
-  metaInfo: Record<string, unknown>;
-  audit: Record<string, unknown>;
-};
+import type {
+  BirthRequestFields,
+  DeathRequestFields,
+  MosipInteropPayload,
+} from "@opencrvs/mosip/api";
 
 export class MOSIPError extends Error {
   constructor(message: string) {

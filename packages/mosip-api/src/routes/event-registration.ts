@@ -2,31 +2,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import * as mosip from "../mosip-api";
 import { generateTransactionId } from "../registration-number";
 import { insertTransaction } from "../database";
-import z from "zod";
-
-const BirthRequestFieldsSchema = z.looseObject({
-  birthCertificateNumber: z.string(),
-  deathCertificateNumber: z.undefined().optional(),
-});
-
-const DeathRequestFieldsSchema = z.looseObject({
-  deathCertificateNumber: z.string(),
-  birthCertificateNumber: z.undefined().optional(),
-});
-
-const MosipNotificationSchema = z.object({
-  recipientFullName: z.string(),
-  recipientEmail: z.string(),
-  recipientPhone: z.string(),
-});
-
-export const MosipInteropPayloadSchema = z.object({
-  trackingId: z.string(),
-  notification: MosipNotificationSchema,
-  requestFields: z.union([BirthRequestFieldsSchema, DeathRequestFieldsSchema]),
-  metaInfo: z.record(z.string(), z.unknown()),
-  audit: z.record(z.string(), z.unknown()),
-});
+import { MosipInteropPayloadSchema } from "@opencrvs/mosip/api";
 
 /** Handles the calls coming from OpenCRVS countryconfig */
 export const registrationEventHandler = async (

@@ -46,14 +46,12 @@ jobs:
         env:
           DOCKER_METADATA_SHORT_SHA_LENGTH: 7
 
-      - name: Copy yarn.lock to docker build context
-        run: cp yarn.lock packages/mosip-api/yarn.lock
-
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v6
         with:
-          context: packages/mosip-api
+          context: .
+          file: packages/mosip-api/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
