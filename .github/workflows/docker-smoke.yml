@@ -66,11 +66,14 @@ jobs:
           }
           trap cleanup EXIT
 
-          docker run -d --rm --name "$container_name" -p "$port:$port" "$image_name"
+          docker run -d --rm --name "$container_name" -e NODE_ENV=development -p "$port:$port" "$image_name"
 
           http_code="000"
           for _ in $(seq 1 30); do
-            http_code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${port}/")
+            http_code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${port}/" || true)
+            if [ -z "$http_code" ]; then
+              http_code="000"
+            fi
             if [ "$http_code" != "000" ]; then
               break
             fi
@@ -91,7 +94,10 @@ jobs:
           fi
 
           if [ "${{ matrix.service }}" = "mosip-api" ]; then
-            swagger_code=$(curl -s -o /tmp/openapi.json -w "%{http_code}" "http://localhost:${port}/documentation/json")
+            swagger_code=$(curl -s -o /tmp/openapi.json -w "%{http_code}" "http://localhost:${port}/documentation/json" || true)
+            if [ -z "$swagger_code" ]; then
+              swagger_code="000"
+            fi
             if [ "$swagger_code" != "200" ]; then
               echo "Swagger JSON endpoint failed with status $swagger_code"
               docker logs "$container_name"
