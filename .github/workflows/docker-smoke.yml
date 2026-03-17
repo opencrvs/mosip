@@ -29,19 +29,19 @@ jobs:
           case "${{ matrix.service }}" in
             mosip-api)
               cp yarn.lock packages/mosip-api/yarn.lock
-              echo "DOCKER_CONTEXT=packages/mosip-api" >> "$GITHUB_ENV"
+              echo "BUILD_CONTEXT=packages/mosip-api" >> "$GITHUB_ENV"
               ;;
             mosip-mock)
               mkdir -p images/mosip-mock
               rsync -a --copy-links packages/mosip-mock/ images/mosip-mock/
               cp yarn.lock images/mosip-mock/yarn.lock
-              echo "DOCKER_CONTEXT=images/mosip-mock" >> "$GITHUB_ENV"
+              echo "BUILD_CONTEXT=images/mosip-mock" >> "$GITHUB_ENV"
               ;;
             esignet-mock)
               mkdir -p images/esignet-mock
               rsync -a --copy-links packages/esignet-mock/ images/esignet-mock/
               cp yarn.lock images/esignet-mock/yarn.lock
-              echo "DOCKER_CONTEXT=images/esignet-mock" >> "$GITHUB_ENV"
+              echo "BUILD_CONTEXT=images/esignet-mock" >> "$GITHUB_ENV"
               ;;
             *)
               echo "Unknown service: ${{ matrix.service }}"
@@ -50,7 +50,7 @@ jobs:
           esac
 
       - name: Build image
-        run: docker build -t "local/${{ matrix.service }}:smoke" "${DOCKER_CONTEXT}"
+        run: docker build -t "local/${{ matrix.service }}:smoke" "${BUILD_CONTEXT}"
 
       - name: Run container smoke checks
         run: |
