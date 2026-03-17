@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "NODE_ENV=development tsx watch --env-file-if-exists=../../.env src/index.ts",
     "start": "NODE_ENV=production tsx src/index.ts",
+    "pretest": "yarn workspace @opencrvs/mosip run build",
     "test": "NODE_ENV=development tsx --test"
   },
   "dependencies": {
