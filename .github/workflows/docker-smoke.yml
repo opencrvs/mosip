@@ -1,0 +1,102 @@
+name: Docker smoke tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - develop
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: mosip-api
+            port: 2024
+          - service: mosip-mock
+            port: 20240
+          - service: esignet-mock
+            port: 20260
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare Docker build context
+        run: |
+          case "${{ matrix.service }}" in
+            mosip-api)
+              cp yarn.lock packages/mosip-api/yarn.lock
+              echo "DOCKER_CONTEXT=packages/mosip-api" >> "$GITHUB_ENV"
+              ;;
+            mosip-mock)
+              mkdir -p images/mosip-mock
+              rsync -a --copy-links packages/mosip-mock/ images/mosip-mock/
+              cp yarn.lock images/mosip-mock/yarn.lock
+              echo "DOCKER_CONTEXT=images/mosip-mock" >> "$GITHUB_ENV"
+              ;;
+            esignet-mock)
+              mkdir -p images/esignet-mock
+              rsync -a --copy-links packages/esignet-mock/ images/esignet-mock/
+              cp yarn.lock images/esignet-mock/yarn.lock
+              echo "DOCKER_CONTEXT=images/esignet-mock" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "Unknown service: ${{ matrix.service }}"
+              exit 1
+              ;;
+          esac
+
+      - name: Build image
+        run: docker build -t "local/${{ matrix.service }}:smoke" "${DOCKER_CONTEXT}"
+
+      - name: Run container smoke checks
+        run: |
+          set -euo pipefail
+
+          container_name="smoke-${{ matrix.service }}"
+          image_name="local/${{ matrix.service }}:smoke"
+          port="${{ matrix.port }}"
+
+          cleanup() {
+            docker logs "$container_name" >/dev/null 2>&1 || true
+            docker rm -f "$container_name" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          docker run -d --rm --name "$container_name" -p "$port:$port" "$image_name"
+
+          http_code="000"
+          for _ in $(seq 1 30); do
+            http_code=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost:${port}/")
+            if [ "$http_code" != "000" ]; then
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$http_code" = "000" ]; then
+            echo "Container did not become reachable on port $port"
+            docker logs "$container_name"
+            exit 1
+          fi
+
+          uid=$(docker exec "$container_name" sh -lc 'id -u')
+          if [ "$uid" = "0" ]; then
+            echo "Container is running as root"
+            docker logs "$container_name"
+            exit 1
+          fi
+
+          if [ "${{ matrix.service }}" = "mosip-api" ]; then
+            swagger_code=$(curl -s -o /tmp/openapi.json -w "%{http_code}" "http://localhost:${port}/documentation/json")
+            if [ "$swagger_code" != "200" ]; then
+              echo "Swagger JSON endpoint failed with status $swagger_code"
+              docker logs "$container_name"
+              exit 1
+            fi
+
+            node -e "const fs=require('fs'); const body=fs.readFileSync('/tmp/openapi.json','utf8'); if(!body.includes('openapi')) { process.exit(1); }"
+          fi
