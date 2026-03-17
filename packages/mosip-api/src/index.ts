@@ -4,7 +4,10 @@ import {
   validatorCompiler,
   ZodTypeProvider,
 } from "fastify-type-provider-zod";
-import { registrationEventHandler } from "./routes/event-registration";
+import {
+  registrationEventHandler,
+  MosipInteropPayloadSchema,
+} from "./routes/event-registration";
 import { env } from "./constants";
 import * as openapi from "./openapi-documentation";
 import { OIDPUserInfoSchema, OIDPQuerySchema } from "./esignet-api";
@@ -24,7 +27,6 @@ import {
   getAllTransactionsHandler,
 } from "./routes/debug-sqlite";
 import { verifyHandler, VerifySchema } from "./routes/verify";
-import { MosipInteropPayloadSchema } from "@opencrvs/mosip/api";
 
 const loggerRedactPaths = [
   "req.headers.authorization",
