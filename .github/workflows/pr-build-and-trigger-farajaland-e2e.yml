@@ -1,0 +1,153 @@
+name: "🚀 MOSIP PR: Build images and trigger Farajaland E2E"
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+env:
+  REGISTRY: ghcr.io
+  MOSIP_API_IMAGE: opencrvs/mosip-api
+  MOSIP_MOCK_IMAGE: opencrvs/mosip-mock
+  ESIGNET_MOCK_IMAGE: opencrvs/esignet-mock
+
+jobs:
+  prepare:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository && !contains(github.actor, 'bot') }}
+    runs-on: ubuntu-24.04
+    outputs:
+      image_tag: ${{ steps.vars.outputs.image_tag }}
+      branch_name: ${{ steps.vars.outputs.branch_name }}
+      pr_number: ${{ steps.vars.outputs.pr_number }}
+    steps:
+      - name: Resolve variables
+        id: vars
+        run: |
+          echo "image_tag=${GITHUB_SHA:0:7}" >> "$GITHUB_OUTPUT"
+          echo "branch_name=${{ github.head_ref }}" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${{ github.event.pull_request.number }}" >> "$GITHUB_OUTPUT"
+
+  build-mosip-api-image:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Copy yarn.lock to Docker build context
+        run: cp yarn.lock packages/mosip-api/yarn.lock
+
+      - name: Build and push mosip-api image
+        uses: docker/build-push-action@v6
+        with:
+          context: packages/mosip-api
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.MOSIP_API_IMAGE }}:${{ needs.prepare.outputs.image_tag }}
+
+  build-mosip-mock-image:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve symlinks in mosip-mock package
+        run: |
+          mkdir -p images/mosip-mock
+          rsync -a --copy-links packages/mosip-mock/ images/mosip-mock/
+
+      - name: Copy yarn.lock to Docker build context
+        run: cp yarn.lock images/mosip-mock/yarn.lock
+
+      - name: Build and push mosip-mock image
+        uses: docker/build-push-action@v6
+        with:
+          context: images/mosip-mock
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.MOSIP_MOCK_IMAGE }}:${{ needs.prepare.outputs.image_tag }}
+
+  build-esignet-mock-image:
+    needs: prepare
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve symlinks in esignet-mock package
+        run: |
+          mkdir -p images/esignet-mock
+          rsync -a --copy-links packages/esignet-mock/ images/esignet-mock/
+
+      - name: Copy yarn.lock to Docker build context
+        run: cp yarn.lock images/esignet-mock/yarn.lock
+
+      - name: Build and push esignet-mock image
+        uses: docker/build-push-action@v6
+        with:
+          context: images/esignet-mock
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.ESIGNET_MOCK_IMAGE }}:${{ needs.prepare.outputs.image_tag }}
+
+  trigger-farajaland:
+    needs:
+      - prepare
+      - build-mosip-api-image
+      - build-mosip-mock-image
+      - build-esignet-mock-image
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Trigger Farajaland workflow
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.E2E_WORKFLOWS_TOKEN }}
+          script: |
+            const result = await github.rest.repos.createDispatchEvent({
+              owner: 'opencrvs',
+              repo: 'opencrvs-farajaland',
+              event_type: 'run_mosip_pr_e2e',
+              client_payload: {
+                actor: '${{ github.actor }}',
+                branch: '${{ needs.prepare.outputs.branch_name }}',
+                pr_number: '${{ needs.prepare.outputs.pr_number }}',
+                'mosip-api-image-tag': '${{ needs.prepare.outputs.image_tag }}',
+                'mosip-mock-image-tag': '${{ needs.prepare.outputs.image_tag }}',
+                'esignet-mock-image-tag': '${{ needs.prepare.outputs.image_tag }}'
+              }
+            });
+
+            console.log(result);
