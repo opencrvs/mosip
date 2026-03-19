@@ -4,6 +4,7 @@ import {
   OIDPUserInfoSchema,
   fetchToken,
   fetchUserInfo,
+  pickUserInfo,
 } from "../esignet-api";
 import { z } from "zod";
 
@@ -12,7 +13,7 @@ export type OIDPUserInfoRequest = FastifyRequest<{
   Querystring: z.infer<typeof OIDPQuerySchema>;
 }>;
 
-export const OIDPUserInfoHandler = async (
+export const rawOIDPUserInfoHandler = async (
   request: OIDPUserInfoRequest,
   _reply: FastifyReply,
 ) => {
@@ -56,4 +57,12 @@ export const OIDPUserInfoHandler = async (
   );
 
   return userInfo;
+};
+
+export const OIDPUserInfoHandler = async (
+  request: OIDPUserInfoRequest,
+  _reply: FastifyReply,
+) => {
+  const userInfoRaw = await rawOIDPUserInfoHandler(request, _reply);
+  return pickUserInfo(userInfoRaw);
 };

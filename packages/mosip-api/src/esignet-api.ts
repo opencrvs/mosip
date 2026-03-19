@@ -164,7 +164,7 @@ function formatDate(dateString: string, formatStr = "PP") {
   });
 }
 
-const pickUserInfo = async (userInfo: OIDPUserInfo) => {
+export const pickUserInfo = async (userInfo: OIDPUserInfo) => {
   return {
     name: {
       firstname: userInfo.name?.split(" ")[0],
@@ -217,5 +217,5 @@ export const fetchUserInfo = async (
       "Something went wrong with the OIDP user info request. No user info was returned.",
     );
   }
-  return pickUserInfo(decodedResponse);
+  return decodedResponse;
 };
