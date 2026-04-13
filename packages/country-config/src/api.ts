@@ -1,4 +1,4 @@
-import type { EventDocument, FieldValue } from "@opencrvs/toolkit/events";
+import type { FieldValue } from "@opencrvs/toolkit/events";
 
 export interface BirthRequestFields extends Record<string, unknown> {
   birthCertificateNumber: string;
@@ -63,7 +63,7 @@ export const createMosipInteropClient = (
   authorizationHeader: string,
 ) => {
   return {
-    register: async (payload: MosipInteropPayload) => {
+    register: async (payload: MosipInteropPayload, timeoutMs = 15000) => {
       const MOSIP_API_REGISTRATION_EVENT_URL = new URL(
         "./events/registration",
         url,
@@ -79,6 +79,7 @@ export const createMosipInteropClient = (
             "content-type": "application/json",
           },
         },
+        timeoutMs,
       );
 
       if (!response.ok) {
@@ -87,17 +88,21 @@ export const createMosipInteropClient = (
 
       return response.json();
     },
-    verifyNid: async (payload: VerifyNidPayload) => {
+    verifyNid: async (payload: VerifyNidPayload, timeoutMs = 15000) => {
       const MOSIP_API_VERIFY_URL = new URL("./verify", url).href;
 
-      const response = await fetchWithTimeout(MOSIP_API_VERIFY_URL, {
-        method: "POST",
-        body: JSON.stringify(payload),
-        headers: {
-          Authorization: authorizationHeader,
-          "content-type": "application/json",
+      const response = await fetchWithTimeout(
+        MOSIP_API_VERIFY_URL,
+        {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: {
+            Authorization: authorizationHeader,
+            "content-type": "application/json",
+          },
         },
-      });
+        timeoutMs,
+      );
 
       if (!response.ok) {
         throw new Error(`Failed to verify: ${await response.text()}`);
