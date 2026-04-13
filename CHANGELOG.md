@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.9.2
+- Introduce optional `timeoutMs` parameters for `register` and `verifyNid` methods in `createMosipInteropClient` to allow customization of request timeouts.
+
 ## 1.9.0
 
 Before version 1.9, communication between country-config and mosip-api was handled via FHIR and GraphQL. OpenCRVS 1.9 introduces a refactored data model, new REST APIs, and new country configuration hooks such as onRegisterHandler. These changes require updates to country configurations, as the @opencrvs/mosip package has been updated accordingly. For detailed upgrade instructions, refer to [documentation.opencrvs.org](https://documentation.opencrvs.org).
