@@ -164,7 +164,6 @@ const authorizeSchema = {
       "scope",
       "acr_values",
       "claims",
-      "state",
       "redirect_uri",
     ],
     properties: {

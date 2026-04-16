@@ -180,7 +180,10 @@
         const personId = document.getElementById("id-input").value;
         // it's base64'd using `btoa` so that in demo the NID doesn't leak to URL and cause awkward questions
         destinationURL.searchParams.set("code", btoa(personId));
-        destinationURL.searchParams.set("state", params.get("state"));
+
+        if (params.get("state"))
+          destinationURL.searchParams.set("state", params.get("state"));
+
         console.log(destinationURL.href);
         window.location.replace(destinationURL.href);
       }
