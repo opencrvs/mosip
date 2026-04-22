@@ -247,12 +247,14 @@ export const buildFastify = async () => {
 async function run() {
   const app = await buildFastify();
 
-  const { wasCreated, wasConnected, database } = initSqlite(
+  const { wasCreated, wasConnected, appliedMigrations, database } = initSqlite(
     env.SQLITE_DATABASE_PATH,
   );
 
   wasCreated && app.log.info("SQLite token storage created");
   wasConnected && app.log.info("SQLite token storage connected");
+  appliedMigrations > 0 &&
+    app.log.info(`Applied ${appliedMigrations} SQLite migration(s)`);
 
   await app.ready();
   await app.listen({

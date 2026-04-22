@@ -1,4 +1,7 @@
 import DatabaseSync, { Database } from "better-sqlite3";
+import { createHash } from "node:crypto";
+import { readdirSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 /*
  * Lightweight SQLite database for storing transaction id with a JWT token
@@ -7,31 +10,102 @@ import DatabaseSync, { Database } from "better-sqlite3";
  * Optimally, MOSIP could receive this token as metadata and return it back in WebSub to avoid storage, but this is not currently supported by MOSIP.
  */
 
-const DATABASE_SCHEMA = `
-  CREATE TABLE transactions (
+const DEFAULT_MIGRATIONS_PATH = join(__dirname, "../migrations");
+
+const CREATE_MIGRATION_TABLE_SQL = `
+  CREATE TABLE IF NOT EXISTS schema_migrations (
     id TEXT PRIMARY KEY,
-    token TEXT UNIQUE NOT NULL,
-    registration_number TEXT UNIQUE NOT NULL,
-    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    checksum TEXT NOT NULL,
+    applied_at TEXT NOT NULL DEFAULT (datetime('now'))
   ) STRICT
 `;
 
 let database: Database;
 
-export const initSqlite = (path: string) => {
+const hashSql = (sql: string) => {
+  return createHash("sha256").update(sql).digest("hex");
+};
+
+const getMigrationFilenames = (migrationsPath: string) => {
+  return readdirSync(migrationsPath)
+    .filter((file) => file.endsWith(".sql"))
+    .sort((a, b) => a.localeCompare(b));
+};
+
+const applyMigrations = (database: Database, migrationsPath: string) => {
+  database.exec(CREATE_MIGRATION_TABLE_SQL);
+
+  const appliedMigrations = database
+    .prepare("SELECT id, checksum FROM schema_migrations")
+    .all() as Array<{ id: string; checksum: string }>;
+
+  const appliedChecksumById = new Map(
+    appliedMigrations.map(({ id, checksum }) => [id, checksum]),
+  );
+
+  let appliedCount = 0;
+  const migrationFilenames = getMigrationFilenames(migrationsPath);
+
+  for (const migrationFilename of migrationFilenames) {
+    const migrationPath = join(migrationsPath, migrationFilename);
+    const sql = readFileSync(migrationPath, "utf8").trim();
+
+    if (!sql) {
+      throw new Error(`Migration '${migrationFilename}' is empty.`);
+    }
+
+    const checksum = hashSql(sql);
+    const appliedChecksum = appliedChecksumById.get(migrationFilename);
+
+    if (appliedChecksum) {
+      if (appliedChecksum !== checksum) {
+        throw new Error(
+          `Migration '${migrationFilename}' checksum mismatch. Existing migrations must not be changed after deployment.`,
+        );
+      }
+      continue;
+    }
+
+    const applyMigration = database.transaction(() => {
+      database.exec(sql);
+      database
+        .prepare("INSERT INTO schema_migrations (id, checksum) VALUES (?, ?)")
+        .run(migrationFilename, checksum);
+    });
+
+    applyMigration();
+    appliedCount += 1;
+  }
+
+  return { appliedCount };
+};
+
+export const initSqlite = (
+  path: string,
+  {
+    migrationsPath = DEFAULT_MIGRATIONS_PATH,
+  }: { migrationsPath?: string } = {},
+) => {
   database = new DatabaseSync(path);
 
-  const tableExists = database
+  database.pragma("foreign_keys = ON");
+  database.pragma("journal_mode = WAL");
+  database.pragma("busy_timeout = 5000");
+
+  const migrationTableExists = database
     .prepare(
-      "SELECT name FROM sqlite_master WHERE type='table' AND name='transactions'",
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='schema_migrations'",
     )
     .get();
 
-  if (!tableExists) {
-    database.exec(DATABASE_SCHEMA);
-  }
+  const { appliedCount } = applyMigrations(database, migrationsPath);
 
-  return { wasCreated: !tableExists, wasConnected: tableExists, database };
+  return {
+    wasCreated: !migrationTableExists,
+    wasConnected: Boolean(migrationTableExists),
+    appliedMigrations: appliedCount,
+    database,
+  };
 };
 
 export const insertTransaction = (

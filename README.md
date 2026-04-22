@@ -36,6 +36,8 @@ yarn set-version 1.7.0-alpha.16
 
 This project uses a **SQLite** database to store the record-specific tokens that OpenCRVS Core uses to allow editing the records. See [`./packages/mosip-api/src/database.ts`](./packages/mosip-api/src/database.ts) for more information.
 
+Schema changes are managed with SQL migrations in [`./packages/mosip-api/migrations`](./packages/mosip-api/migrations). On startup, `mosip-api` automatically applies pending migrations in order and stores applied checksums in `schema_migrations`.
+
 The **environment variables** the server uses can be found at [`./packages/mosip-api/src/constants.ts`](./packages/mosip-api/src/constants.ts). Create a `.env` file in the root of the repository, if you want to override the local values.
 
 The **identities** for E-Signet and IDA Auth mocks are found at [`./docs/mock-identities.json`](./docs/mock-identities.json).
