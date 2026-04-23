@@ -202,8 +202,9 @@ async function run() {
     `Swagger UI running at http://${env.HOST}:${env.PORT}/documentation ✅`,
   );
 
-  const { topic } = await initWebSub();
-  app.log.info(`WebSub subscription initialized for topic '${topic}' ✅`);
+  // Disable for Sri Lanka
+  // const { topic } = await initWebSub();
+  // app.log.info(`WebSub subscription initialized for topic '${topic}' ✅`);
 
   process.on("exit", () => {
     database.close();
