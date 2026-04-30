@@ -173,17 +173,18 @@ function formatDate(dateString: string, formatStr = "PP") {
 }
 
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
+  const names = userInfo.name?.split(" ") ?? [];
   return {
     name: {
-      firstname: userInfo.given_name,
-      middlename: userInfo.middle_name,
-      surname: userInfo.family_name,
+      firstname: names[0] ?? "",
+      surname: names.slice(1).join(" ") ?? "",
     },
     gender: userInfo?.gender?.toLowerCase(),
     ...(userInfo.birthdate && {
       dobUnknown: null,
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
     }),
+    address: userInfo.address,
     verificationStatus: "authenticated",
     idType: null,
     nid: null,
