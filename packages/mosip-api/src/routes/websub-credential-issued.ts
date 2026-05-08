@@ -43,12 +43,12 @@ export const credentialIssuedHandler = async (
   reply: FastifyReply,
 ) => {
   try {
+    request.log.info(`Received credential issued event from WebSub:
+${JSON.stringify(request.body.event)}`);
+
     const verifiableCredential = decryptMosipCredential(
       request.body.event.data.credential,
     );
-
-    request.log.info(`Received credential issued event from WebSub:
-${JSON.stringify(request.body.event)}`);
 
     // commented out for now, as there is an issue when verifying the VC, likely due to canonicalization differences
     // await verifyCredentialOrThrow(verifiableCredential, {
