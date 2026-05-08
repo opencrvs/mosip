@@ -137,11 +137,43 @@ const initRoutes = (app: FastifyInstance) => {
    * MOSIP Kafka WebSub
    */
   app.get("/websub/callback", async (request, reply) => {
-    const { "hub.challenge": challenge } = request.query as {
+    const {
+      "hub.challenge": challenge,
+      "hub.mode": mode,
+      "hub.topic": topic,
+      "hub.reason": reason,
+    } = request.query as {
       "hub.challenge"?: string;
+      "hub.mode"?: string;
+      "hub.topic"?: string;
+      "hub.reason"?: string;
     };
-    if (challenge) return reply.type("text/plain").send(challenge);
-    else return reply.code(400).send("Missing hub.challenge");
+
+    if (mode === "denied") {
+      request.log.warn(
+        {
+          event: "websub.subscription.denied",
+          topic,
+          reason,
+        },
+        "WebSub hub denied subscription state change",
+      );
+      return reply.code(200).send("denied");
+    }
+
+    if (challenge) {
+      request.log.info(
+        {
+          event: "websub.subscription.challenge",
+          mode,
+          topic,
+        },
+        "Responding to WebSub challenge",
+      );
+      return reply.type("text/plain").send(challenge);
+    }
+
+    return reply.code(400).send("Missing hub.challenge");
   });
 
   app.withTypeProvider<ZodTypeProvider>().route({
@@ -272,7 +304,7 @@ async function run() {
   );
 
   const { topic } = await initWebSub();
-  app.log.info(`WebSub subscription initialized for topic '${topic}'`);
+  app.log.info(`WebSub subscription requested for topic '${topic}'`);
 
   process.on("exit", () => {
     database.close();
