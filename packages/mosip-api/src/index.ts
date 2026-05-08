@@ -17,7 +17,7 @@ import { OIDPUserInfoHandler } from "./routes/oidp-user-info";
 import { initSqlite } from "./database";
 import {
   credentialIssuedHandler,
-  CredentialIssuedSchema,
+  // CredentialIssuedSchema,
 } from "./routes/websub-credential-issued";
 import { initWebSub } from "./websub/subscribe";
 import {
@@ -180,9 +180,9 @@ const initRoutes = (app: FastifyInstance) => {
     method: "POST",
     url: "/websub/callback", // see constants.ts `${env.MOSIP_WEBSUB_CALLBACK_URL}`
     handler: credentialIssuedHandler,
-    schema: {
-      body: CredentialIssuedSchema,
-    },
+    // schema: {
+    //   body: CredentialIssuedSchema,
+    // },
   });
 };
 
