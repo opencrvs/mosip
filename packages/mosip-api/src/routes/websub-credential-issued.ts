@@ -47,6 +47,9 @@ export const credentialIssuedHandler = async (
       request.body.event.data.credential,
     );
 
+    request.log.info(`Received credential issued event from WebSub:
+${JSON.stringify(request.body.event)}`);
+
     // commented out for now, as there is an issue when verifying the VC, likely due to canonicalization differences
     // await verifyCredentialOrThrow(verifiableCredential, {
     //   allowList: MOSIP_VERIFIABLE_CREDENTIAL_ALLOWED_URLS,
