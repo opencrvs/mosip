@@ -23,7 +23,7 @@ export const CredentialIssuedSchema = z.object({
     data: z.object({
       registrationId: z.string(),
       credential: z.string(),
-      credentialType: z.literal("vercred"),
+      credentialType: z.literal("euin"),
       protectionKey: z.string(),
     }),
   }),
@@ -72,7 +72,7 @@ ${JSON.stringify(request.body.event)}`);
           actionId,
           registrationNumber,
           nationalId: (verifiableCredential.credentialSubject as BirthSubject)
-            .VID,
+            .UIN,
         },
         { token, logger: request.log },
       );
@@ -96,7 +96,7 @@ ${JSON.stringify(request.body.event)}`);
           actionId,
           requestId: requestId!,
           nationalId: (verifiableCredential.credentialSubject as BirthSubject)
-            .VID,
+            .UIN,
         },
         { token, logger: request.log },
       );
