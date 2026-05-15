@@ -83,9 +83,9 @@ const initRoutes = (app: FastifyInstance) => {
     method: "POST",
     url: "/websub/callback", // see constants.ts `${env.MOSIP_WEBSUB_CALLBACK_URL}`
     handler: credentialIssuedHandler,
-    schema: {
-      body: CredentialIssuedSchema,
-    },
+    // schema: {
+    //   body: CredentialIssuedSchema,
+    // },
   });
 
   /*

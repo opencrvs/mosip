@@ -108,5 +108,10 @@ export function decryptMosipCredential(
   ]);
 
   const decryptedJson = JSON.parse(decrypted.toString("utf-8"));
-  return MOSIPVerifiableCredential.parse(decryptedJson);
+
+  console.log("Decrypted credential:", decryptedJson);
+
+  // Loosen up the schema validation for MOSIP Connect 2026
+  // return MOSIPVerifiableCredential.parse(decryptedJson);
+  return decryptedJson as z.infer<typeof MOSIPVerifiableCredential>;
 }

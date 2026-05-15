@@ -173,6 +173,7 @@ function formatDate(dateString: string, formatStr = "PP") {
 }
 
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
+  console.log({ userInfo });
   return {
     name: {
       firstname: userInfo.given_name,

@@ -35,6 +35,7 @@ export const registrationEventHandler = async (
       audit,
       metaInfo,
       notification,
+      logger: request.log,
     });
   }
 
