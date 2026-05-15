@@ -7,6 +7,7 @@ import {
   DeathRequestFields,
   MosipInteropPayload,
 } from "@opencrvs/mosip/api";
+import type { FastifyBaseLogger } from "fastify";
 
 export class MOSIPError extends Error {
   constructor(message: string) {
@@ -79,6 +80,7 @@ export const postBirthRecord = async ({
   audit,
   metaInfo,
   notification,
+  logger,
 }: {
   event: {
     id: string;
@@ -89,6 +91,7 @@ export const postBirthRecord = async ({
   audit: MosipInteropPayload["audit"];
   metaInfo: MosipInteropPayload["metaInfo"];
   notification: MosipInteropPayload["notification"];
+  logger?: FastifyBaseLogger;
 }) => {
   const requestBody = JSON.stringify(
     {
@@ -113,6 +116,15 @@ export const postBirthRecord = async ({
   );
 
   const authToken = await getMosipAuthToken("PACKET");
+
+  logger?.info(
+    {
+      event: "mosip.birth.create-packet.request",
+      url: env.MOSIP_CREATE_PACKET_URL,
+      payload: JSON.parse(requestBody),
+    },
+    "Sending birth create-packet request to MOSIP",
+  );
 
   // packet manager: create packet
   const createPacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
@@ -152,6 +164,15 @@ export const postBirthRecord = async ({
     },
     null,
     2,
+  );
+
+  logger?.info(
+    {
+      event: "mosip.birth.process-packet.request",
+      url: env.MOSIP_PROCESS_PACKET_URL,
+      payload: JSON.parse(processPacketRequestBody),
+    },
+    "Sending birth process-packet request to MOSIP",
   );
 
   const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {

@@ -23,7 +23,7 @@ export const CredentialIssuedSchema = z.object({
     data: z.object({
       registrationId: z.string(),
       credential: z.string(),
-      credentialType: z.literal("vercred"),
+      credentialType: z.literal("euin"),
       protectionKey: z.string(),
     }),
   }),
@@ -43,6 +43,9 @@ export const credentialIssuedHandler = async (
   reply: FastifyReply,
 ) => {
   try {
+    request.log.info(`Received credential issued event from WebSub:
+${JSON.stringify(request.body.event)}`);
+
     const verifiableCredential = decryptMosipCredential(
       request.body.event.data.credential,
     );
@@ -69,7 +72,7 @@ export const credentialIssuedHandler = async (
           actionId,
           registrationNumber,
           nationalId: (verifiableCredential.credentialSubject as BirthSubject)
-            .VID,
+            .UIN,
         },
         { token, logger: request.log },
       );
@@ -93,7 +96,7 @@ export const credentialIssuedHandler = async (
           actionId,
           requestId: requestId!,
           nationalId: (verifiableCredential.credentialSubject as BirthSubject)
-            .VID,
+            .UIN,
         },
         { token, logger: request.log },
       );
