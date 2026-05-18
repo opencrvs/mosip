@@ -1,6 +1,6 @@
 import { DateValue, NameFieldValue, TextValue } from "@opencrvs/toolkit/events";
 import { FastifyReply, FastifyRequest } from "fastify";
-// import { verifyNid } from "../mosip-api";
+import { verifyNid } from "../mosip-api";
 import { z } from "zod";
 
 export const VerifySchema = z.object({
@@ -13,32 +13,30 @@ export const VerifySchema = z.object({
 
 /** Handles the calls coming from OpenCRVS countryconfig */
 export const verifyHandler = async (
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  // const body = VerifySchema.parse(request.body);
+  const body = VerifySchema.parse(request.body);
 
-  return reply.code(200).send("verified");
+  const {
+    response: { authStatus },
+  } = await verifyNid({
+    nid: body.nid,
+    dob: body.dob.replaceAll("-", "/"),
+    name: [
+      {
+        language: "eng",
+        value: `${body.name.firstname} ${body.name.surname}`,
+      },
+    ],
+    gender: body.gender ? [{ language: "eng", value: body.gender }] : undefined,
+  });
 
-  // const {
-  //   response: { authStatus },
-  // } = await verifyNid({
-  //   nid: body.nid,
-  //   dob: body.dob.replaceAll("-", "/"),
-  //   name: [
-  //     {
-  //       language: "eng",
-  //       value: `${body.name.firstname} ${body.name.surname}`,
-  //     },
-  //   ],
-  //   gender: body.gender ? [{ language: "eng", value: body.gender }] : undefined,
-  // });
+  const transactionId = body.transactionId;
 
-  // const transactionId = body.transactionId;
+  if (transactionId) {
+    request.log.info({ transactionId, authStatus });
+  }
 
-  // if (transactionId) {
-  //   request.log.info({ transactionId, authStatus });
-  // }
-
-  // return reply.code(200).send(authStatus ? "verified" : "failed");
+  return reply.code(200).send(authStatus ? "verified" : "failed");
 };
