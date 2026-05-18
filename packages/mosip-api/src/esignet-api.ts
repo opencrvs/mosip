@@ -37,6 +37,7 @@ type OIDPUserAddress = {
 
 type OIDPUserInfo = {
   sub: string;
+  individual_id?: string;
   name?: string;
   given_name?: string;
   family_name?: string;
@@ -168,7 +169,6 @@ function formatDate(dateString: string, formatStr = "PP") {
 const pickUserInfo = async (userInfo: OIDPUserInfo) => {
   console.log({ userInfo });
   return {
-    ...userInfo,
     sub: userInfo.sub, // usually holds the PSUT
     name: {
       firstname: userInfo.name?.split(" ")[0],
@@ -180,8 +180,8 @@ const pickUserInfo = async (userInfo: OIDPUserInfo) => {
       birthDate: formatDate(userInfo.birthdate, "yyyy-MM-dd"),
     }),
     verificationStatus: "authenticated",
-    idType: null,
-    nid: null,
+    idType: userInfo.individual_id ? "NATIONAL_ID" : null,
+    nid: userInfo.individual_id ?? null,
   };
 };
 
