@@ -9,6 +9,21 @@ import {
 } from "@opencrvs/mosip/api";
 import type { FastifyBaseLogger } from "fastify";
 
+function logCurl(
+  method: string,
+  url: string,
+  headers: Record<string, string>,
+  body?: string,
+) {
+  const headerArgs = Object.entries(headers)
+    .map(([k, v]) => `-H '${k}: ${v}'`)
+    .join(" ");
+  const bodyArg = body ? `-d '${body}'` : "";
+  console.log(
+    `\n[DEMO] curl -X ${method} '${url}' ${headerArgs} ${bodyArg}\n`,
+  );
+}
+
 export class MOSIPError extends Error {
   constructor(message: string) {
     super(message);
@@ -19,28 +34,29 @@ export class MOSIPError extends Error {
 export type AuthType = "PACKET" | "WEBSUB";
 
 export async function getMosipAuthToken(authType: AuthType) {
+  const body = JSON.stringify({
+    id: "string",
+    version: "string",
+    requesttime: new Date().toISOString(),
+    metadata: {},
+    request: {
+      clientId:
+        authType === "PACKET"
+          ? env.MOSIP_PACKET_AUTH_CLIENT_ID
+          : env.MOSIP_WEBSUB_AUTH_CLIENT_ID,
+      secretKey:
+        authType === "PACKET"
+          ? env.MOSIP_PACKET_AUTH_CLIENT_SECRET
+          : env.MOSIP_WEBSUB_AUTH_CLIENT_SECRET,
+      appId: env.MOSIP_AUTH_CLIENT_APP_ID,
+    },
+  });
+  const headers = { "Content-Type": "application/json" };
+  logCurl("POST", env.MOSIP_AUTH_URL, headers, body);
   const response = await fetch(env.MOSIP_AUTH_URL, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      id: "string",
-      version: "string",
-      requesttime: new Date().toISOString(),
-      metadata: {},
-      request: {
-        clientId:
-          authType === "PACKET"
-            ? env.MOSIP_PACKET_AUTH_CLIENT_ID
-            : env.MOSIP_WEBSUB_AUTH_CLIENT_ID,
-        secretKey:
-          authType === "PACKET"
-            ? env.MOSIP_PACKET_AUTH_CLIENT_SECRET
-            : env.MOSIP_WEBSUB_AUTH_CLIENT_SECRET,
-        appId: env.MOSIP_AUTH_CLIENT_APP_ID,
-      },
-    }),
+    headers,
+    body,
   });
 
   if (!response.ok) {
@@ -127,13 +143,15 @@ export const postBirthRecord = async ({
   );
 
   // packet manager: create packet
+  const createPacketHeaders = {
+    "Content-Type": "application/json",
+    Cookie: `Authorization=${authToken};`,
+  };
+  logCurl("PUT", env.MOSIP_CREATE_PACKET_URL, createPacketHeaders, requestBody);
   const createPacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
     method: "PUT",
     body: requestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
-    },
+    headers: createPacketHeaders,
   });
 
   if (!createPacketResponse.ok) {
@@ -175,13 +193,20 @@ export const postBirthRecord = async ({
     "Sending birth process-packet request to MOSIP",
   );
 
+  const processPacketHeaders = {
+    "Content-Type": "application/json",
+    Cookie: `Authorization=${authToken};`,
+  };
+  logCurl(
+    "POST",
+    env.MOSIP_PROCESS_PACKET_URL,
+    processPacketHeaders,
+    processPacketRequestBody,
+  );
   const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
     method: "POST",
     body: processPacketRequestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
-    },
+    headers: processPacketHeaders,
   });
 
   if (!processPacketResponse.ok) {
@@ -244,13 +269,20 @@ export const postDeathRecord = async ({
   );
 
   // packet manager: deactivate packet
+  const deactivatePacketHeaders = {
+    "Content-Type": "application/json",
+    Cookie: `Authorization=${authToken};`,
+  };
+  logCurl(
+    "PUT",
+    env.MOSIP_CREATE_PACKET_URL,
+    deactivatePacketHeaders,
+    deactivatePacketRequestBody,
+  );
   const deactivatePacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
     method: "PUT",
     body: deactivatePacketRequestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
-    },
+    headers: deactivatePacketHeaders,
   });
 
   if (!deactivatePacketResponse.ok) {
@@ -283,13 +315,20 @@ export const postDeathRecord = async ({
     2,
   );
 
+  const deathProcessPacketHeaders = {
+    "Content-Type": "application/json",
+    Cookie: `Authorization=${authToken};`,
+  };
+  logCurl(
+    "POST",
+    env.MOSIP_PROCESS_PACKET_URL,
+    deathProcessPacketHeaders,
+    processPacketRequestBody,
+  );
   const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
     method: "POST",
     body: processPacketRequestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
-    },
+    headers: deathProcessPacketHeaders,
   });
 
   if (!processPacketResponse.ok) {
@@ -349,13 +388,20 @@ export const postDemographicUpdateRecord = async ({
     2,
   );
 
+  const updatePacketHeaders = {
+    "Content-Type": "application/json",
+    Cookie: `Authorization=${authToken};`,
+  };
+  logCurl(
+    "PUT",
+    env.MOSIP_CREATE_PACKET_URL,
+    updatePacketHeaders,
+    updatePacketRequestBody,
+  );
   const updatePacketResponse = await fetch(env.MOSIP_CREATE_PACKET_URL, {
     method: "PUT",
     body: updatePacketRequestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
-    },
+    headers: updatePacketHeaders,
   });
 
   if (!updatePacketResponse.ok) {
@@ -387,13 +433,20 @@ export const postDemographicUpdateRecord = async ({
     2,
   );
 
+  const updateProcessPacketHeaders = {
+    "Content-Type": "application/json",
+    Cookie: `Authorization=${authToken};`,
+  };
+  logCurl(
+    "POST",
+    env.MOSIP_PROCESS_PACKET_URL,
+    updateProcessPacketHeaders,
+    processPacketRequestBody,
+  );
   const processPacketResponse = await fetch(env.MOSIP_PROCESS_PACKET_URL, {
     method: "POST",
     body: processPacketRequestBody,
-    headers: {
-      "Content-Type": "application/json",
-      Cookie: `Authorization=${authToken};`,
-    },
+    headers: updateProcessPacketHeaders,
   });
 
   if (!processPacketResponse.ok) {
