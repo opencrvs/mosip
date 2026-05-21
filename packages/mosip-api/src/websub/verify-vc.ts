@@ -2,14 +2,14 @@ import { flattenedVerify, importSPKI } from "jose";
 import { z } from "zod";
 import canonicalize from "canonicalize";
 
-const BirthSubject = z.object({
+const BirthSubject = z.looseObject({
   UIN: z.string(),
   id: z.string().url(),
 });
 
 export type BirthSubject = z.infer<typeof BirthSubject>;
 
-const DeathSubject = z.object({
+const DeathSubject = z.looseObject({
   id: z.string().url(),
   vcVer: z.literal("VC-V1"),
 });

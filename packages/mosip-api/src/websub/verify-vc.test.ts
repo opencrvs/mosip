@@ -28,7 +28,7 @@ const VALID_CREDENTIAL = {
   issuanceDate: "2025-04-11T07:57:43.134Z",
   credentialSubject: {
     birthCertificateNumber: "C83B023548BST",
-    VID: "8031687218",
+    UIN: "8031687218",
     id: "http://credential.idrepo/credentials/100010033575073",
     vcVer: "VC-V1",
   },

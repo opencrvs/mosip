@@ -36,7 +36,7 @@ const sendVerifiableCredential = async (
           JSON.stringify(verifiableCredential),
           PRIVATE_KEY,
         ),
-        credentialType: "vercred",
+        credentialType: "euin",
         protectionKey: "275700",
       },
     },
@@ -151,7 +151,7 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
 
     sendVerifiableCredential(id, {
       birthCertificateNumber,
-      VID,
+      UIN: VID,
       id: `http://credential.idrepo/credentials/${id}`,
       vcVer: "VC-V1",
     }).catch((e) => {
