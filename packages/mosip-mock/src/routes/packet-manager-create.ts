@@ -145,7 +145,6 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
       birthCertificateNumber,
       UIN,
       id: `http://credential.idrepo/credentials/${id}`,
-      vcVer: "VC-V1",
     }).catch((e) => {
       request.log.error(
         {
@@ -164,7 +163,6 @@ export const packetManagerCreateHandler: RouteHandlerMethod = async (
 
     sendVerifiableCredential(id, {
       id: `http://credential.idrepo/credentials/${id}`,
-      vcVer: "VC-V1",
     }).catch((e) => {
       request.log.error(
         {

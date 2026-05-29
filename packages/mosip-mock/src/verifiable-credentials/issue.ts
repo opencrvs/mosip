@@ -20,12 +20,7 @@ export async function issueVerifiableCredential(
     issuanceDate,
     credentialSubject: subject,
     id: `http://credential.idrepo/credentials/${randomUUID()}`,
-    type: ["VerifiableCredential", "MOSIPVerifiableCredential"],
-    "@context": [
-      "https://www.w3.org/2018/credentials/v1",
-      `${env.ISSUER_URL}/.well-known/mosip-context.json`,
-      { sec: "https://w3id.org/security#" },
-    ],
+    type: ["MOSIPVerifiableCredential"],
     issuer: ISSUER,
   };
 
