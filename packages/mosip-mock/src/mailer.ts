@@ -17,7 +17,7 @@ export const sendEmail = async (
 
     return;
   }
-
+  try {
   const emailTransport = nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: env.SMTP_PORT,
@@ -34,4 +34,7 @@ export const sendEmail = async (
     subject,
     text,
   });
+  } catch () {
+    console.log("Could not send email. Ensure environment variables are set correctly")
+  }
 };
