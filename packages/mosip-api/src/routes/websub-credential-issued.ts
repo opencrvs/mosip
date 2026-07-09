@@ -59,6 +59,15 @@ export const credentialIssuedHandler = async (
       getTransactionAndDiscard(transactionId);
     const { eventId, actionId } = decode(token) as TokenPayload;
 
+    // With client credentials configured, confirm with a freshly issued token:
+    // it survives OpenCRVS redeployments that happened while the credential was
+    // pending, and the confirmation is audited as this integration rather than
+    // the registrar. The stored token remains as a fallback for deployments
+    // that have not been issued client credentials yet.
+    const confirmationToken = opencrvs.isDirectAuthConfigured()
+      ? await opencrvs.getConfirmationToken(eventId, actionId)
+      : token;
+
     if (isBirthSubject(verifiableCredential.credentialSubject)) {
       opencrvs.confirmRegistration(
         {
@@ -67,7 +76,7 @@ export const credentialIssuedHandler = async (
           registrationNumber,
           nationalId: verifiableCredential.credentialSubject.VID,
         },
-        { token },
+        { token: confirmationToken },
       );
     } else {
       opencrvs.confirmRegistration(
@@ -76,7 +85,7 @@ export const credentialIssuedHandler = async (
           actionId,
           registrationNumber,
         },
-        { token },
+        { token: confirmationToken },
       );
     }
     return reply
