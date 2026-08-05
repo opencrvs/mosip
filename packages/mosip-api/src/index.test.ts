@@ -4,7 +4,7 @@ import { buildFastify } from "./index";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { env } from "./constants";
-import { generateKeyPairSync } from "node:crypto";
+import { createHmac, generateKeyPairSync } from "node:crypto";
 import jwt from "jsonwebtoken";
 import { schemaJson as defaultSchemaJson } from "./types/idSchemaJson";
 import { initSqlite } from "./database";
@@ -25,7 +25,11 @@ const createJwtPayload = () => ({
 });
 
 const createPacketRequests: Array<{
-  request: { schemaJson: string; process: string; fields: Record<string, unknown> };
+  request: {
+    schemaJson: string;
+    process: string;
+    fields: Record<string, unknown>;
+  };
 }> = [];
 
 const mswServer = setupServer(
@@ -164,39 +168,101 @@ test("validates JWTs", async (t) => {
     );
   });
 
-  await t.test("should accept correction updates and send CRVS_UPDATE process", async () => {
-    createPacketRequests.length = 0;
+  await t.test(
+    "should accept correction updates and send CRVS_UPDATE process",
+    async () => {
+      createPacketRequests.length = 0;
 
-    const response = await fastify.inject({
+      const response = await fastify.inject({
+        method: "POST",
+        url: "/events/update-biographics",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${createValidJwt()}`,
+        },
+        body: JSON.stringify({
+          trackingId: "tracking-id-correction",
+          notification: {
+            recipientFullName: "Jane Doe",
+            recipientEmail: "jane@example.com",
+            recipientPhone: "+1555000114",
+          },
+          requestFields: {
+            VID: "8031687218",
+            fullName: "Infant Updated",
+            dateOfBirth: "2024-01-01",
+            gender: "male",
+          },
+          metaInfo: {},
+          audit: {},
+        }),
+      });
+
+      assert.strictEqual(response.statusCode, 202);
+      assert.strictEqual(createPacketRequests.length, 1);
+      assert.strictEqual(
+        createPacketRequests[0]?.request?.process,
+        "CRVS_UPDATE",
+      );
+      assert.strictEqual(
+        createPacketRequests[0]?.request?.fields?.VID,
+        "8031687218",
+      );
+    },
+  );
+
+  await fastify.close();
+  database.close();
+});
+
+test("authenticates WebSub callbacks", async (t) => {
+  const { database } = initSqlite(":memory:");
+  const fastify = await buildFastify();
+  await fastify.ready();
+
+  // The route is exempt from JWT auth, so the hub signature is the only thing
+  // standing between an unauthenticated caller and a confirmed registration.
+  const body = JSON.stringify({ not: "a real credential envelope" });
+  const sign = (payload: string, secret = env.MOSIP_WEBSUB_SECRET) =>
+    `sha256=${createHmac("sha256", secret).update(payload).digest("hex")}`;
+
+  const post = (headers: Record<string, string>) =>
+    fastify.inject({
       method: "POST",
-      url: "/events/update-biographics",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${createValidJwt()}`,
-      },
-      body: JSON.stringify({
-        trackingId: "tracking-id-correction",
-        notification: {
-          recipientFullName: "Jane Doe",
-          recipientEmail: "jane@example.com",
-          recipientPhone: "+1555000114",
-        },
-        requestFields: {
-          VID: "8031687218",
-          fullName: "Infant Updated",
-          dateOfBirth: "2024-01-01",
-          gender: "male",
-        },
-        metaInfo: {},
-        audit: {},
-      }),
+      url: "/websub/callback",
+      headers: { "Content-Type": "application/json", ...headers },
+      body,
     });
 
-    assert.strictEqual(response.statusCode, 202);
-    assert.strictEqual(createPacketRequests.length, 1);
-    assert.strictEqual(createPacketRequests[0]?.request?.process, "CRVS_UPDATE");
-    assert.strictEqual(createPacketRequests[0]?.request?.fields?.VID, "8031687218");
+  await t.test("rejects an unsigned callback", async () => {
+    const response = await post({});
+    assert.strictEqual(response.statusCode, 401);
   });
+
+  await t.test("rejects a callback signed with the wrong secret", async () => {
+    const response = await post({
+      "X-Hub-Signature": sign(body, "not-the-hub-secret"),
+    });
+    assert.strictEqual(response.statusCode, 401);
+  });
+
+  await t.test(
+    "rejects a callback whose body was altered in transit",
+    async () => {
+      const response = await post({ "X-Hub-Signature": sign(`${body} `) });
+      assert.strictEqual(response.statusCode, 401);
+    },
+  );
+
+  // Anything but 401 proves the signature gate passed and the request moved on.
+  // What it then fails on is not this test's concern — the body is bogus.
+  await t.test(
+    "lets a correctly signed callback through the gate",
+    async () => {
+      const response = await post({ "X-Hub-Signature": sign(body) });
+      assert.notStrictEqual(response.statusCode, 401);
+    },
+  );
 
   await fastify.close();
   database.close();

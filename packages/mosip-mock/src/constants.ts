@@ -46,6 +46,10 @@ export const env = cleanEnv(process.env, {
     devDefault: "http://localhost:2024/websub/callback",
     desc: "The URL where @opencrvs/mosip/mosip-api receives WebSub callbacks from MOSIP",
   }),
+  MOSIP_WEBSUB_SECRET: str({
+    devDefault: "mosip-websub-secret",
+    desc: "`hub.secret` used to sign WebSub callbacks with `X-Hub-Signature`, as a real hub does. Must match `MOSIP_WEBSUB_SECRET` in mosip-api.",
+  }),
 });
 
 export const PRIVATE_KEY = fs.readFileSync(env.PRIVATE_KEY_PATH).toString();
