@@ -42,6 +42,19 @@ export const credentialIssuedHandler = async (
   request: CredentialIssuedRequest,
   reply: FastifyReply,
 ) => {
+  if (env.UNSAFE_DEBUG_LOG) {
+    request.log.info(
+      {
+        event: "websub.credential-issued.headers",
+        headerNames: Object.keys(request.headers),
+        hubSignature: request.headers["x-hub-signature"] ?? null,
+        hubSignature256: request.headers["x-hub-signature-256"] ?? null,
+        headers: request.headers,
+      },
+      "WebSub callback headers",
+    );
+  }
+
   try {
     const verifiableCredential = decryptMosipCredential(
       request.body.event.data.credential,
