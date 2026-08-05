@@ -27,6 +27,12 @@ import {
 import { verifyHandler, VerifySchema } from "./routes/verify";
 import { MosipInteropPayloadSchema } from "@opencrvs/mosip/api";
 
+declare module "fastify" {
+  interface FastifyRequest {
+    rawBody?: Buffer;
+  }
+}
+
 const loggerRedactPaths = [
   "req.headers.authorization",
   "req.headers.cookie",
@@ -177,6 +183,28 @@ export const buildFastify = async () => {
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
   publicKeyLogger = app.log;
+
+  // Retains the exact bytes so the WebSub HMAC can be recomputed over them.
+  // Replaces Fastify's built-in JSON parser, preserving its empty-body and
+  // 400-on-malformed behaviour.
+  app.addContentTypeParser(
+    "application/json",
+    { parseAs: "buffer" },
+    (request, body, done) => {
+      const buffer = body as Buffer;
+      request.rawBody = buffer;
+
+      if (buffer.length === 0) return done(null, undefined);
+
+      try {
+        done(null, JSON.parse(buffer.toString("utf8")));
+      } catch (err) {
+        (err as FastifyError).statusCode = 400;
+        done(err as Error);
+      }
+    },
+  );
+
   app.register(formbody);
   app.register(cors, {
     origin: [env.CLIENT_APP_URL],

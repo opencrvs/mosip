@@ -7,6 +7,7 @@ import { decryptMosipCredential } from "../websub/crypto";
 import { env } from "../constants";
 import { getBirthIdentifier } from "../websub/verify-vc";
 import { ActionType } from "@opencrvs/toolkit/events";
+import { createHmac } from "node:crypto";
 
 export const CredentialIssuedSchema = z.object({
   publisher: z.string(),
@@ -43,15 +44,30 @@ export const credentialIssuedHandler = async (
   reply: FastifyReply,
 ) => {
   if (env.UNSAFE_DEBUG_LOG) {
+    const received = request.headers["x-hub-signature"] ?? null;
+    const raw = request.rawBody;
+    const hmac = (encoding: "hex" | "base64") =>
+      raw
+        ? createHmac("sha256", env.MOSIP_WEBSUB_SECRET)
+            .update(raw)
+            .digest(encoding)
+        : null;
+
+    const hex = hmac("hex");
+
     request.log.info(
       {
-        event: "websub.credential-issued.headers",
-        headerNames: Object.keys(request.headers),
-        hubSignature: request.headers["x-hub-signature"] ?? null,
-        hubSignature256: request.headers["x-hub-signature-256"] ?? null,
-        headers: request.headers,
+        event: "websub.credential-issued.hub-signature",
+        received,
+        // The header is `sha256=<hex>`; base64 is logged too in case the hub
+        // ever differs, and both distinguish "wrong encoding" from "wrong key".
+        computedHex: hex && `sha256=${hex}`,
+        computedBase64: hmac("base64"),
+        matches: received !== null && received === `sha256=${hex}`,
+        rawBodyLength: raw?.length ?? null,
+        contentLength: request.headers["content-length"] ?? null,
       },
-      "WebSub callback headers",
+      "WebSub HMAC check (observe only)",
     );
   }
 
