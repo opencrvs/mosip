@@ -1,6 +1,6 @@
 {
   "name": "@opencrvs/mosip-api",
-  "version": "2.0.0-demo.20260805",
+  "version": "2.0.0-demo.20260805.2",
   "license": "MPL-2.0",
   "scripts": {
     "dev": "NODE_ENV=development tsx watch --env-file-if-exists=../../.env src/index.ts",
