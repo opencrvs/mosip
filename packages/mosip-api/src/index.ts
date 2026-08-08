@@ -13,7 +13,10 @@ import formbody from "@fastify/formbody";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
 import { getPublicKey } from "./opencrvs-api";
-import { OIDPUserInfoHandler } from "./routes/oidp-user-info";
+import {
+  OIDPUserInfoHandler,
+  rawOIDPUserInfoHandler,
+} from "./routes/oidp-user-info";
 import { initSqlite } from "./database";
 import {
   credentialIssuedHandler,
@@ -127,6 +130,15 @@ const initRoutes = (app: FastifyInstance) => {
     url: "/esignet/get-oidp-user-info",
     method: "POST",
     handler: OIDPUserInfoHandler,
+    schema: {
+      body: OIDPUserInfoSchema,
+      querystring: OIDPQuerySchema,
+    },
+  });
+  app.withTypeProvider<ZodTypeProvider>().route({
+    url: "/esignet/get-oidp-user-info/raw",
+    method: "POST",
+    handler: rawOIDPUserInfoHandler,
     schema: {
       body: OIDPUserInfoSchema,
       querystring: OIDPQuerySchema,

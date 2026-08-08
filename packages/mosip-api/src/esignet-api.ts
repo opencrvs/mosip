@@ -165,7 +165,7 @@ function formatDate(dateString: string, formatStr = "PP") {
   });
 }
 
-const pickUserInfo = async (userInfo: OIDPUserInfo) => {
+export const pickUserInfo = async (userInfo: OIDPUserInfo) => {
   return {
     sub: userInfo.sub, // usually holds the PSUT
     name: {
@@ -219,5 +219,5 @@ export const fetchUserInfo = async (
       "Something went wrong with the OIDP user info request. No user info was returned.",
     );
   }
-  return pickUserInfo(decodedResponse);
+  return decodedResponse;
 };
