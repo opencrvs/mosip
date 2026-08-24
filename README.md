@@ -1,4 +1,9 @@
+> [!IMPORTANT]
+> Repository is archived. v2.1.0 onwards issues and pull requests are opened under [opencrvs-core](https://github.com/opencrvs/opencrvs-core).
+
 # OpenCRVS API for MOSIP
+
+v2.0.1
 
 This repository provides an mediator/API layer that facilitates communication between OpenCRVS and MOSIP, enabling secure identity integration. Refer to [OpenCRVS documentation](https://documentation.opencrvs.org/technology/interoperability/national-id-client) for installation and deployment instructions.
 
